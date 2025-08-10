@@ -1,23 +1,8 @@
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import {
-  FilePlus, FileImage, RotateCw, Archive, FileType, FileOutput, Grip,
-} from "lucide-react";
+import { Grip } from "lucide-react";
 import { Link } from "react-router-dom";
-
-// This list should match the one in ToolSelector.tsx
-const tools = [
-  { value: "merge", label: "Merge PDF", icon: FilePlus, color: "text-red-500" },
-  { value: "split", label: "Split PDF", icon: FileImage, color: "text-orange-500" },
-  { value: "rotate", label: "Rotate PDF", icon: RotateCw, color: "text-blue-500" },
-  { value: "compress", label: "Compress PDF", icon: Archive, color: "text-green-500" },
-  { value: "word-to-pdf", label: "Word to PDF", icon: FileType, color: "text-indigo-500" },
-  { value: "pdf-to-word", label: "PDF to Word", icon: FileOutput, color: "text-purple-500" },
-];
+import { tools } from "@/constants/tools"; // Import from our new file
 
 export function ToolsMenu() {
   return (
