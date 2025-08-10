@@ -5,9 +5,17 @@ import { ToolSelector } from "./ToolSelector";
 import { FileUploader } from "./FileUploader";
 import { StatusDisplay } from "./StatusDisplay";
 import { useToast } from "@/hooks/use-toast";
-import { Zap } from "lucide-react";
+import { Zap, Info } from "lucide-react";
 import { mergePDFs } from "@/lib/pdf-tools";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+// List of tools that can run entirely in the browser
+const BROWSER_ONLY_TOOLS = ["merge"];
 
 export const PDFProcessor = () => {
   const [selectedTool, setSelectedTool] = useState("merge");
@@ -18,13 +26,16 @@ export const PDFProcessor = () => {
   const [apiBaseUrl, setApiBaseUrl] = useState<string>("");
   const { toast } = useToast();
 
+  // Check if the currently selected tool requires a backend server
+  const requiresBackend = !BROWSER_ONLY_TOOLS.includes(selectedTool);
+
   useEffect(() => {
-    const saved = localStorage.getItem("pdfx_api_base") || "";
+    const saved = localStorage.getItem("pdfmingle_api_base") || "";
     setApiBaseUrl(saved);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("pdfx_api_base", apiBaseUrl);
+    localStorage.setItem("pdfmingle_api_base", apiBaseUrl);
   }, [apiBaseUrl]);
 
   const handleProcess = async () => {
@@ -50,8 +61,7 @@ export const PDFProcessor = () => {
     setStatusMessage("Processing your files...");
 
     try {
-      // Client-side support for Merge
-      if (selectedTool === "merge") {
+      if (!requiresBackend && selectedTool === "merge") {
         const blob = await mergePDFs(files);
         const url = URL.createObjectURL(blob);
         setDownloadUrl(url);
@@ -70,9 +80,8 @@ export const PDFProcessor = () => {
         return;
       }
 
-      // For other tools, require backend URL
-      if (!apiBaseUrl.trim()) {
-        throw new Error("No backend configured. Set the Backend URL to enable this tool.");
+      if (requiresBackend && !apiBaseUrl.trim()) {
+        throw new Error("Backend URL is required for this tool.");
       }
 
       const formData = new FormData();
@@ -107,6 +116,7 @@ export const PDFProcessor = () => {
         title: "Success!",
         description: "Your files have been processed successfully.",
       });
+
     } catch (error: any) {
       setStatus("error");
       setStatusMessage(error?.message || "An error occurred during processing. Please try again.");
@@ -133,28 +143,39 @@ export const PDFProcessor = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <Card className="shadow-primary">
+    <div className="max-w-xl mx-auto">
+      <Card className="shadow-primary overflow-hidden">
         <CardHeader className="text-center pb-4">
-          <CardTitle className="text-2xl font-bold text-primary mb-2">
+          <CardTitle className="text-3xl font-bold text-primary mb-1">
             PDF Processing Center
           </CardTitle>
           <p className="text-muted-foreground">
             Select your tool and upload files to get started
           </p>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 px-4 md:px-6 pb-6">
           <ToolSelector value={selectedTool} onValueChange={setSelectedTool} />
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Backend URL (optional)</label>
-            <Input
-              placeholder="https://your-flask-server.com"
-              value={apiBaseUrl}
-              onChange={(e) => setApiBaseUrl(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">Leave empty to use browser-only processing (Merge supported).</p>
-          </div>
+          {requiresBackend && (
+            <div className="space-y-2 animate-in fade-in duration-300">
+              <label className="text-sm font-medium flex items-center gap-2">
+                Backend URL
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>This tool requires server-side processing. <br/> Please enter the URL of your backend.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </label>
+              <Input
+                placeholder="https://your-backend-server.com"
+                value={apiBaseUrl}
+                onChange={(e) => setApiBaseUrl(e.target.value)}
+              />
+            </div>
+          )}
 
           <FileUploader files={files} onFilesChange={setFiles} />
 
@@ -164,7 +185,7 @@ export const PDFProcessor = () => {
               size="lg"
               onClick={handleProcess}
               disabled={status === "processing"}
-              className="min-w-40"
+              className="min-w-48"
             >
               <Zap className="h-5 w-5 mr-2" />
               {status === "processing" ? "Processing..." : "Process Files"}
