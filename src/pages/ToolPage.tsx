@@ -1,27 +1,22 @@
-
-import { useParams } from "react-router-dom";
+import { useParams, Navigate } from "react-router-dom";
 import { PDFProcessor } from "@/components/PDFProcessor";
-
-// Mock tool data - in a real app, this might come from a config file
-const tools = {
-  merge: { title: "Merge PDF files", description: "Combine PDFs in the order you want with the easiest PDF merger available." },
-  split: { title: "Split PDF file", description: "Separate one page or a whole set for easy conversion into independent PDF files." },
-  // ... add other tools here
-};
+import { tools } from "@/constants/tools"; // Import from our new file
 
 const ToolPage = () => {
-  const { toolId } = useParams<{ toolId: keyof typeof tools }>();
+  const { toolId } = useParams<{ toolId: string }>();
+
+  const currentTool = tools.find(t => t.value === toolId);
   
-  if (!toolId || !tools[toolId]) {
-    // Optional: Render a fallback or redirect if the tool is not found
-    return <div>Tool not found</div>;
+  if (!toolId || !currentTool) {
+    // If the toolId from the URL is not valid, redirect to the 404 page.
+    return <Navigate to="/404" replace />;
   }
 
-  const { title, description } = tools[toolId];
+  const { label, description } = currentTool;
 
   return (
     <div className="flex flex-col items-center justify-center text-center">
-      <h1 className="text-4xl font-bold mb-2">{title}</h1>
+      <h1 className="text-4xl font-bold mb-2">{label}</h1>
       <p className="text-lg text-muted-foreground mb-8 max-w-xl">{description}</p>
       <div className="w-full max-w-2xl">
         <PDFProcessor initialTool={toolId} />
