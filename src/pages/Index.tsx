@@ -5,7 +5,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="py-8">
+      <main className="py-8 px-4">
         <PDFProcessor />
       </main>
     </div>
