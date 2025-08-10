@@ -8,7 +8,8 @@ import { PDFMingleLogo } from "./PDFMingleLogo";
 export const MobileNav = () => (
   <Sheet>
     <SheetTrigger asChild>
-      <Button variant="ghost" size="icon" aria-label="Open Menu">
+      {/* The text-ilovepdf-text class is added here to ensure the icon is dark */}
+      <Button variant="ghost" size="icon" className="text-ilovepdf-text" aria-label="Open Menu">
         <Menu className="h-6 w-6" />
       </Button>
     </SheetTrigger>
