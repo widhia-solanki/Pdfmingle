@@ -202,3 +202,14 @@ export const PDFProcessor = () => {
     </div>
   );
 };
+// ... imports
+
+// Add this interface at the top
+interface PDFProcessorProps {
+  initialTool?: string;
+}
+
+export const PDFProcessor = ({ initialTool = "merge" }: PDFProcessorProps) => { // Modify this line
+  const [selectedTool, setSelectedTool] = useState(initialTool); // Modify this line
+
+  // ... rest of the component code remains the same
