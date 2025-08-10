@@ -1,5 +1,5 @@
 import { Logo } from "./Logo";
-import ThreeDotsMenu from "./ThreeDotsMenu";
+import { ToolsMenu } from "./ToolsMenu"; // Updated import
 
 export const Header = () => {
   return (
@@ -21,8 +21,7 @@ export const Header = () => {
         </p>
       </div>
 
-      {/* --- Menu on both Mobile and Desktop --- */}
-      <ThreeDotsMenu />
+      <ToolsMenu /> {/* Updated component */}
     </header>
   );
 };
