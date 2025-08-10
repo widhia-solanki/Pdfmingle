@@ -1,5 +1,5 @@
 import { FileText } from "lucide-react";
-import { ThreeDotsMenu } from "./ThreeDotsMenu";
+import ThreeDotsMenu from "./ThreeDotsMenu";
 
 export const Header = () => {
   return (
