@@ -2,15 +2,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Grip } from "lucide-react";
 import { Link } from "react-router-dom";
-import { tools } from "@/constants/tools"; // Import from our new file
+import { tools } from "@/constants/tools";
 
 export function ToolsMenu() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 hover:text-white">
+        {/* The text-ilovepdf-text class is added here to ensure the icon is dark */}
+        <Button variant="ghost" size="icon" className="text-ilovepdf-text" aria-label="Open Tools Menu">
           <Grip className="h-6 w-6" />
-          <span className="sr-only">Open Tools Menu</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-4">
