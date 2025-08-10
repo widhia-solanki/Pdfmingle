@@ -30,7 +30,6 @@ export const PDFProcessor = ({ initialTool = "merge" }: PDFProcessorProps) => {
   const [apiBaseUrl, setApiBaseUrl] = useState<string>("");
   const { toast } = useToast();
 
-  // Check if the currently selected tool requires a backend server
   const requiresBackend = !BROWSER_ONLY_TOOLS.includes(selectedTool);
 
   useEffect(() => {
