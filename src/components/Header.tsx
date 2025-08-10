@@ -25,4 +25,6 @@ export const Header = () => {
       </div>
     </header>
   );
-};
+};```
+
+After you **commit these two changes**, your website will have the correct, functional desktop navigation, and the header will appear as it should.
