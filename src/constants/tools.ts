@@ -1,7 +1,7 @@
 import {
-  FilePlus, Scissors, Shuffle, Archive, FileOutput, FileType, 
-  FileText, FileSignature, Unlock, Lock
-} from "lucide-react";
+  FilePlus, Scissors, Archive, FileOutput, FileType, 
+  FileText, Unlock, Lock
+} from "lucide-react"; // FIX: Removed unused 'Shuffle' and 'FileSignature'
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
 
