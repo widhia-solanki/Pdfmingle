@@ -3,10 +3,10 @@ import { useParams, Navigate } from "react-router-dom";
 import { PDFProcessor } from "@/components/PDFProcessor";
 import { ResultsPage } from "@/components/ResultsPage";
 import { tools } from "@/constants/tools";
-import { mergePDFs } from "@/lib/pdf-tools";
+import { mergePDFs, splitPDF } from "@/lib/pdf-tools";
 import { useToast } from "@/hooks/use-toast";
 
-const BROWSER_ONLY_TOOLS = ["merge"];
+const BROWSER_ONLY_TOOLS = ["merge", "split"];
 
 const ToolPage = () => {
   const { toolId } = useParams<{ toolId: string }>();
@@ -18,7 +18,6 @@ const ToolPage = () => {
 
   const currentTool = tools.find(t => t.value === toolId);
 
-  // Reset state when the tool changes
   useEffect(() => {
     handleStartOver();
   }, [toolId]);
@@ -37,7 +36,10 @@ const ToolPage = () => {
     if (downloadUrl) {
       const a = document.createElement("a");
       a.href = downloadUrl;
-      a.download = `processed_${toolId}.pdf`; // Dynamic filename
+      // Make the download filename dynamic based on the tool
+      a.download = toolId === 'split' 
+        ? `pdfmingle_split_files.zip` 
+        : `pdfmingle_${toolId}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -51,40 +53,52 @@ const ToolPage = () => {
     }
 
     setStatus("processing");
-    const apiBaseUrl = "https://your-backend-server.com"; // Your backend URL
     const requiresBackend = !BROWSER_ONLY_TOOLS.includes(toolId);
 
     try {
       let blob: Blob;
 
-      if (!requiresBackend && toolId === 'merge') {
-        blob = await mergePDFs(files);
-      } else {
-        if (requiresBackend && !apiBaseUrl) {
-          throw new Error("Backend URL is not configured.");
+      // --- START OF THE FIX ---
+      // This new logic correctly handles all browser-based tools
+      if (!requiresBackend) {
+        if (toolId === 'merge') {
+          blob = await mergePDFs(files);
+        } else if (toolId === 'split') {
+          if (files.length > 1) {
+            throw new Error("Please select only one file to split.");
+          }
+          blob = await splitPDF(files[0]);
+        } else {
+          // This is for any future browser-only tools you might add
+          throw new Error("This tool is not yet implemented in the browser.");
         }
+      } else {
+        // This block now only runs for tools that NEED a backend
+        const apiBaseUrl = "https://your-backend-server.com"; // Your real backend URL
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
         const endpoint = `${apiBaseUrl.replace(/\/$/, "")}/${toolId}`;
         const response = await fetch(endpoint, { method: "POST", body: formData });
+
         if (!response.ok) {
           throw new Error(`Server error: ${response.statusText}`);
         }
         blob = await response.blob();
       }
+      // --- END OF THE FIX ---
 
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setStatus("success");
       toast({ title: "Success!", description: "Your files have been processed." });
+
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An unknown error occurred.";
-      setStatus("idle"); // Go back to idle on error to allow retry
+      setStatus("idle");
       toast({ title: "Processing failed", description: message, variant: "destructive" });
     }
   };
 
-  // If processing was successful, show the results page.
   if (status === 'success') {
     return <ResultsPage 
       downloadUrl={downloadUrl}
@@ -93,7 +107,6 @@ const ToolPage = () => {
     />;
   }
   
-  // Otherwise, show the uploader.
   return (
     <div className="flex flex-col items-center justify-center text-center">
       <h1 className="text-4xl font-bold mb-2">{currentTool.label}</h1>
@@ -105,7 +118,7 @@ const ToolPage = () => {
         onProcess={handleProcess}
         status={status as "idle" | "processing"}
         selectedTool={toolId}
-        onToolChange={() => {}} // Not used here
+        onToolChange={() => {}}
         hideToolSelector={true}
       />
     </div>
