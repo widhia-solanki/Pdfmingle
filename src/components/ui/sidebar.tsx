@@ -101,7 +101,6 @@ const SidebarProvider = React.forwardRef<
         }
       }
 
-      // FIX: Removed 'window.' prefix
       addEventListener("keydown", handleKeyDown)
       return () => removeEventListener("keydown", handleKeyDown)
     }, [toggleSidebar])
@@ -147,8 +146,6 @@ const SidebarProvider = React.forwardRef<
   }
 )
 SidebarProvider.displayName = "SidebarProvider"
-
-// ... (The rest of the file remains the same, but it is included below to ensure a clean replacement)
 
 const Sidebar = React.forwardRef<
   HTMLDivElement,
@@ -653,4 +650,9 @@ const SidebarMenuSkeleton = React.forwardRef<
     >
       {showIcon && (
         <Skeleton
- 
+          className="size-4 rounded-md"
+          data-sidebar="menu-skeleton-icon"
+        />
+      )}
+      <Skeleton
+        className="h-4 f
