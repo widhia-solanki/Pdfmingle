@@ -1,6 +1,6 @@
 import { useParams, Navigate } from "react-router-dom";
 import { PDFProcessor } from "@/components/PDFProcessor";
-import { tools } from "@/constants/tools"; // Import from our new file
+import { tools } from "@/constants/tools";
 
 const ToolPage = () => {
   const { toolId } = useParams<{ toolId: string }>();
@@ -8,7 +8,6 @@ const ToolPage = () => {
   const currentTool = tools.find(t => t.value === toolId);
   
   if (!toolId || !currentTool) {
-    // If the toolId from the URL is not valid, redirect to the 404 page.
     return <Navigate to="/404" replace />;
   }
 
@@ -19,7 +18,8 @@ const ToolPage = () => {
       <h1 className="text-4xl font-bold mb-2">{label}</h1>
       <p className="text-lg text-muted-foreground mb-8 max-w-xl">{description}</p>
       <div className="w-full max-w-2xl">
-        <PDFProcessor initialTool={toolId} />
+        {/* Pass the new props here */}
+        <PDFProcessor initialTool={toolId} hideToolSelector={true} />
       </div>
     </div>
   );
