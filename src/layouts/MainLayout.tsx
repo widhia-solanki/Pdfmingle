@@ -5,11 +5,10 @@ export const MainLayout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="flex-grow py-8 px-4">
-        {/* Outlet renders the current page component */}
+      <main className="flex-grow container py-8 md:py-12">
         <Outlet />
       </main>
-      <footer className="text-center py-4 text-sm text-muted-foreground border-t">
+      <footer className="text-center py-6 text-sm text-muted-foreground border-t">
         © PDFMingle 2025 - Your PDF Editor
       </footer>
     </div>
