@@ -47,6 +47,12 @@ export const FileUploader = ({ files, onFilesChange }: FileUploaderProps) => {
   const openFileDialog = () => {
     fileInputRef.current?.click();
   };
+  
+  // This is the function that stops the event from bubbling
+  const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    openFileDialog();
+  };
 
   return (
     <div className="space-y-4">
@@ -59,7 +65,7 @@ export const FileUploader = ({ files, onFilesChange }: FileUploaderProps) => {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onClick={openFileDialog}
+        onClick={openFileDialog} // This handles clicks on the card area
       >
         <div className="text-center">
           <Upload className={`mx-auto h-12 w-12 mb-4 ${isDragOver ? "text-primary" : "text-muted-foreground"}`} />
@@ -67,7 +73,8 @@ export const FileUploader = ({ files, onFilesChange }: FileUploaderProps) => {
             {isDragOver ? "Drop files here" : "Drag & Drop files here"}
           </p>
           <p className="text-sm text-muted-foreground mb-4">or click to select files</p>
-          <Button variant="outline" onClick={openFileDialog} type="button">
+          {/* THE FIX IS HERE: We use the new handleButtonClick function */}
+          <Button variant="outline" onClick={handleButtonClick} type="button">
             Choose Files
           </Button>
         </div>
