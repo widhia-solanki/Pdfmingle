@@ -120,14 +120,16 @@ export const PDFProcessor = ({ initialTool = "merge" }: PDFProcessorProps) => {
         description: "Your files have been processed successfully.",
       });
 
-    } catch (error: any) {
+    } catch (error: unknown) { // FIX: Changed 'any' to 'unknown'
       setStatus("error");
-      setStatusMessage(error?.message || "An error occurred during processing. Please try again.");
+      // FIX: Safely get the error message
+      const message = error instanceof Error ? error.message : "An unknown error occurred.";
+      setStatusMessage(message);
       console.error("Processing error:", error);
 
       toast({
         title: "Processing failed",
-        description: error?.message || "There was an error processing your files.",
+        description: message,
         variant: "destructive",
       });
     }
