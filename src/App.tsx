@@ -7,7 +7,7 @@ import { MainLayout } from "@/layouts/MainLayout";
 import HomePage from "@/pages/HomePage";
 import ToolPage from "@/pages/ToolPage";
 import NotFound from "@/pages/NotFound";
-import AboutPage from "@/pages/AboutPage"; // 1. IMPORT THE NEW PAGE
+import AboutPage from "@/pages/AboutPage"; // 1. IMPORT THE PAGE
 
 const queryClient = new QueryClient();
 
@@ -20,7 +20,8 @@ const App = () => (
         <Routes>
           <Route element={<MainLayout />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutPage />} /> {/* 2. ADD THE ROUTE */}
+            {/* THIS IS THE LINE THAT MAKES THE PAGE WORK */}
+            <Route path="/about" element={<AboutPage />} /> 
             <Route path="/:toolId" element={<ToolPage />} />
           </Route>
           <Route path="*" element={<NotFound />} />
