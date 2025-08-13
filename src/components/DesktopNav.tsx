@@ -1,3 +1,6 @@
+import * as React from "react";
+import Link from "next/link"; // 1. CORRECT IMPORT
+
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -8,76 +11,65 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import { tools } from "@/constants/tools";
-import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export const DesktopNav = () => {
-  const convertTools = tools.filter(t => t.category === 'Convert');
-  const allTools = tools; // For the "All PDF Tools" dropdown
+  const organizeTools = tools.filter(t => t.category === "Organize");
+  const optimizeTools = tools.filter(t => t.category === "Optimize");
+  // ... add other categories if you want them in the dropdown
 
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        {/* Single Links */}
         <NavigationMenuItem>
-          <Link to="/merge" className={navigationMenuTriggerStyle()}>
-            MERGE PDF
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link to="/split" className={navigationMenuTriggerStyle()}>
-            SPLIT PDF
-          </Link>
-        </NavigationMenuItem>
-        <NavigationMenuItem>
-          <Link to="/compress" className={navigationMenuTriggerStyle()}>
-            COMPRESS PDF
-          </Link>
-        </NavigationMenuItem>
-        
-        {/* Convert PDF Dropdown */}
-        <NavigationMenuItem>
-          <NavigationMenuTrigger>CONVERT PDF</NavigationMenuTrigger>
+          <NavigationMenuTrigger>Organize PDF</NavigationMenuTrigger>
           <NavigationMenuContent>
             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {convertTools.map((tool) => (
-                <ListItem key={tool.label} to={`/${tool.value}`} title={tool.label}>
+              {organizeTools.map((tool) => (
+                <ListItem
+                  key={tool.label}
+                  title={tool.label}
+                  href={`/${tool.value}`} // 2. USE 'href' INSTEAD OF 'to'
+                >
                   {tool.description}
                 </ListItem>
               ))}
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
-
-        {/* All PDF Tools Dropdown */}
         <NavigationMenuItem>
-          <NavigationMenuTrigger>ALL PDF TOOLS</NavigationMenuTrigger>
+          <NavigationMenuTrigger>Optimize PDF</NavigationMenuTrigger>
           <NavigationMenuContent>
-             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
-              {allTools.map((tool) => (
-                <ListItem key={tool.label} to={`/${tool.value}`} title={tool.label}>
+            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] ">
+              {optimizeTools.map((tool) => (
+                <ListItem
+                  key={tool.label}
+                  title={tool.label}
+                  href={`/${tool.value}`} // 2. USE 'href' INSTEAD OF 'to'
+                >
                   {tool.description}
                 </ListItem>
               ))}
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
+        {/* Add other menu items here */}
       </NavigationMenuList>
     </NavigationMenu>
   );
 };
 
-// A helper component for styling the dropdown items
+// This ListItem component uses 'Link' from Next.js now
 const ListItem = React.forwardRef<
-  React.ElementRef<typeof Link>,
-  React.ComponentPropsWithoutRef<typeof Link> & { title: string }
->(({ className, title, children, to, ...props }, ref) => {
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a">
+>(({ className, title, children, href, ...props }, ref) => {
   return (
     <li>
       <NavigationMenuLink asChild>
         <Link
+          href={href!} // Make sure href is not undefined
           ref={ref}
-          to={to ?? "/"}
           className={cn(
             "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className
