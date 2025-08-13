@@ -2,13 +2,12 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { tools } from "@/constants/tools";
-import { Link } from "react-router-dom";
+import Link from "next/link"; // 1. CORRECT IMPORT for Next.js
 import { PDFMingleLogo } from "./PDFMingleLogo";
 
 export const MobileNav = () => (
   <Sheet>
     <SheetTrigger asChild>
-      {/* The text-ilovepdf-text class is added here to ensure the icon is dark */}
       <Button variant="ghost" size="icon" className="text-ilovepdf-text" aria-label="Open Menu">
         <Menu className="h-6 w-6" />
       </Button>
@@ -22,9 +21,10 @@ export const MobileNav = () => (
         {tools.map((tool) => {
           const Icon = tool.icon;
           return (
+            // 2. CORRECT LINK component with 'href' prop
             <Link
               key={tool.value}
-              to={`/${tool.value}`}
+              href={`/${tool.value}`}
               className="flex items-center gap-3 p-2 rounded-md hover:bg-accent"
             >
               <Icon className={`h-6 w-6 ${tool.color}`} />
