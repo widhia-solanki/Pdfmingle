@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import Link from 'next/link'; // 1. CORRECT IMPORT for Next.js
 
 export const PDFMingleLogo = () => (
-  <Link to="/" className="flex items-center text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
+  // 2. USE 'href' INSTEAD OF 'to'
+  <Link href="/" className="flex items-center text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
     <span className="text-ilovepdf-red">PDF</span>Mingle
   </Link>
 );
