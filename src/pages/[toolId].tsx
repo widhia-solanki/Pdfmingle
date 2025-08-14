@@ -1,165 +1,18 @@
-import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { tools, Tool } from '@/constants/tools';
-import { PDFProcessor } from '@/components/PDFProcessor';
-import { ResultsPage } from '@/components/ResultsPage';
-import { useToast } from '@/hooks/use-toast';
-import { mergePDFs, splitPDF } from '@/lib/pdf-tools';
+import { ToolPageLayout } from '@/components/ToolPageLayout';
 
-interface ToolPageProps {
-  tool: Tool;
+interface PageProps {
+  tool: Omit<Tool, 'icon'>; // The tool data WITHOUT the icon component
 }
 
-const BROWSER_ONLY_TOOLS = ["merge-pdf", "split-pdf"];
+const DynamicToolPage: NextPage<PageProps> = ({ tool }) => {
+  // Find the full tool object (including the icon) from the original list
+  const fullTool = tools.find(t => t.value === tool.value)!;
 
-const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
-  const { toast } = useToast();
-  
-  const [files, setFiles] = useState<File[]>([]);
-  const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
-  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    handleStartOver();
-  }, [tool.value]);
-
-  const handleStartOver = () => {
-    setFiles([]);
-    setStatus("idle");
-    setDownloadUrl(null);
-  };
-
-  const handleDownload = () => {
-    if (downloadUrl) {
-      const a = document.createElement("a");
-      a.href = downloadUrl;
-      a.download = `pdfmingle_${tool.value}_result.${tool.value === 'split-pdf' ? 'zip' : 'pdf'}`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    }
-  };
-
-  const handleProcess = async () => {
-    if (files.length === 0) {
-      toast({ title: "No files selected", description: "Please select at least one file to process.", variant: "destructive" });
-      return;
-    }
-
-    setStatus("processing");
-    const requiresBackend = !BROWSER_ONLY_TOOLS.includes(tool.value);
-
-    try {
-      let blob: Blob;
-
-      if (!requiresBackend) {
-        if (tool.value === 'merge-pdf') {
-          blob = await mergePDFs(files);
-        } else if (tool.value === 'split-pdf') {
-          if (files.length > 1) throw new Error("Please select only one file to split.");
-          blob = await splitPDF(files[0]);
-        } else {
-          throw new Error("Tool not implemented for browser processing.");
-        }
-      } else {
-        const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
-        const formData = new FormData();
-        files.forEach((file) => formData.append("files", file));
-        const endpoint = `${apiBaseUrl}/${tool.value}`;
-        const response = await fetch(endpoint, { method: "POST", body: formData });
-        if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
-        blob = await response.blob();
-      }
-
-      const url = URL.createObjectURL(blob);
-      setDownloadUrl(url);
-      setStatus("success");
-      toast({ title: "Success!", description: "Your files have been processed." });
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "An unknown error occurred.";
-      setStatus("idle");
-      toast({ title: "Processing failed", description: message, variant: "destructive" });
-    }
-  };
-  
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "HowTo",
-    "name": tool.metaTitle,
-    "description": tool.metaDescription,
-    "step": tool.steps.map((step, index) => ({
-      "@type": "HowToStep",
-      "name": `Step ${index + 1}`,
-      "text": step,
-      "position": index + 1,
-    })),
-  };
-
-  return (
-    <>
-      {/* --- START OF THE FIX --- */}
-      {/* The content inside the Head component has been restored. */}
-      <Head>
-        <title>{tool.metaTitle}</title>
-        <meta name="description" content={tool.metaDescription} />
-        <meta name="keywords" content={tool.metaKeywords} />
-        <meta property="og:title" content={tool.metaTitle} />
-        <meta property="og:description" content={tool.metaDescription} />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://www.pdfmingle.org/${tool.value}`} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      </Head>
-      {/* --- END OF THE FIX --- */}
-
-      <div className="flex flex-col items-center text-center">
-        <h1 className="text-3xl md:text-5xl font-bold text-ilovepdf-text">{tool.h1}</h1>
-        <p className="mt-4 max-w-xl text-base md:text-xl text-muted-foreground">{tool.description}</p>
-        
-        <div className="mt-8 md:mt-12 w-full">
-          {status === 'success' ? (
-            <ResultsPage
-              downloadUrl={downloadUrl}
-              onDownload={handleDownload}
-              onStartOver={handleStartOver}
-            />
-          ) : (
-            <PDFProcessor
-              files={files}
-              onFilesChange={setFiles}
-              onProcess={handleProcess}
-              status={status as "idle" | "processing"}
-              selectedTool={tool.value}
-              onToolChange={() => {}}
-              hideToolSelector={true}
-            />
-          )}
-        </div>
-        
-        <section className="text-left max-w-3xl mx-auto mt-16 md:mt-24">
-          <h2 className="text-2xl font-bold text-center mb-6">How to {tool.label}</h2>
-          <ol className="list-decimal list-inside space-y-4 text-gray-600">
-            {tool.steps.map((step, index) => <li key={index}>{step}</li>)}
-          </ol>
-        </section>
-
-        <section className="mt-16 text-center w-full">
-            <h3 className="text-xl font-bold mb-4">Try our other tools:</h3>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-                {tools.filter(t => t.value !== tool.value).slice(0, 4).map(otherTool => (
-                    <Link key={otherTool.value} href={`/${otherTool.value}`} className="text-ilovepdf-red hover:underline font-medium">
-                        {otherTool.label}
-                    </Link>
-                ))}
-            </div>
-        </section>
-      </div>
-    </>
-  );
+  return <ToolPageLayout tool={fullTool} />;
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
@@ -171,8 +24,16 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const tool = tools.find(t => t.value === params?.toolId);
-  if (!tool) return { notFound: true };
-  return { props: { tool } };
+  
+  if (!tool) {
+    return { notFound: true };
+  }
+
+  // --- THIS IS THE FIX ---
+  // Create a new object without the 'icon' property before returning
+  const { icon, ...serializableTool } = tool;
+
+  return { props: { tool: serializableTool } };
 };
 
-export default ToolPage;
+export default DynamicToolPage;
