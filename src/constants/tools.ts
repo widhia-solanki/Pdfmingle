@@ -1,7 +1,8 @@
+
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText, 
   Unlock, Lock, RotateCw, FileImage, Image, FileKey2, FileDigit, 
-  ScanLine, Scale
+  ScanLine, Scale, BookOpen, Link as LinkIcon, FileHeart, Files
 } from "lucide-react";
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
@@ -48,6 +49,19 @@ export const tools: Tool[] = [
     metaKeywords: "split pdf, pdf splitter, extract pdf pages, separate pdf",
     steps: [ "Select a PDF", "Choose the pages to extract", "Click Split", "Download your new files." ]
   },
+  {
+    value: "organize-pdf",
+    label: "Organize PDF",
+    h1: "Organize PDF Pages",
+    description: "Sort, add, and remove pages from your PDF document.",
+    category: "Organize",
+    icon: Files,
+    color: "text-amber-600",
+    metaTitle: "Organize PDF Pages Online - Sort & Delete | PDFMingle",
+    metaDescription: "Easily reorder, rotate, and delete pages in your PDF file online for free. Visual and simple to use.",
+    metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
+    steps: [ "Upload your PDF", "Drag pages to reorder or delete them", "Click Organize", "Download the updated PDF." ]
+  },
 
   // --- OPTIMIZE CATEGORY ---
   {
@@ -62,6 +76,19 @@ export const tools: Tool[] = [
     metaDescription: "Reduce the file size of your PDF files online for free. Our PDF compressor is easy to use and preserves document quality.",
     metaKeywords: "compress pdf, pdf compressor, reduce pdf size, pdf optimizer",
     steps: [ "Select a PDF", "Choose a compression level", "Click Compress", "Download your smaller file." ]
+  },
+  {
+    value: "repair-pdf",
+    label: "Repair PDF",
+    h1: "Repair a Damaged PDF",
+    description: "Attempt to recover data from a corrupted or damaged PDF file.",
+    category: "Optimize",
+    icon: FileHeart,
+    color: "text-emerald-500",
+    metaTitle: "Repair PDF Online - Fix Corrupted PDF Files | PDFMingle",
+    metaDescription: "Try to fix and recover corrupted PDF files with our free online repair tool. Upload your damaged file and see if we can save it.",
+    metaKeywords: "repair pdf, fix pdf, corrupted pdf, damaged pdf",
+    steps: [ "Upload the damaged PDF file", "Click the Repair PDF button", "If successful, preview the recovered data", "Download your repaired file." ]
   },
 
   // --- CONVERT CATEGORY ---
@@ -116,6 +143,19 @@ export const tools: Tool[] = [
     metaDescription: "Combine JPG images into a PDF file. Adjust orientation and margins with our easy-to-use image to PDF converter.",
     metaKeywords: "jpg to pdf, convert jpg to pdf, image to pdf",
     steps: [ "Upload your JPG images", "Adjust order and settings", "Click Create PDF", "Download your document." ]
+  },
+  {
+    value: "html-to-pdf",
+    label: "HTML to PDF",
+    h1: "Convert HTML to PDF",
+    description: "Turn any public webpage into a high-quality PDF document.",
+    category: "Convert",
+    icon: LinkIcon,
+    color: "text-cyan-500",
+    metaTitle: "Convert HTML to PDF Online - Webpage to PDF | PDFMingle",
+    metaDescription: "Easily convert any live webpage to a PDF document by simply pasting the URL. Free, fast, and no installation needed.",
+    metaKeywords: "html to pdf, webpage to pdf, url to pdf",
+    steps: [ "Paste the URL of the webpage", "Adjust page settings if needed", "Click Convert to PDF", "Download your PDF file." ]
   },
 
   // --- EDIT CATEGORY ---
