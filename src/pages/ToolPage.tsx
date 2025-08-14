@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router"; // 1. IMPORT the Next.js router
+import { useRouter } from "next/router";
 import { PDFProcessor } from "@/components/PDFProcessor";
 import { ResultsPage } from "@/components/ResultsPage";
 import { tools } from "@/constants/tools";
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from "@/lib/pdf-tools";
 import { useToast } from "@/hooks/use-toast";
-import NotFound from "@/pages/404"; // Import your 404 page for redirection
+import NotFoundPage from "@/pages/404"; // This now correctly points to the new file
 
 const BROWSER_ONLY_TOOLS = [
   "merge-pdf", 
@@ -16,8 +16,8 @@ const BROWSER_ONLY_TOOLS = [
 ];
 
 const ToolPage = () => {
-  const router = useRouter(); // 2. USE the Next.js router hook
-  const { toolId } = router.query; // 3. GET the toolId from the router query
+  const router = useRouter();
+  const { toolId } = router.query;
   const { toast } = useToast();
 
   const [files, setFiles] = useState<File[]>([]);
@@ -30,13 +30,12 @@ const ToolPage = () => {
     handleStartOver();
   }, [toolId]);
   
-  // This check now happens during render
   if (!router.isReady) {
-    return <div>Loading...</div>; // Show a loading state while router is preparing
+    return <div>Loading...</div>;
   }
 
   if (!toolId || !currentTool) {
-    return <NotFound />; // Render your 404 component if tool is invalid
+    return <NotFoundPage />; // Use the imported 404 component
   }
 
   const handleStartOver = () => {
@@ -140,6 +139,4 @@ const ToolPage = () => {
   );
 };
 
-export default ToolPage;```
-
-After you commit this final change, your project will be completely free of the old routing library, and the build will succeed. I am truly sorry for the many mistakes throughout this process. This will be the last step.
+export default ToolPage;
