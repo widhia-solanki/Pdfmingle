@@ -1,5 +1,5 @@
 
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, RotationTypes } from "pdf-lib"; // 1. Import RotationTypes
 import JSZip from "jszip";
 
 // --- MERGE PDF ---
@@ -8,16 +8,13 @@ export async function mergePDFs(files: File[]): Promise<Blob> {
   if (pdfFiles.length < 2) {
     throw new Error("Please select at least two PDF files to merge.");
   }
-
   const mergedPdf = await PDFDocument.create();
-
   for (const file of pdfFiles) {
     const bytes = await file.arrayBuffer();
     const pdf = await PDFDocument.load(bytes);
     const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
     copiedPages.forEach((page) => mergedPdf.addPage(page));
   }
-
   const mergedBytes = await mergedPdf.save();
   return new Blob([mergedBytes], { type: "application/pdf" });
 }
@@ -27,17 +24,13 @@ export async function splitPDF(file: File): Promise<Blob> {
   if (!file || file.type !== "application/pdf") {
     throw new Error("Please select a valid PDF file to split.");
   }
-
   const originalBytes = await file.arrayBuffer();
   const originalPdf = await PDFDocument.load(originalBytes);
   const pageCount = originalPdf.getPageCount();
-
   if (pageCount <= 1) {
     throw new Error("The selected PDF has only one page and cannot be split.");
   }
-
   const zip = new JSZip();
-
   for (let i = 0; i < pageCount; i++) {
     const newPdf = await PDFDocument.create();
     const [copiedPage] = await newPdf.copyPages(originalPdf, [i]);
@@ -46,7 +39,6 @@ export async function splitPDF(file: File): Promise<Blob> {
     const pageNumber = String(i + 1).padStart(3, '0');
     zip.file(`page_${pageNumber}.pdf`, pageBytes);
   }
-
   const zipBlob = await zip.generateAsync({ type: "blob" });
   return zipBlob;
 }
@@ -58,7 +50,8 @@ export async function rotatePDF(file: File, angle: 90 | 180 | 270): Promise<Blob
   const pages = pdfDoc.getPages();
   pages.forEach(page => {
     const currentRotation = page.getRotation().angle;
-    page.setRotation({ angle: currentRotation + angle });
+    // 2. THIS IS THE FIX: We now include the 'type' property.
+    page.setRotation({ type: RotationTypes.Degrees, angle: currentRotation + angle });
   });
   const pdfBytes = await pdfDoc.save();
   return new Blob([pdfBytes], { type: "application/pdf" });
