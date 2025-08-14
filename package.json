@@ -1,3 +1,4 @@
+
 {
   "name": "pdfmingle-next",
   "private": true,
@@ -9,6 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "react": "^18",
+    "react-dom": "^18",
+    "next": "14.2.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
@@ -46,11 +50,9 @@
     "input-otp": "^1.4.2",
     "jszip": "^3.10.1",
     "lucide-react": "^0.462.0",
-    "next": "14.2.3",
     "pdf-lib": "^1.17.1",
-    "react": "^18",
     "react-day-picker": "^8.10.1",
-    "react-dom": "^18",
+    "react-resizable-panels": "^2.1.9",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
