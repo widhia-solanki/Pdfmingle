@@ -1,28 +1,20 @@
-import type { Config } from "tailwindcss";
 
-export default {
-  darkMode: ["class"],
+    import type { Config } from "tailwindcss";
+
+const config: Config = {
   content: [
-    "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./app/**/*.{ts,tsx}",
-    "./src/**/*.{ts,tsx}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/layouts/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "1rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
       colors: {
-        // iLovePDF Color Palette
-        'ilovepdf-red': '#e53935',
-        'ilovepdf-red-dark': '#d32f2f',
+        // --- THIS IS THE CHANGE ---
+        'ilovepdf-red': '#3B82F6', // A nice, modern blue
+        'ilovepdf-red-dark': '#2563EB', // A darker blue for hover effects
         'ilovepdf-text': '#333333',
+        // --- END OF CHANGE ---
         
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -77,4 +69,5 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
-} satisfies Config;
+};
+export default config;
