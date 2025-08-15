@@ -6,7 +6,7 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-const MainLayoutComponent = ({ children }: MainLayoutProps) => { // Renamed to avoid conflict
+const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
@@ -33,5 +33,4 @@ const MainLayoutComponent = ({ children }: MainLayoutProps) => { // Renamed to a
   );
 };
 
-export const MainLayout = MainLayoutComponent; // Keep named export for consistency if needed elsewhere
-export default MainLayoutComponent; // Add default export for _app.tsx
+export default MainLayout; // THE ONLY CHANGE IS HERE
