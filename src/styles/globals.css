@@ -1,12 +1,13 @@
-
-   @tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* 
-  1. DEFINITIONS FIRST:
-  This @layer defines all your color variables. It must come before they are used.
+  CORRECT STRUCTURE: 
+  1. Define all variables first inside a @layer.
+  2. THEN, use those variables.
 */
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -30,13 +31,13 @@
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
   }
-}
 
-/* 
-  2. USAGE SECOND:
-  This @layer uses the variables defined above.
-*/
-@layer base {
+  /* Define dark mode variables if you add them later */
+  .dark {
+  }
+
+  /* This is the part that was causing the error. 
+     It now comes AFTER the variables are defined. */
   * {
     @apply border-border;
   }
@@ -44,32 +45,4 @@
     @apply bg-background text-ilovepdf-text;
     font-family: 'Open Sans', Arial, sans-serif;
   }
-}
-
-/* 
-  3. UTILITIES and ANIMATIONS LAST:
-  This is for your custom background styles.
-*/
-@layer utilities {
-  .hero-gradient-background {
-    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
-  }
-}
-
-@keyframes float1 {
-  0% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(-20px) translateX(10px); }
-  100% { transform: translateY(0px) translateX(0px); }
-}
-
-@keyframes float2 {
-  0% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(15px) translateX(-15px); }
-  100% { transform: translateY(0px) translateX(0px); }
-}
-
-@keyframes float3 {
-  0% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(-10px) translateX(20px); }
-  100% { transform: translateY(0px) translateX(0px); }
 }
