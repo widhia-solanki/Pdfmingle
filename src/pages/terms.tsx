@@ -9,7 +9,6 @@ const TermsPage = () => {
       </Head>
       
       <div className="animate-in fade-in duration-500">
-        {/* 1. Hero Section - EXACTLY LIKE THE ABOUT US PAGE */}
         <section className="bg-gradient-to-br from-gray-900 to-gray-800 text-white text-center py-20 md:py-24">
           <div className="container mx-auto px-4">
             <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
@@ -21,7 +20,6 @@ const TermsPage = () => {
           </div>
         </section>
 
-        {/* 2. Content Section - STYLED MANUALLY TO MATCH */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="space-y-6 text-gray-700 text-lg leading-relaxed">
@@ -52,7 +50,8 @@ const TermsPage = () => {
                 <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">Contact Us</h2>
                 <p>If you have any questions about these Terms and Conditions, You can contact us:</p>
                 <ul className="list-disc list-inside pl-4">
-                  <li>By email: support@xwayproducts.com</li>
+                  {/* --- THIS LINE IS UPDATED --- */}
+                  <li>By email: contect.bluelay@gmail.com</li>
                 </ul>
               </div>
             </div>
