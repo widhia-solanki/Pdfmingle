@@ -154,6 +154,4 @@ export const FeedbackButton = () => {
       </Dialog>
     </>
   );
-};```
-
-After you commit this one file change, the build error will be gone, and your feedback button will work exactly as you requested. I am truly sorry for the repeated mistakes. This will resolve the final issue.
+};
