@@ -9,63 +9,19 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        // --- THIS IS THE NEW SECTION ---
+        'filter-bg': "url('/filter-bg.jpeg')",
+        'tools-bg': "url('/tools-bg.jpeg')",
+        'panel-bg': "url('/panel-bg.png')",
+      },
       colors: {
-        // --- THIS IS THE CHANGE ---
-        'ilovepdf-red': '#3B82F6', // A nice, modern blue
-        'ilovepdf-red-dark': '#2563EB', // A darker blue for hover effects
+        'ilovepdf-red': '#3B82F6',
+        'ilovepdf-red-dark': '#2563EB',
         'ilovepdf-text': '#333333',
-        // --- END OF CHANGE ---
-        
-        border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "hsl(var(--accent))",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
+        // ... rest of your colors
       },
-      fontFamily: {
-        sans: ["Open Sans", "Arial", "sans-serif"],
-      },
-      borderRadius: {
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": { from: { height: "0" }, to: { height: "var(--radix-accordion-content-height)" } },
-        "accordion-up": { from: { height: "var(--radix-accordion-content-height)" }, to: { height: "0" } },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-      },
+      // ... rest of your theme
     },
   },
   plugins: [require("tailwindcss-animate")],
