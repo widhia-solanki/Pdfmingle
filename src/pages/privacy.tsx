@@ -9,43 +9,51 @@ const PrivacyPage = () => {
       </Head>
       
       <div className="animate-in fade-in duration-500">
-        {/* Page Header Section */}
-        <section className="text-center py-12 md:py-16">
+        {/* 1. Hero Section - EXACTLY LIKE THE ABOUT US PAGE */}
+        <section className="bg-gradient-to-br from-gray-900 to-gray-800 text-white text-center py-20 md:py-24">
           <div className="container mx-auto px-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-ilovepdf-text">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
               Privacy Policy
             </h1>
-            <p className="mt-4 text-lg text-muted-foreground">
+            <p className="mt-4 text-lg md:text-xl text-gray-300">
               Last updated: August 15, 2025
             </p>
           </div>
         </section>
 
-        {/* Main Content Section */}
-        <section className="pb-16 md:pb-24">
-          <div className="container mx-auto px-4">
-            {/* The 'prose' class beautifully styles all the text content inside */}
-            <div className="prose max-w-4xl mx-auto">
-              <p>X-Way Products Private Limited ("us", "we", or "our") operates the PDFMingle website (the "Service").</p>
-              <p>This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.</p>
+        {/* 2. Content Section - STYLED MANUALLY TO MATCH */}
+        <section className="py-16 md:py-24">
+          <div className="container mx-auto px-4 max-w-4xl">
+            <div className="space-y-6 text-gray-700 text-lg leading-relaxed">
+              <p>X-Way Products Private Limited ("us", "we", or "our") operates the PDFMingle website (the "Service"). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.</p>
               
-              <h2>Information Collection and Use</h2>
-              <p>We do not require you to create an account or provide any personal information to use our tools. We are committed to a privacy-first approach.</p>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">Information Collection and Use</h2>
+                <p>We do not require you to create an account or provide any personal information to use our tools. We are committed to a privacy-first approach.</p>
+              </div>
 
-              <h2>File Handling</h2>
-              <p>We temporarily process the files you upload to perform the requested tool's function. All files are automatically and permanently deleted from our servers within a limited timeframe (e.g., 2 hours). We do not read, access, or store your files for any purpose other than to provide the service you requested.</p>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">File Handling</h2>
+                <p>We temporarily process the files you upload to perform the requested tool's function. All files are automatically and permanently deleted from our servers within a limited timeframe (e.g., 2 hours). We do not read, access, or store your files for any purpose other than to provide the service you requested.</p>
+              </div>
               
-              <h2>Log Data</h2>
-              <p>We may collect information that your browser sends whenever you visit our Service ("Log Data"). This Log Data may include information such as your computer's Internet Protocol ("IP") address, browser type, browser version, the pages of our Service that you visit, the time and date of your visit, the time spent on those pages and other statistics. This data is used for analytics to improve our service and is not linked to any personally identifiable information.</p>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">Log Data</h2>
+                <p>We may collect information that your browser sends whenever you visit our Service ("Log Data"). This Log Data may include information such as your computer's Internet Protocol ("IP") address, browser type, browser version, the pages of our Service that you visit, the time and date of your visit, and other statistics. This data is used for analytics to improve our service and is not linked to any personally identifiable information.</p>
+              </div>
 
-              <h2>Cookies</h2>
-              <p>Cookies are files with a small amount of data, which may include an anonymous unique identifier. We use cookies to ensure the proper functioning of our site. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.</p>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">Cookies</h2>
+                <p>Cookies are files with a small amount of data, which may include an anonymous unique identifier. We use cookies to ensure the proper functioning of our site. You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent.</p>
+              </div>
               
-              <h2>Contact Us</h2>
-              <p>If you have any questions about this Privacy Policy, please contact us:</p>
-              <ul>
-                <li>By email: support@xwayproducts.com</li>
-              </ul>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">Contact Us</h2>
+                <p>If you have any questions about this Privacy Policy, please contact us:</p>
+                <ul className="list-disc list-inside pl-4">
+                  <li>By email: support@xwayproducts.com</li>
+                </ul>
+              </div>
             </div>
           </div>
         </section>
