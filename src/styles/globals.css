@@ -1,14 +1,17 @@
+/*
+  These are the three main Tailwind directives.
+  They must come first.
+*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* 
-  CORRECT STRUCTURE: 
-  1. Define all variables first inside a @layer.
-  2. THEN, use those variables.
+  CORRECT STRUCTURE:
+  Next, we define all our custom variables and base styles inside a @layer.
 */
-
 @layer base {
+  /* This section defines all the color variables for your theme. */
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -32,12 +35,14 @@
     --radius: 0.5rem;
   }
 
-  /* Define dark mode variables if you add them later */
+  /* Define your dark mode variables here if you add them later */
   .dark {
   }
 
-  /* This is the part that was causing the error. 
-     It now comes AFTER the variables are defined. */
+  /* 
+    This is the part that was causing the error.
+    It now comes AFTER the variables are defined but still inside the @layer.
+  */
   * {
     @apply border-border;
   }
@@ -45,4 +50,4 @@
     @apply bg-background text-ilovepdf-text;
     font-family: 'Open Sans', Arial, sans-serif;
   }
-}
+    }
