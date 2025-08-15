@@ -37,9 +37,9 @@ export const FeedbackButton = () => {
   const handleSendFeedback = async (ratingValue: number) => {
     setIsSubmitting(true);
 
-    const serviceId = 'YOUR_SERVICE_ID'; // <-- PASTE YOUR SERVICE ID HERE
-    const templateId = 'YOUR_TEMPLATE_ID'; // <-- PASTE YOUR TEMPLATE ID HERE
-    const publicKey = 'YOUR_PUBLIC_KEY'; // <-- PASTE YOUR PUBLIC KEY HERE
+    const serviceId = service_vwj2sx5; // <-- PASTE YOUR SERVICE ID HERE
+    const templateId = template_743hx8r; // <-- PASTE YOUR TEMPLATE ID HERE
+    const publicKey = LZ8cIn4qrUv7k80Ik; // <-- PASTE YOUR PUBLIC KEY HERE
 
     const templateParams = {
       toolName: router.pathname, // Gets the current page URL, e.g., /merge-pdf
