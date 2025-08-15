@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,13 +11,14 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 
-// Your SVG icon as a React component
+// --- THIS IS THE UPDATED ICON ---
+// The SVG code has been replaced to match your new icon.
 const FeedbackIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 20C7.59 20 4 16.41 4 12C4 7.59 7.59 4 12 4C16.41 4 20 7.59 20 12C20 16.41 16.41 20 12 20Z" fill="currentColor"/>
-        <path d="M12 18C14.21 18 16 16.21 16 14H8C8 16.21 9.79 18 12 18Z" fill="currentColor"/>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
     </svg>
 );
+// --- END OF ICON UPDATE ---
 
 
 const ratings = [
@@ -37,12 +38,12 @@ export const FeedbackButton = () => {
   const handleSendFeedback = async (ratingValue: number) => {
     setIsSubmitting(true);
 
- const serviceId = 'service_vwj2sx5';
-const templateId = 'template_743hx8r';
-const publicKey = 'LZ8cIn4qrUv7k80Ik';
-    
+    const serviceId = 'service_vwj2sx5';
+    const templateId = 'template_743hx8r';
+    const publicKey = 'LZ8cIn4qrUv7k80Ik';
+
     const templateParams = {
-      toolName: router.pathname, // Gets the current page URL, e.g., /merge-pdf
+      toolName: router.pathname,
       rating: ratingValue,
     };
 
@@ -69,7 +70,7 @@ const publicKey = 'LZ8cIn4qrUv7k80Ik';
     <>
       <Button
         onClick={() => setOpen(true)}
-        className="fixed bottom-4 right-4 h-14 w-14 rounded-full bg-ilovepdf-red shadow-lg hover:bg-ilovepdf-red-dark transition-transform hover:scale-110"
+        className="fixed bottom-4 right-4 h-14 w-14 rounded-full bg-ilovepdf-red shadow-lg hover:bg-ilovepdf-red-dark transition-transform hover:scale-110 text-white"
         aria-label="Give Feedback"
       >
         <FeedbackIcon />
