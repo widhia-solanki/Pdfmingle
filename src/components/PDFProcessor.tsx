@@ -1,7 +1,6 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import GoogleDriveIcon from "@/components/GoogleDriveIcon";
-import DropboxIcon from "@/components/DropboxIcon";
+// We no longer need GoogleDriveIcon or DropboxIcon imports
 
 interface PDFProcessorProps {
   onFilesSelected: (files: File[]) => void;
@@ -34,18 +33,20 @@ export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
         ref={fileInputRef} 
         className="hidden" 
         multiple 
-        accept=".pdf" // You can adjust this based on the tool
+        accept=".pdf"
         onChange={handleFileChange}
       />
 
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="w-12 h-12 rounded-full bg-white border shadow-sm hover:bg-gray-100" aria-label="Select files from Google Drive">
-          <GoogleDriveIcon className="h-6 w-6" />
-        </Button>
-        <Button variant="ghost" size="icon" className="w-12 h-12 rounded-full bg-white border shadow-sm hover:bg-gray-100" aria-label="Select files from Dropbox">
-          <DropboxIcon className="h-6 w-6" />
-        </Button>
-      </div>
+      {/* --- THIS IS THE FIX --- */}
+      {/* The div containing the Google Drive and Dropbox buttons has been completely removed. */}
+      
     </div>
   );
-};
+};```
+
+### Summary of the Fix
+
+*   We removed the `import` statements for `GoogleDriveIcon` and `DropboxIcon`.
+*   We deleted the `div` that contained the two circular buttons.
+
+After you commit this one file change, the build error will be gone, your UI will be cleaner, and your project will deploy successfully.
