@@ -28,6 +28,4 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       </footer>
     </div>
   );
-};```
-
-After you commit these two changes, the import error will be resolved, and your build will succeed. I am truly sorry for the repeated mistakes and the frustrating experience. This will fix the final issue.
+};
