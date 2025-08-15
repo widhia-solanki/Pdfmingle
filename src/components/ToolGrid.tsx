@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { tools, categories, ToolCategory } from '@/constants/tools';
 import { Button } from '@/components/ui/button';
-import Link from 'next/link'; // 1. CORRECT IMPORT for Next.js
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 export const ToolGrid = () => {
@@ -12,53 +12,60 @@ export const ToolGrid = () => {
     : tools.filter(tool => tool.category === activeCategory);
 
   return (
-    <section className="w-full max-w-5xl mx-auto">
-      {/* Category Filters */}
-      <div className="flex flex-wrap items-center justify-center gap-2 md:gap-3 mb-10">
-        <Button
-          onClick={() => setActiveCategory('All')}
-          variant={activeCategory === 'All' ? 'default' : 'outline'}
-          className={cn(
-            "rounded-full px-5 py-2 text-base md:text-sm",
-            activeCategory === 'All' && 'bg-gray-800 text-white hover:bg-gray-700'
-          )}
-        >
-          All
-        </Button>
-        {categories.map((category) => (
+    // The main container no longer needs margins, as sections handle spacing
+    <section className="w-full">
+      
+      {/* 1. Filter Section with Red Background */}
+      <div className="w-full bg-filter-bg bg-cover bg-center py-12 md:py-16">
+        <div className="container mx-auto px-4 flex flex-wrap items-center justify-center gap-3">
           <Button
-            key={category}
-            onClick={() => setActiveCategory(category)}
-            variant={activeCategory === category ? 'default' : 'outline'}
+            onClick={() => setActiveCategory('All')}
             className={cn(
-              "rounded-full px-5 py-2 text-base md:text-sm",
-               activeCategory === category && 'bg-gray-800 text-white hover:bg-gray-700'
+              "rounded-full px-6 py-3 text-base font-semibold transition-colors",
+              activeCategory === 'All' 
+                ? 'bg-white text-black hover:bg-gray-200' 
+                : 'bg-black/20 text-white hover:bg-black/40'
             )}
           >
-            {category}
+            All
           </Button>
-        ))}
+          {categories.map((category) => (
+            <Button
+              key={category}
+              onClick={() => setActiveCategory(category)}
+              className={cn(
+                "rounded-full px-6 py-3 text-base font-semibold transition-colors",
+                activeCategory === category 
+                  ? 'bg-white text-black hover:bg-gray-200' 
+                  : 'bg-black/20 text-white hover:bg-black/40'
+              )}
+            >
+              {category}
+            </Button>
+          ))}
+        </div>
       </div>
 
-      {/* Tools Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredTools.map((tool) => {
-          const Icon = tool.icon;
-          return (
-            // 2. CORRECT LINK with 'href' prop
-            <Link 
-              href={`/${tool.value}`} 
-              key={tool.value} 
-              className="group flex items-center text-left p-4 border rounded-lg hover:shadow-lg hover:border-primary transition-all duration-300"
-            >
-              <Icon className={`h-10 w-10 mr-4 shrink-0 ${tool.color}`} />
-              <div>
-                <h3 className="font-semibold text-foreground text-lg">{tool.label}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{tool.description}</p>
-              </div>
-            </Link>
-          );
-        })}
+      {/* 2. Tools Section with Yellow Background */}
+      <div className="w-full bg-tools-bg bg-cover bg-center py-16 md:py-24">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredTools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link 
+                  href={`/${tool.value}`} 
+                  key={tool.value} 
+                  className="group flex flex-col items-center text-center p-6 bg-white/80 backdrop-blur-sm rounded-lg shadow-md hover:shadow-xl hover:scale-105 transition-all duration-300"
+                >
+                  <Icon className={`h-12 w-12 mb-4 ${tool.color}`} />
+                  <h3 className="font-bold text-ilovepdf-text text-xl">{tool.label}</h3>
+                  <p className="text-sm text-gray-600 mt-2">{tool.description}</p>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </section>
   );
