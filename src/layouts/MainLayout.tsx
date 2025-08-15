@@ -15,13 +15,18 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         {children}
       </main>
       <footer className="text-center py-6 text-sm text-gray-400 bg-transparent">
-        <div className="flex justify-center items-center gap-4 mb-4">
-          <Link href="/" className="hover:underline text-gray-300">
-            Home
-          </Link>
-          <span className="text-gray-500">|</span>
+        {/* --- THIS IS THE UPDATED SECTION --- */}
+        <div className="flex justify-center items-center flex-wrap gap-x-4 gap-y-2 mb-4 px-4">
           <Link href="/about" className="hover:underline text-gray-300">
             About Us
+          </Link>
+          <span className="text-gray-500 hidden sm:inline">|</span>
+          <Link href="/privacy" className="hover:underline text-gray-300">
+            Privacy Policy
+          </Link>
+          <span className="text-gray-500 hidden sm:inline">|</span>
+          <Link href="/terms" className="hover:underline text-gray-300">
+            Terms & Conditions
           </Link>
         </div>
         © PDFMingle 2025 - Your PDF Editor
