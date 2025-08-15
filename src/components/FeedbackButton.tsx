@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CheckCircle } from 'lucide-react';
 
+// Your custom feedback icon
 const FeedbackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
@@ -30,6 +31,7 @@ const ratings = [
 ];
 
 export const FeedbackButton = () => {
+  // State to manage which step of the modal is visible
   const [feedbackState, setFeedbackState] = useState<'rating' | 'message' | 'submitted'>('rating');
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,6 +40,7 @@ export const FeedbackButton = () => {
   const router = useRouter();
   const { toast } = useToast();
   
+  // When an emoji is clicked, select it and move to the message step
   const handleEmojiClick = (ratingValue: number) => {
     setSelectedRating(ratingValue);
     setFeedbackState('message');
@@ -59,7 +62,7 @@ export const FeedbackButton = () => {
 
     try {
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      setFeedbackState('submitted');
+      setFeedbackState('submitted'); // Move to success screen
     } catch (error) {
       console.error('Failed to send feedback:', error);
       toast({
@@ -73,6 +76,7 @@ export const FeedbackButton = () => {
   
   const handleClose = () => {
     setOpen(false);
+    // Use a timeout to reset the state only after the close animation finishes
     setTimeout(() => {
         setFeedbackState('rating');
         setSelectedRating(null);
@@ -81,6 +85,7 @@ export const FeedbackButton = () => {
     }, 200);
   };
   
+  // Auto-close the modal after a successful submission
   useEffect(() => {
     if (feedbackState === 'submitted') {
       const timer = setTimeout(() => {
@@ -102,6 +107,7 @@ export const FeedbackButton = () => {
 
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
         <DialogContent className="sm:max-w-md">
+          {/* View 1: Rating selection */}
           {feedbackState === 'rating' && (
             <>
               <DialogHeader>
@@ -123,6 +129,7 @@ export const FeedbackButton = () => {
             </>
           )}
 
+          {/* View 2: Message input */}
           {feedbackState === 'message' && (
             <>
               <DialogHeader>
@@ -147,6 +154,7 @@ export const FeedbackButton = () => {
             </>
           )}
 
+          {/* View 3: Success message */}
           {feedbackState === 'submitted' && (
             <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
