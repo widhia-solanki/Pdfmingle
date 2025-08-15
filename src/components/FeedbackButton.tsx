@@ -37,10 +37,10 @@ export const FeedbackButton = () => {
   const handleSendFeedback = async (ratingValue: number) => {
     setIsSubmitting(true);
 
-    const serviceId = service_vwj2sx5; // <-- PASTE YOUR SERVICE ID HERE
-    const templateId = template_743hx8r; // <-- PASTE YOUR TEMPLATE ID HERE
-    const publicKey = LZ8cIn4qrUv7k80Ik; // <-- PASTE YOUR PUBLIC KEY HERE
-
+   const serviceId = service_vwj2sx5; 
+const templateId = template_743hx8r;
+const publicKey = LZ8cIn4qrUv7k80Ik;
+    
     const templateParams = {
       toolName: router.pathname, // Gets the current page URL, e.g., /merge-pdf
       rating: ratingValue,
