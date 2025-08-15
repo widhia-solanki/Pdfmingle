@@ -14,9 +14,8 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle } from 'lucide-react'; // Import a success icon
+import { CheckCircle } from 'lucide-react';
 
-// Your custom feedback icon
 const FeedbackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
         <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
@@ -32,7 +31,6 @@ const ratings = [
 ];
 
 export const FeedbackButton = () => {
-  // 1. ADD NEW STATE to manage the steps of the modal
   const [feedbackState, setFeedbackState] = useState<'rating' | 'message' | 'submitted'>('rating');
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,14 +39,13 @@ export const FeedbackButton = () => {
   const router = useRouter();
   const { toast } = useToast();
   
-  // 2. NEW LOGIC to handle clicking an emoji
   const handleEmojiClick = (ratingValue: number) => {
     setSelectedRating(ratingValue);
-    setFeedbackState('message'); // Move to the next step
+    setFeedbackState('message');
   };
 
   const handleSendFeedback = async () => {
-    if (!selectedRating) return; // Should not happen, but a good safeguard
+    if (!selectedRating) return;
 
     setIsSubmitting(true);
     const serviceId = 'service_vwj2sx5';
@@ -58,12 +55,12 @@ export const FeedbackButton = () => {
     const templateParams = {
       toolName: router.pathname,
       rating: selectedRating,
-      message: message || 'No message provided.', // This now sends the message
+      message: message || 'No message provided.',
     };
 
     try {
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      setFeedbackState('submitted'); // Move to the success step
+      setFeedbackState('submitted');
     } catch (error) {
       console.error('Failed to send feedback:', error);
       toast({
@@ -75,10 +72,8 @@ export const FeedbackButton = () => {
     }
   };
   
-  // Reset everything when the dialog is closed
   const handleClose = () => {
     setOpen(false);
-    // Add a small delay to allow the closing animation to finish
     setTimeout(() => {
         setFeedbackState('rating');
         setSelectedRating(null);
@@ -87,12 +82,11 @@ export const FeedbackButton = () => {
     }, 200);
   };
   
-  // Auto-close after successful submission
   useEffect(() => {
     if (feedbackState === 'submitted') {
       const timer = setTimeout(() => {
         handleClose();
-      }, 2000); // Close after 2 seconds
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [feedbackState]);
@@ -109,8 +103,6 @@ export const FeedbackButton = () => {
 
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
         <DialogContent className="sm:max-w-md">
-          {/* --- 3. NEW UI: RENDER DIFFERENT CONTENT BASED ON THE STEP --- */}
-
           {feedbackState === 'rating' && (
             <>
               <DialogHeader>
@@ -167,6 +159,4 @@ export const FeedbackButton = () => {
       </Dialog>
     </>
   );
-};```
-
-After committing these changes, your feedback modal will now have the new, improved, multi-step user experience, and the messages will be correctly sent to your email.
+};
