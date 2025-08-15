@@ -1,17 +1,8 @@
-/*
-  These are the three main Tailwind directives.
-  They must come first.
-*/
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* 
-  CORRECT STRUCTURE:
-  Next, we define all our custom variables and base styles inside a @layer.
-*/
 @layer base {
-  /* This section defines all the color variables for your theme. */
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -35,19 +26,16 @@
     --radius: 0.5rem;
   }
 
-  /* Define your dark mode variables here if you add them later */
   .dark {
+    /* Dark mode variables can go here later */
   }
+}
 
-  /* 
-    This is the part that was causing the error.
-    It now comes AFTER the variables are defined but still inside the @layer.
-  */
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-ilovepdf-text;
-    font-family: 'Open Sans', Arial, sans-serif;
-  }
-    }
+body {
+  @apply bg-background text-ilovepdf-text;
+  font-family: 'Open Sans', Arial, sans-serif;
+}
+
+* {
+  @apply border-border;
+}
