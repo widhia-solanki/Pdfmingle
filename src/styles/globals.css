@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+  1. DEFINITIONS FIRST:
+  This @layer defines all your color variables. It must come before they are used.
+*/
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -27,6 +31,10 @@
   }
 }
 
+/* 
+  2. USAGE SECOND:
+  This @layer uses the variables defined above.
+*/
 @layer base {
   * {
     @apply border-border;
@@ -37,10 +45,12 @@
   }
 }
 
-/* --- NEW CODE FOR THE ANIMATED HERO BACKGROUND --- */
+/* 
+  3. UTILITIES and ANIMATIONS LAST:
+  This is for your custom background styles.
+*/
 @layer utilities {
   .hero-gradient-background {
-    /* This creates the dark gradient background */
     background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
   }
 }
