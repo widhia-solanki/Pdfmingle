@@ -32,7 +32,30 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-ilovepdf-text;
+    /* We remove the background color from here to apply it on the layout */
+    @apply text-ilovepdf-text;
     font-family: 'Open Sans', Arial, sans-serif;
+  }
+}
+
+/* --- NEW CODE FOR THE ANIMATED BACKGROUND --- */
+@layer base {
+  .animated-grid-background {
+    background-color: #0c4a6e; /* A dark blue fallback */
+    background-image: 
+      linear-gradient(to bottom, black, #0c4a6e 50%, #0284c7),
+      linear-gradient(to right, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 100% 100%, 40px 40px, 40px 40px;
+    animation: move-grid 20s linear infinite;
+  }
+}
+
+@keyframes move-grid {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 40px 40px;
   }
 }
