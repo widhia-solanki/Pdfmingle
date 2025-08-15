@@ -5,7 +5,7 @@ import { ResultsPage } from "@/components/ResultsPage";
 import { tools } from "@/constants/tools";
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from "@/lib/pdf-tools";
 import { useToast } from "@/hooks/use-toast";
-import NotFoundPage from "@/pages/404"; // This now correctly points to the new file
+import NotFoundPage from "@/pages/404";
 
 const BROWSER_ONLY_TOOLS = [
   "merge-pdf", 
@@ -21,10 +21,16 @@ const ToolPage = () => {
   const { toast } = useToast();
 
   const [files, setFiles] = useState<File[]>([]);
-  const [status, setStatus] = useState<"idle" | "processing" | "success" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "processing" | "success">("idle");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   const currentTool = tools.find(t => t.value === toolId);
+
+  useEffect(() => {
+    if (files.length > 0 && status === 'idle') {
+      handleProcess();
+    }
+  }, [files]);
 
   useEffect(() => {
     handleStartOver();
@@ -35,7 +41,7 @@ const ToolPage = () => {
   }
 
   if (!toolId || !currentTool) {
-    return <NotFoundPage />; // Use the imported 404 component
+    return <NotFoundPage />;
   }
 
   const handleStartOver = () => {
@@ -57,10 +63,7 @@ const ToolPage = () => {
   };
 
   const handleProcess = async () => {
-    if (files.length === 0) {
-      toast({ title: "No files selected", variant: "destructive" });
-      return;
-    }
+    if (files.length === 0) return;
     
     setStatus("processing");
     const requiresBackend = !BROWSER_ONLY_TOOLS.includes(toolId as string);
@@ -69,6 +72,14 @@ const ToolPage = () => {
       let blob: Blob;
 
       if (!requiresBackend) {
+        const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+        const endpoint = `${apiBaseUrl}/${toolId}`;
+        const response = await fetch(endpoint, { method: "POST", body: formData });
+        if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+        blob = await response.blob();
+      } else {
         switch (toolId) {
           case 'merge-pdf':
             blob = await mergePDFs(files);
@@ -89,17 +100,6 @@ const ToolPage = () => {
           default:
             throw new Error("Tool not implemented for browser processing.");
         }
-      } else {
-        const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
-        const formData = new FormData();
-        files.forEach((file) => formData.append("files", file));
-        const endpoint = `${apiBaseUrl}/${toolId}`;
-        const response = await fetch(endpoint, { method: "POST", body: formData });
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || `Server error: ${response.statusText}`);
-        }
-        blob = await response.blob();
       }
 
       const url = URL.createObjectURL(blob);
@@ -109,32 +109,33 @@ const ToolPage = () => {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An unknown error occurred.";
       setStatus("idle");
+      setFiles([]);
       toast({ title: "Processing failed", description: message, variant: "destructive" });
     }
   };
 
-  if (status === 'success') {
-    return <ResultsPage 
-      downloadUrl={downloadUrl}
-      onDownload={handleDownload}
-      onStartOver={handleStartOver}
-    />;
-  }
-  
   return (
     <div className="flex flex-col items-center justify-center text-center">
       <h1 className="text-4xl font-bold mb-2">{currentTool.label}</h1>
       <p className="text-lg text-muted-foreground mb-8 max-w-xl">{currentTool.description}</p>
       
-      <PDFProcessor
-        files={files}
-        onFilesChange={setFiles}
-        onProcess={handleProcess}
-        status={status as "idle" | "processing"}
-        selectedTool={toolId as string}
-        onToolChange={() => {}}
-        hideToolSelector={true}
-      />
+      <div className="w-full max-w-2xl">
+        {status === 'success' ? (
+          <ResultsPage
+            downloadUrl={downloadUrl}
+            onDownload={handleDownload}
+            onStartOver={handleStartOver}
+          />
+        ) : status === 'processing' ? (
+          <div className="flex flex-col items-center justify-center p-12">
+            <p className="text-lg font-semibold animate-pulse">Processing your files...</p>
+          </div>
+        ) : (
+          // --- THIS IS THE FIX ---
+          // The PDFProcessor now only receives the one prop it needs.
+          <PDFProcessor onFilesSelected={setFiles} />
+        )}
+      </div>
     </div>
   );
 };
