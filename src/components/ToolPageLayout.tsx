@@ -20,14 +20,12 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
   const [status, setStatus] = useState<"idle" | "processing" | "success">("idle");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
-  // This effect runs when the user selects files
   useEffect(() => {
     if (files.length > 0 && status === 'idle') {
       handleProcess();
     }
   }, [files]);
 
-  // This effect resets the UI when the tool changes
   useEffect(() => {
     handleStartOver();
   }, [tool.value]);
@@ -50,7 +48,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
   };
 
   const handleProcess = async () => {
-    if (files.length === 0) return; // Guard clause
+    if (files.length === 0) return;
 
     setStatus("processing");
     const requiresBackend = !BROWSER_ONLY_TOOLS.includes(tool.value);
@@ -59,9 +57,37 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
       let blob: Blob;
 
       if (!requiresBackend) {
-        // ... (browser-side logic remains the same)
+        // --- THIS IS THE FIX ---
+        // The backend logic was missing, it has been restored.
+        const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
+        const formData = new FormData();
+        files.forEach((file) => formData.append("files", file));
+        const endpoint = `${apiBaseUrl}/${tool.value}`;
+        const response = await fetch(endpoint, { method: "POST", body: formData });
+        if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+        blob = await response.blob();
       } else {
-        // ... (backend-side logic remains the same)
+        // Browser-side logic
+        switch (tool.value) {
+          case 'merge-pdf':
+            blob = await mergePDFs(files);
+            break;
+          case 'split-pdf':
+            if (files.length > 1) throw new Error("Please select only one file to split.");
+            blob = await splitPDF(files[0]);
+            break;
+          case 'rotate-pdf':
+            blob = await rotatePDF(files[0], 90);
+            break;
+          case 'jpg-to-pdf':
+            blob = await jpgToPDF(files);
+            break;
+          case 'add-page-numbers':
+            blob = await addPageNumbersPDF(files[0]);
+            break;
+          default:
+            throw new Error("Tool not implemented for browser processing.");
+        }
       }
 
       const url = URL.createObjectURL(blob);
@@ -71,19 +97,19 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An unknown error occurred.";
       setStatus("idle");
-      setFiles([]); // Clear files on error to allow re-upload
+      setFiles([]);
       toast({ title: "Processing failed", description: message, variant: "destructive" });
     }
   };
 
   const schema = {
-    // ... (schema is unchanged)
+    // ... schema is unchanged
   };
 
   return (
     <>
       <Head>
-        {/* ... (Head is unchanged) ... */}
+        {/* ... Head is unchanged ... */}
       </Head>
 
       <div className="flex flex-col items-center text-center">
@@ -91,32 +117,35 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
         <p className="mt-4 max-w-xl text-base md:text-xl text-muted-foreground">{tool.description}</p>
         
         <div className="mt-8 md:mt-12 w-full">
-          {/* --- THIS IS THE FIX --- */}
-          {status === 'success' && (
+          {status === 'success' ? (
             <ResultsPage
               downloadUrl={downloadUrl}
               onDownload={handleDownload}
               onStartOver={handleStartOver}
             />
-          )}
-
-          {status === 'processing' && (
-             <div className="flex flex-col items-center justify-center p-12">
+          ) : (
+            status === 'processing' ? (
+              <div className="flex flex-col items-center justify-center p-12">
                 <p className="text-lg font-semibold animate-pulse">Processing your files...</p>
-                {/* Optional: Add a spinner icon here */}
-             </div>
-          )}
-
-          {status === 'idle' && (
-            // The PDFProcessor now only needs ONE prop
-            <PDFProcessor onFilesSelected={setFiles} />
+              </div>
+            ) : (
+              <PDFProcessor onFilesSelected={setFiles} />
+            )
           )}
         </div>
         
-        {/* ... (rest of the page is unchanged) ... */}
+        {/* ... rest of the page is unchanged ... */}
       </div>
     </>
   );
-};```
+};
 
-After you commit this one final change, the TypeScript error will be resolved, and your build will succeed. I am truly sorry for the long and difficult process. This will be the final step.
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  // ... getStaticProps is unchanged
+};
+
+export const getStaticPaths: GetStaticPaths = async () => {
+  // ... getStaticPaths is unchanged
+};
+
+export default ToolPage;
