@@ -1,14 +1,12 @@
 import Link from 'next/link';
 import { Tool } from '@/constants/tools';
 
-// The component now accepts a 'tools' prop
 interface ToolGridProps {
   tools: Tool[];
 }
 
 export const ToolGrid = ({ tools }: ToolGridProps) => {
   return (
-    // The grid now sits on a clean, light gray background
     <section className="w-full bg-gray-50 py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -30,6 +28,4 @@ export const ToolGrid = ({ tools }: ToolGridProps) => {
       </div>
     </section>
   );
-};```
-
-After you commit these changes, your homepage will have the exact modern and clean design from your reference image, with the filter buttons correctly styled and positioned inside the dark hero section.
+};
