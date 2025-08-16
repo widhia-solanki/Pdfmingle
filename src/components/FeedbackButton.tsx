@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, Frown, Meh, Neutral, Smile, SmilePlus } from 'lucide-react'; // FIX icons
+ import { CheckCircle, Frown, Meh, Smile, Smile2 } from "lucide-react"; // FIX icons
 
 const FeedbackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
