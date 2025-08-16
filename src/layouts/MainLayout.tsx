@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { CookieConsent } from "@/components/CookieConsent"; // 1. IMPORT the new component
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -12,10 +13,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header />
-      {/* 
-        THE FIX: The 'container' class is removed from <main>.
-        Now, sections inside a page can choose to be full-width or contained.
-      */}
       <main className="flex-grow">
         {children}
       </main>
@@ -35,7 +32,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </div>
         © PDFMingle 2025 - Your PDF Editor
       </footer>
+      
       <FeedbackButton />
+      
+      {/* 2. ADD the CookieConsent component here */}
+      <CookieConsent />
     </div>
   );
 };
