@@ -6,7 +6,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import Link from 'next/link';
 
@@ -16,17 +15,33 @@ export const CookieConsent = () => {
   const [showBanner, setShowBanner] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Check for the cookie preference only on the client-side
+  // --- THIS IS THE FIX ---
+  // We wrap the localStorage access in a useEffect hook.
+  // This ensures the code only runs on the client-side (in the browser).
   useEffect(() => {
-    const consent = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (!consent) {
+    // Check if a consent choice has already been made
+    const storedConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
+
+    if (storedConsent) {
+      const { expiry } = JSON.parse(storedConsent);
+      // If the consent has expired, show the banner again
+      if (new Date() > new Date(expiry)) {
+        localStorage.removeItem(COOKIE_CONSENT_KEY);
+        setShowBanner(true);
+      } else {
+        // Otherwise, respect the user's choice and hide the banner
+        setShowBanner(false);
+      }
+    } else {
+      // If no choice has been made, show the banner
       setShowBanner(true);
     }
   }, []);
+  // --- END OF THE FIX ---
 
   const setConsent = (consentValue: 'accepted' | 'declined') => {
     const expiry = new Date();
-    expiry.setFullYear(expiry.getFullYear() + 1); // Set expiry for 12 months
+    expiry.setFullYear(expiry.getFullYear() + 1);
     
     const consentData = {
       value: consentValue,
@@ -39,7 +54,6 @@ export const CookieConsent = () => {
 
   const handleAccept = () => {
     setConsent('accepted');
-    // You can add tracking script initialization here if needed
   };
 
   const handleDecline = () => {
@@ -56,11 +70,9 @@ export const CookieConsent = () => {
         <div className="max-w-4xl mx-auto bg-white p-4 rounded-lg shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-700 text-center sm:text-left">
             We use cookies to improve your experience and analyze traffic. By using PDFMingle, you agree to our{' '}
-            <DialogTrigger asChild>
-              <button onClick={() => setModalOpen(true)} className="font-semibold text-ilovepdf-red hover:underline">
-                Cookie Policy
-              </button>
-            </DialogTrigger>
+            <button onClick={() => setModalOpen(true)} className="font-semibold text-ilovepdf-red hover:underline">
+              Cookie Policy
+            </button>
             {' '}and{' '}
             <Link href="/privacy" className="font-semibold text-ilovepdf-red hover:underline">
               Privacy Policy
