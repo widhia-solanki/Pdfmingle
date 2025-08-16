@@ -31,7 +31,7 @@ const ratings: Rating[] = [
   { emoji: '😡', value: 1, label: 'Very Dissatisfied' },
   { emoji: '😕', value: 2, label: 'Dissatisfied' },
   { emoji: '😐', value: 3, label: 'Neutral' },
-  { emoji: '🙂', value: 4, label: 'Satisfied' },
+  { emoji: 🙂, value: 4, label: 'Satisfied' },
   { emoji: '😍', value: 5, label: 'Very Satisfied' },
 ];
 
@@ -82,7 +82,7 @@ export const FeedbackButton = () => {
       setSelectedRating(null);
       setMessage('');
       setIsSubmitting(false);
-    }, 300);
+    }, 200);
   };
   
   useEffect(() => {
@@ -103,53 +103,55 @@ export const FeedbackButton = () => {
       </Button>
 
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-        <DialogContent className="sm:max-w-md">
-          {!showSuccess ? (
-            <>
-              <DialogHeader>
-                <DialogTitle>Share Your Feedback</DialogTitle>
-                <DialogDescription>How was your experience with this tool?</DialogDescription>
-              </DialogHeader>
+        {/* The new bg gradient class, all content is automatically white */}
+        <DialogContent className="sm:max-w-md bg-gradient-hero text-white">
+          <DialogHeader>
+            <DialogTitle>Share Your Feedback</DialogTitle>
+            <DialogDescription>How was your experience with this tool?</DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex justify-around items-center py-4">
+            {ratings.map(({ emoji, value, label }) => (
+              <button
+                key={value}
+                onClick={() => setSelectedRating({ emoji, value, label})}
+                className={cn(
+                  "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200",
+                  selectedRating?.value === value 
+                    ? "scale-125 transform" 
+                    : "scale-100 hover:scale-110 opacity-60 hover:opacity-100"
+                )}
+                aria-label={label}
+              >
+                {emoji}
+              </button>
+            ))}
+          </div>
+
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Tell us what you liked or what we can improve... (optional)"
+            className="mt-2 bg-white/10 text-white placeholder:text-gray-300"
+          />
+
+          <DialogFooter className="mt-4">
+            <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
+            <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
+              {isSubmitting ? 'Sending...' : 'Send Feedback'}
+            </Button>
+          </DialogFooter>
+          </div>
+          )}
+            
+           <div 
+              className="flex flex-col items-center justify-center text-center py-8 gap-4"
               
-              <div className="flex justify-around items-center py-4">
-                {ratings.map((rating) => (
-                  <button
-                    key={rating.value}
-                    onClick={() => setSelectedRating(rating)}
-                    className={cn(
-                      "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200",
-                      selectedRating?.value === rating.value 
-                        ? "scale-125 transform" 
-                        : "scale-100 hover:scale-110 opacity-60 hover:opacity-100"
-                    )}
-                    aria-label={rating.label}
-                  >
-                    {rating.emoji}
-                  </button>
-                ))}
-              </div>
-
-              <Textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Tell us what you liked or what we can improve... (optional)"
-                className="mt-2"
-              />
-
-              <DialogFooter className="mt-4">
-                <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
-                <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
-                  {isSubmitting ? 'Sending...' : 'Send Feedback'}
-                </Button>
-              </DialogFooter>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
               <DialogTitle className="text-2xl">Feedback Sent!</DialogTitle>
               <DialogDescription>Thank you for helping us improve.</DialogDescription>
             </div>
-          )}
+          
         </DialogContent>
       </Dialog>
     </>
