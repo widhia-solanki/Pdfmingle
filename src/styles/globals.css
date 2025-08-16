@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 
+  This is the final, correct structure. 
+  We define the variables inside `@layer base` and then apply them directly to HTML elements using standard CSS.
+*/
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -29,13 +33,15 @@
   .dark {
     /* Dark mode variables can go here later */
   }
+}
 
-  body {
-    @apply bg-background text-foreground; /* Use the variables Tailwind creates */
-    font-family: 'Open Sans', Arial, sans-serif;
-  }
+/* Apply base styles using standard CSS, which is more reliable */
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: 'Open Sans', Arial, sans-serif;
+}
 
-  * {
-    @apply border-border;
-  }
+* {
+  border-color: hsl(var(--border));
 }
