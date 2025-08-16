@@ -1,39 +1,31 @@
 import { ToolGrid } from '@/components/ToolGrid';
-import { InformativePanel } from '@/components/InformativePanel';
+import Head from 'next/head';
 
 const HomePage = () => {
   return (
-    // The main container is now simpler as sections handle their own styles
-    <div className="w-full">
-      {/* Hero Section (from before) */}
-      <section className="relative w-full overflow-hidden hero-gradient-background rounded-b-3xl">
-        <div className="absolute inset-0 z-0">
-          <div 
-            className="absolute top-[-5%] left-[5%] w-72 h-72 bg-blue-500/20 rounded-full filter blur-3xl opacity-50"
-            style={{ animation: 'float1 15s infinite ease-in-out' }}
-          ></div>
-          <div 
-            className="absolute bottom-[-5%] right-[10%] w-80 h-80 bg-red-500/20 rounded-full filter blur-3xl opacity-50"
-            style={{ animation: 'float2 20s infinite ease-in-out' }}
-          ></div>
-        </div>
-        <div className="relative z-10 container mx-auto px-4 text-center py-20 md:py-32">
-          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
-            Every tool you need to work with PDFs in one place
+    <>
+      <Head>
+        <title>PDFMingle – Free Online PDF Tools | Merge, Convert, Edit & More</title>
+        <meta 
+          name="description" 
+          content="Work with PDFs easily using PDFMingle. Merge, convert, edit, compress, split, and secure files online. Fast, free, and secure — no sign-up required." 
+        />
+      </Head>
+      <div className="container mx-auto px-4 text-center">
+        {/* Hero Section */}
+        <div className="py-10 md:py-16">
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-ilovepdf-text">
+            Your Go-To Solution for Any PDF Task
           </h1>
-          <p className="mt-6 max-w-2xl mx-auto text-lg text-gray-300">
-            Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+            Facing a document challenge? We have the solution. Our website offers a complete toolkit to handle any task, from using our simple tool to <strong className="text-ilovepdf-text">merge PDF online</strong> to converting files with our trusted <strong className="text-ilovepdf-text">PDF converter</strong>. You can even <strong className="text-ilovepdf-text">edit PDF online</strong> or add a watermark for free. It’s the simple, secure, and stress-free way to manage your documents.
           </p>
         </div>
-      </section>
 
-      {/* Tool Grid and Filters Section */}
-      {/* The ToolGrid component now lives inside the homepage */}
-      <ToolGrid />
-
-      {/* New Informative Panel Section */}
-      <InformativePanel />
-    </div>
+        {/* Tool Grid Section (This remains the same) */}
+        <ToolGrid />
+      </div>
+    </>
   );
 };
 
