@@ -12,17 +12,19 @@ const HomePage = () => {
         />
       </Head>
       <div className="container mx-auto px-4 text-center">
-        {/* Hero Section */}
+        {/* --- THIS IS THE UPDATED HERO SECTION --- */}
         <div className="py-10 md:py-16">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-ilovepdf-text">
-            Your Go-To Solution for Any PDF Task
-          </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-            Facing a document challenge? We have the solution. Our website offers a complete toolkit to handle any task, from using our simple tool to <strong className="text-ilovepdf-text">merge PDF online</strong> to converting files with our trusted <strong className="text-ilovepdf-text">PDF converter</strong>. You can even <strong className="text-ilovepdf-text">edit PDF online</strong> or add a watermark for free. It’s the simple, secure, and stress-free way to manage your documents.
-          </p>
+          <div className="bg-gray-800 text-white rounded-2xl p-8 md:p-12 shadow-lg">
+            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+              Every tool you need to work with PDFs in one place
+            </h1>
+            <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-300">
+              Every tool you need to use PDFs, at your fingertips. All are 100% FREE and easy to use! Merge, split, compress, convert, rotate, unlock and watermark PDFs with just a few clicks.
+            </p>
+          </div>
         </div>
 
-        {/* Tool Grid Section (This remains the same) */}
+        {/* This ToolGrid component is unchanged */}
         <ToolGrid />
       </div>
     </>
