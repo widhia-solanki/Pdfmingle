@@ -9,29 +9,24 @@ const config: Config = {
   theme: {
     extend: {
       backgroundImage: {
-        'filter-bg': "url('/filter-bg.jpeg')",
-        'tools-bg': "url('/tools-bg.jpeg')",
+        // We no longer need the image backgrounds, but keep panel-bg for the footer
         'panel-bg': "url('/panel-bg.png')",
       },
       colors: {
-        'ilovepdf-red': '#3B82F6',
-        'ilovepdf-red-dark': '#2563EB',
+        // --- NEW COLORS FOR THE HERO AND BUTTONS ---
+        'hero-bg': '#2d3748', // Dark Slate
+        'filter-inactive-bg': 'rgba(255, 255, 255, 0.1)',
+        'brand-blue': '#3B82F6', // The blue for the active button
+        'brand-blue-dark': '#2563EB',
         'ilovepdf-text': '#333333',
-        // --- NEW COLORS FOR BUTTONS ---
-        'ilovepdf-button-bg': '#333333', // Dark gray/black for active button
-        'ilovepdf-button-text': '#ffffff', // White text for active button
         // --- END OF NEW COLORS ---
         
+        // This is now redundant, but we'll keep it for other components
+        'ilovepdf-red': '#3B82F6', 
+        'ilovepdf-red-dark': '#2563EB',
+        
         border: "hsl(var(--border))",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        // ... rest of your colors
+        // ... rest of your shadcn colors
       },
       // ... rest of your theme
     },
