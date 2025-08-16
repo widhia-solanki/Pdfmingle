@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, Frown, Meh, Neutral, Smile, SmilePlus } from 'lucide-react';
+import { CheckCircle, Frown, Meh, MehOutlined, Smile, SmilePlus } from 'lucide-react'; // FIX icons
 
 const FeedbackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -31,7 +31,7 @@ interface Rating {
 const ratings: Rating[] = [
   { emoji: '😡', value: 1, label: 'Very Dissatisfied' }, // Frown
   { emoji: '😕', value: 2, label: 'Dissatisfied' },// Meh
-  { emoji: '😐', value: 3, label: 'Neutral' }, // Neutre
+  { emoji: '😐', value: 3, label: 'Neutral' }, // MehOutlined - use other option
   { emoji: '🙂', value: 4, label: 'Satisfied' },// simle
   { emoji: '😍', value: 5, label: 'Very Satisfied' }, // SmilePlus
 ];
@@ -79,6 +79,11 @@ export const FeedbackButton = () => {
         variant: "destructive",
       });
       setIsSubmitting(false);
+    } finally {
+      setIsSubmitting(false);
+      setOpen(false);
+      setSelectedRating(null);
+      setMessage('');
     }
   };
   
