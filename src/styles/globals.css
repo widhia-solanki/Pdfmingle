@@ -29,13 +29,13 @@
   .dark {
     /* Dark mode variables can go here later */
   }
-}
 
-body {
-  @apply bg-background text-ilovepdf-text;
-  font-family: 'Open Sans', Arial, sans-serif;
-}
+  body {
+    @apply bg-background text-foreground; /* Use the variables Tailwind creates */
+    font-family: 'Open Sans', Arial, sans-serif;
+  }
 
-* {
-  @apply border-border;
+  * {
+    @apply border-border;
+  }
 }
