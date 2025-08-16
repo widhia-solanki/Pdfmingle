@@ -1,19 +1,18 @@
+import { Hero } from '@/components/Hero';
 import { ToolGrid } from '@/components/ToolGrid';
 import { InformativePanel } from '@/components/InformativePanel';
-import { Hero } from '@/components/Hero'; // 1. Import the new Hero component
-import { tools } from '@/constants/tools';
+import { tools } from '@/constants/tools'; // Import the full list of tools
 
 const HomePage = () => {
   return (
     <div className="w-full">
-      {/* 2. Use the new Hero component */}
+      {/* 1. The Hero Section */}
       <Hero />
 
-      {/* The ToolGrid is now simpler */}
-      <div className="container mx-auto px-4 text-center -mt-16 relative z-20">
-         <ToolGrid tools={tools} />
-      </div>
+      {/* 2. The Tool Grid - It now receives the full, unfiltered list of tools */}
+      <ToolGrid tools={tools} />
 
+      {/* 3. The Informative Panel at the bottom */}
       <InformativePanel />
     </div>
   );
