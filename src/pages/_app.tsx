@@ -1,7 +1,10 @@
-import '@/styles/globals.css';
+// src/pages/_app.tsx
+
+import '@/index.css'; // Corrected path to your global CSS
 import type { AppProps } from 'next/app';
 import { MainLayout } from '@/layouts/MainLayout';
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react"; // 1. Import Analytics
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
@@ -10,11 +13,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <Component {...pageProps} />
       </MainLayout>
       <SpeedInsights /> 
-      {/* 
-        THE FIX:
-        The <SpeedInsights /> component should be placed here,
-        outside of your main layout but still inside the main App return.
-      */}
+      <Analytics /> {/* 2. Add the Analytics component */}
     </>
   );
 }
