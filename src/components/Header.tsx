@@ -16,7 +16,11 @@ export const Header = () => {
               <MobileNav />
             </div>
           )}
-          <PDFMingleLogo />
+          {/* TEST 1: See if PDFMingleLogo renders as text */}
+          <div>CHECK: LOGO HERE</div>
+          
+          {/* TEST 2: Render component and say "there" if component doesn't exist */}
+          {PDFMingleLogo ? <PDFMingleLogo /> : <div> Logo is not rendered, or component is missing</div>}
         </div>
         <ToolsMenu />
       </div>
