@@ -1,7 +1,7 @@
-import { PDFMingleLogo } from "./PDFMingleLogo";
-import { MobileNav } from "./MobileNav"; // Corrected import path
+import { MobileNav } from "./MobileNav";
 import { ToolsMenu } from "./ToolsMenu";
 import { usePathname } from 'next/navigation';
+import Link from 'next/link';
 
 export const Header = () => {
   const pathname = usePathname();
@@ -16,11 +16,28 @@ export const Header = () => {
               <MobileNav />
             </div>
           )}
-          {/* TEST 1: See if PDFMingleLogo renders as text */}
-          <div>CHECK: LOGO HERE</div>
           
-          {/* TEST 2: Render component and say "there" if component doesn't exist */}
-          {PDFMingleLogo ? <PDFMingleLogo /> : <div> Logo is not rendered, or component is missing</div>}
+          {/* --- THIS IS THE FIX --- */}
+          {/* The broken import is removed, and the logo is now directly here. */}
+          <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M50 0 L20 0 L0 20 L0 50 L30 50 L50 30 Z" fill="#10B981" />
+              <path d="M50 0 L80 0 L100 20 L100 50 L70 50 L50 30 Z" fill="#3B82F6" />
+              <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
+              <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
+            </svg>
+            <span>
+              <span className="text-ilovepdf-red">PDF</span> Mingle
+            </span>
+          </Link>
+          {/* --- END OF THE FIX --- */}
+
         </div>
         <ToolsMenu />
       </div>
