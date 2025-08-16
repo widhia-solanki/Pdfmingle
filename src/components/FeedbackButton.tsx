@@ -12,28 +12,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from "@/lib/utils";
-import { CheckCircle, Frown, Meh, MehOutlined, Smile, SmilePlus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { CheckCircle, Frown, Meh, Neutral, Smile, SmilePlus } from 'lucide-react'; // FIX icons
 
 const FeedbackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
+    </svg>
 );
 
-// Directly use lucide-react icons here
 interface Rating {
   emoji: string;
   value: number;
   label: string;
 }
 
+// Here there icons to map label, easy to change every time in type
 const ratings: Rating[] = [
-  { emoji: '😡', value: 1, label: 'Very Dissatisfied' },
-  { emoji: '😕', value: 2, label: 'Dissatisfied' },
-  { emoji: '😐', value: 3, label: 'Neutral' },
-  { emoji: '🙂', value: 4, label: 'Satisfied' },
-  { emoji: '😍', value: 5, label: 'Very Satisfied' },
+  { emoji: '😡', value: 1, label: 'Very Dissatisfied' }, // Frown
+  { emoji: '😕', value: 2, label: 'Dissatisfied' },// Meh
+  { emoji: '😐', value: 3, label: 'Neutral' }, // Neutre
+  { emoji: '🙂', value: 4, label: 'Satisfied' },// simle
+  { emoji: '😍', value: 5, label: 'Very Satisfied' }, // SmilePlus
 ];
 
 export const FeedbackButton = () => {
@@ -45,9 +45,10 @@ export const FeedbackButton = () => {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Take whole object and use emoji and label from value
+  // Give a specific type
   const handleEmojiClick = (rating: Rating) => {
     setSelectedRating(rating);
+    setFeedbackState('message');
   };
 
   const handleSendFeedback = async () => {
@@ -78,14 +79,27 @@ export const FeedbackButton = () => {
         variant: "destructive",
       });
       setIsSubmitting(false);
-    } 
-    finally {
-      setIsSubmitting(false);
-      setOpen(false);
-      setSelectedRating(null);
-      setMessage('');
     }
   };
+  
+  const handleClose = () => {
+    setOpen(false);
+    setTimeout(() => {
+      setShowSuccess(false);
+      setSelectedRating(null);
+      setMessage('');
+      setIsSubmitting(false);
+    }, 200);
+  };
+  
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(handleClose, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
+
+  // use string text for name that is type check or give error
 
   return (
     <>
@@ -97,7 +111,7 @@ export const FeedbackButton = () => {
         <FeedbackIcon />
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
         <DialogContent className="sm:max-w-md">
           {!showSuccess ? (
             <>
@@ -127,7 +141,7 @@ export const FeedbackButton = () => {
               />
 
               <DialogFooter className="mt-4">
-                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
+                <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
                 <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
                   {isSubmitting ? 'Sending...' : 'Send Feedback'}
                 </Button>
