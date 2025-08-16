@@ -1,7 +1,7 @@
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText, 
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, 
-  Link as LinkIcon, FileDigit // --- THIS IS THE FIX ---
+  Link as LinkIcon, FileDigit
 } from "lucide-react";
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
@@ -218,6 +218,4 @@ export const tools: Tool[] = [
   },
 ];
 
-export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];```
-
-After you commit this one final change, the build error will be gone, and your website will deploy successfully. I am truly sorry for this long and difficult process. This will resolve the final issue.
+export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
