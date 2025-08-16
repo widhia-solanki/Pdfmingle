@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, Frown, Meh, Smile, SmilePlus } from "lucide-react";
+import { CheckCircle } from 'lucide-react';
 
 const FeedbackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -27,35 +27,30 @@ interface Rating {
   label: string;
 }
 
-// Here there icons to map label, easy to change every time in type
 const ratings: Rating[] = [
-  { emoji: '😡', value: 1, label: 'Very Dissatisfied' }, // Frown
-  { emoji: '😕', value: 2, label: 'Dissatisfied' },// Meh
-  { emoji: '😐', value: 3, label: 'Neutral' }, // MehOutlined - use other option
-  { emoji: '🙂', value: 4, label: 'Satisfied' },// simle
-  { emoji: '😍', value: 5, label: 'Very Satisfied' }, // SmilePlus
+  { emoji: '😡', value: 1, label: 'Very Dissatisfied' },
+  { emoji: '😕', value: 2, label: 'Dissatisfied' },
+  { emoji: '😐', value: 3, label: 'Neutral' },
+  { emoji: '🙂', value: 4, label: 'Satisfied' },
+  { emoji: '😍', value: 5, label: 'Very Satisfied' },
 ];
 
 export const FeedbackButton = () => {
-  const [showSuccess, setShowSuccess] = useState(false);
+  const [feedbackState, setFeedbackState] = useState<'rating' | 'message' | 'submitted'>('rating');
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
   const [message, setMessage] = useState('');
   const router = useRouter();
   const { toast } = useToast();
-
-  // Give a specific type
+  
   const handleEmojiClick = (rating: Rating) => {
     setSelectedRating(rating);
     setFeedbackState('message');
   };
 
   const handleSendFeedback = async () => {
-    if (!selectedRating) {
-      toast({ title: "Please select a rating.", variant: "destructive" });
-      return;
-    }
+    if (!selectedRating) return;
 
     setIsSubmitting(true);
     const serviceId = 'service_vwj2sx5';
@@ -70,39 +65,36 @@ export const FeedbackButton = () => {
 
     try {
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
-      setShowSuccess(true);
+      setFeedbackState('submitted');
     } catch (error) {
       console.error('Failed to send feedback:', error);
       toast({
         title: "Error",
-        description: "Could not send feedback. Please try again.",
+        description: "Could not send feedback. Please try again later.",
         variant: "destructive",
       });
       setIsSubmitting(false);
-    } finally {
-      setIsSubmitting(false);
-      setOpen(false);
-      setSelectedRating(null);
-      setMessage('');
     }
   };
   
   const handleClose = () => {
     setOpen(false);
     setTimeout(() => {
-      setShowSuccess(false);
-      setSelectedRating(null);
-      setMessage('');
-      setIsSubmitting(false);
+        setFeedbackState('rating');
+        setSelectedRating(null);
+        setMessage('');
+        setIsSubmitting(false);
     }, 200);
   };
   
   useEffect(() => {
-    if (showSuccess) {
-      const timer = setTimeout(handleClose, 2000);
+    if (feedbackState === 'submitted') {
+      const timer = setTimeout(() => {
+        handleClose();
+      }, 2000);
       return () => clearTimeout(timer);
     }
-  }, [showSuccess]);
+  }, [feedbackState]);
 
   return (
     <>
@@ -116,43 +108,52 @@ export const FeedbackButton = () => {
 
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
         <DialogContent className="sm:max-w-md">
-          {!showSuccess ? (
+          {feedbackState === 'rating' && (
             <>
               <DialogHeader>
                 <DialogTitle>Share Your Feedback</DialogTitle>
                 <DialogDescription>How was your experience with this tool?</DialogDescription>
               </DialogHeader>
-              
               <div className="flex justify-around items-center py-4">
-                {ratings.map(({ emoji, value, label }) => (
+                {ratings.map((rating) => (
                   <button
-                    key={value}
-                    onClick={() => handleEmojiClick({ emoji, value, label })}
-                    className={cn(
-                      "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-ilovepdf-red"
-                    )}
-                    aria-label={label}
+                    key={rating.value}
+                    onClick={() => handleEmojiClick(rating)}
+                    className="flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-ilovepdf-red"
+                    aria-label={rating.label}
                   >
-                    {emoji}
+                    {rating.emoji}
                   </button>
                 ))}
               </div>
+            </>
+          )}
 
+          {feedbackState === 'message' && (
+            <>
+              <DialogHeader>
+                <DialogTitle>Thank You!</DialogTitle>
+                <DialogDescription>Would you like to add any details?</DialogDescription>
+              </DialogHeader>
+              <div className="text-5xl text-center py-4">
+                {selectedRating?.emoji}
+              </div>
               <Textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tell us what you liked or what we can improve... (optional)"
                 className="mt-2"
               />
-
               <DialogFooter className="mt-4">
                 <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
-                <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
+                <Button onClick={handleSendFeedback} disabled={isSubmitting}>
                   {isSubmitting ? 'Sending...' : 'Send Feedback'}
                 </Button>
               </DialogFooter>
             </>
-          ) : (
+          )}
+
+          {feedbackState === 'submitted' && (
             <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
               <DialogTitle className="text-2xl">Feedback Sent!</DialogTitle>
