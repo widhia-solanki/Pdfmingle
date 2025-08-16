@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,45 +14,36 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { CheckCircle, FaceFrown, FaceMeh, FaceNeutral, FaceSmile, FaceSmilePlus } from "lucide-react";
+import { CheckCircle } from "lucide-react";
 
-// Custom SVG feedback icon
 const FeedbackIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z" />
-  </svg>
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
+    </svg>
 );
 
-// 1. Define the Rating interface
 interface Rating {
   value: number;
   label: string;
   icon: React.ReactNode;
 }
 
-// Rating options with Lucide icons
 const ratings: Rating[] = [
-  { value: 1, label: 'Very Dissatisfied', icon: <FaceFrown className="h-6 w-6" /> },
-  { value: 2, label: 'Dissatisfied', icon: <FaceMeh className="h-6 w-6" /> },
-  { value: 3, label: 'Neutral', icon: <FaceNeutral className="h-6 w-6" /> },
-  { value: 4, label: 'Satisfied', icon: <FaceSmile className="h-6 w-6" /> },
-  { value: 5, label: 'Very Satisfied', icon: <FaceSmilePlus className="h-6 w-6" /> },
+  { value: 1, label: 'Very Dissatisfied', icon: '1' },
+  { value: 2, label: 'Dissatisfied', icon: '2' },
+  { value: 3, label: 'Neutral', icon: '3' },
+  { value: 4, label: 'Satisfied', icon: '4' },
+  { value: 5, label: 'Very Satisfied', icon: '5' },
 ];
 
 export const FeedbackButton = () => {
   const [showSuccess, setShowSuccess] = useState(false);
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-   // 2. Now selectedRating has the correct Rating Type
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
   const [message, setMessage] = useState('');
   const router = useRouter();
   const { toast } = useToast();
-
-  // 3. Pass the complete "Rating" object as value
-  const handleEmojiClick = (rating: Rating) => {
-    setSelectedRating(rating); // Pass the full rating object now
-  };
 
   const handleSendFeedback = async () => {
     if (!selectedRating) {
@@ -66,7 +58,7 @@ export const FeedbackButton = () => {
 
     const templateParams = {
       toolName: router.pathname,
-      rating: `${selectedRating.label} (${selectedRating.value} stars)`, // Send both label and score for EmailJS template
+      rating: `${selectedRating.label} (${selectedRating.value} stars)`,
       message: message || 'No message provided.',
     };
 
@@ -121,10 +113,11 @@ export const FeedbackButton = () => {
               </DialogHeader>
               
               <div className="flex justify-around items-center py-4">
-                {ratings.map(({ emoji, value, label, icon }) => ( // destructure icon prop
+                {ratings.map(({ value, label, icon }) => ( // icon: React.ReactNode
+                  // You should render a digit there, not a graphic component
                   <button
                     key={value}
-                    onClick={() => handleEmojiClick({ value, label, emoji : value.toString() })} // create a full object
+                    onClick={() => setSelectedRating({ value, label,})} // icon is gone
                     className={cn(
                       "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200",
                       selectedRating?.value === value
@@ -133,8 +126,7 @@ export const FeedbackButton = () => {
                     )}
                     aria-label={label}
                   >
-                      {icon} {/* show the icon name as a key */}
-                    
+                    {icon} 
                   </button>
                 ))}
               </div>
