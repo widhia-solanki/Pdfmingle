@@ -28,6 +28,4 @@ export const ToolGrid = ({ tools }: ToolGridProps) => {
       </div>
     </section>
   );
-};```
-
-After you commit this one final change, the syntax error will be gone, and your build will succeed. I am truly sorry for this long and difficult process. This will resolve the final issue.
+};
