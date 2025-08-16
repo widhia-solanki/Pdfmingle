@@ -1,10 +1,10 @@
 import { PDFMingleLogo } from "./PDFMingleLogo";
-import { MobileNav } from "./ToolsMenu"; 
+import { MobileNav } from "./MobileNav"; // Corrected import path
 import { ToolsMenu } from "./ToolsMenu";
-import { usePathname } from 'next/navigation'; // 1. CORRECT hook
+import { usePathname } from 'next/navigation';
 
 export const Header = () => {
-  const pathname = usePathname(); // 2. Correct path
+  const pathname = usePathname();
   const isHomePage = pathname === '/';
 
   return (
