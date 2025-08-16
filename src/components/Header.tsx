@@ -1,12 +1,11 @@
 import { PDFMingleLogo } from "./PDFMingleLogo";
-import { MobileNav } from "./ToolsMenu"; 
+import { MobileNav } from "./MobileNav"; // Corrected import path
 import { ToolsMenu } from "./ToolsMenu";
-import { useRouter } from "next/router"; // 1. Updated Import
+import { useRouter } from "next/navigation";
 
 export const Header = () => {
-  const router = useRouter();
-  // 2. Correctly Access the Pathname
-  const isHomePage = router.pathname === '/';
+  const pathname = useRouter().asPath;
+  const isHomePage = pathname === '/';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
