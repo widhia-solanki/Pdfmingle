@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -8,32 +8,31 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from "@/lib/utils";
-import { CheckCircle, FaceFrown, FaceMeh, FaceNeutral, FaceSmile, FaceSmilePlus } from "lucide-react"; // 1. IMPORT LUCIDE ICONS
+import { cn } from '@/lib/utils';
+import { CheckCircle } from "lucide-react";
 
 const FeedbackIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
-    </svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
+  </svg>
 );
 
-// 2. DEFINE Ratings with Lucide icons now
 interface Rating {
   value: number;
   label: string;
-  icon: React.ReactNode; // The "emoji" is now a React.ReactNode
+  icon: React.ReactNode;
 }
 
 const ratings: Rating[] = [
-  { value: 1, label: 'Very Dissatisfied', icon: <FaceFrown className="h-6 w-6" /> },
-  { value: 2, label: 'Dissatisfied', icon: <FaceMeh className="h-6 w-6" /> },
-  { value: 3, label: 'Neutral', icon: <FaceNeutral className="h-6 w-6" /> },
-  { value: 4, label: 'Satisfied', icon: <FaceSmile className="h-6 w-6" /> },
-  { value: 5, label: 'Very Satisfied', icon: <FaceSmilePlus className="h-6 w-6" /> },
+  { value: 1, label: 'Very Dissatisfied', icon: '1' }, // Use text now. We can replace it for svg code later.
+  { value: 2, label: 'Dissatisfied', icon: '2' },
+  { value: 3, label: 'Neutral', icon: '3' },
+  { value: 4, label: 'Satisfied', icon: '4' },
+  { value: 5, label: 'Very Satisfied', icon: '5' },
 ];
 
 export const FeedbackButton = () => {
@@ -52,13 +51,13 @@ export const FeedbackButton = () => {
     }
 
     setIsSubmitting(true);
-    const serviceId = 'YOUR_SERVICE_ID'; // <- IMPORTANT: Replace these with your EmailJS keys
-    const templateId = 'YOUR_TEMPLATE_ID';
-    const publicKey = 'YOUR_PUBLIC_KEY';
+    const serviceId = 'service_vwj2sx5';
+    const templateId = 'template_743hx8r';
+    const publicKey = 'LZ8cIn4qrUv7k80Ik';
 
     const templateParams = {
       toolName: router.pathname,
-      rating: `${selectedRating.label} (${selectedRating.value} stars)`, // More descriptive rating
+      rating: `${selectedRating.label} (${selectedRating.value})`,
       message: message || 'No message provided.',
     };
 
@@ -69,7 +68,7 @@ export const FeedbackButton = () => {
       console.error('Failed to send feedback:', error);
       toast({
         title: "Error",
-        description: "Could not send feedback. Please try again later.",
+        description: "Could not send feedback. Please try again.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -105,49 +104,47 @@ export const FeedbackButton = () => {
 
       <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
         <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Share Your Feedback</DialogTitle>
-            <DialogDescription>How was your experience on this page?</DialogDescription>
-          </DialogHeader>
-          
-          {/* UI is now in a single view */}
-          <div className="space-y-4 py-4">
-            <div className="flex justify-around items-center py-2">
-              {/* 3. Render Lucide Icons instead of emoticons */}
-              {ratings.map((rating) => (
-                <button
-                  key={rating.value}
-                  onClick={() => setSelectedRating(rating)}
-                  className={cn(
-                    "flex flex-col items-center gap-2 rounded-lg p-2 transition-all duration-200",
-                    selectedRating?.value === rating.value 
-                      ? "scale-125 transform text-ilovepdf-red" // Style selected rating
-                      : "scale-100 hover:scale-110 opacity-60 hover:opacity-100"
-                  )}
-                  aria-label={rating.label}
-                >
-                  {rating.icon}
-                  <span className="text-xs text-muted-foreground">{rating.label}</span>
-                </button>
-              ))}
-            </div>
+          {!showSuccess ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Share Your Feedback</DialogTitle>
+                <DialogDescription>How was your experience with this tool?</DialogDescription>
+              </DialogHeader>
+              
+              <div className="flex justify-around items-center py-4">
+                {ratings.map(({ value, label, icon }) => (
+                  // NOW, we render the icon
+                  <button
+                    key={value}
+                    onClick={() =>setSelectedRating({value , label })}
+                    className={cn(
+                      "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200",
+                      selectedRating?.value === value
+                        ? "scale-125 transform text-ilovepdf-red" 
+                        : "scale-100 hover:scale-110 opacity-60 hover:opacity-100"
+                    )}
+                    aria-label={label}
+                  >
+                   {icon} 
+                  </button>
+                ))}
+              </div>
 
-            <Textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Tell us what you liked or what we can improve... (optional)"
-              className="bg-white/10 text-black placeholder:text-gray-300"
-            />
-          
-            <DialogFooter className="mt-4">
-              <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
-              <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
-                {isSubmitting ? 'Sending...' : 'Send Feedback'}
-              </Button>
-            </DialogFooter>
-          </div>
-          
-          {showSuccess && (
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Tell us what you liked or what we can improve... (optional)"
+                className="mt-2 bg-white/10 text-black placeholder:text-gray-300"
+              />
+
+              <DialogFooter className="mt-4">
+                <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
+                <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
+                  {isSubmitting ? 'Sending...' : 'Send Feedback'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
             <div className="flex flex-col items-center justify-center text-center py-8 gap-4">
               <CheckCircle className="h-16 w-16 text-green-500" />
               <DialogTitle className="text-2xl">Feedback Sent!</DialogTitle>
