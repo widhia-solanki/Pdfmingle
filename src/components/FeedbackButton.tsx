@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,27 +12,28 @@ import { Textarea } from '@/components/ui/textarea';
 import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
-import { CheckCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { CheckCircle, Frown, Meh, MehOutlined, Smile, SmilePlus } from 'lucide-react';
 
 const FeedbackIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
-    </svg>
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M20 2H4C2.9 2 2 2.9 2 4V16C2 17.1 2.9 18 4 18H8V22L13.2 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2ZM20 16H12.8L10 18.8V16H4V4H20V16ZM8 9H16V7H8V9ZM8 12H16V10H8V12Z"/>
+  </svg>
 );
 
+// Directly use lucide-react icons here
 interface Rating {
+  emoji: string;
   value: number;
   label: string;
-  icon: React.ReactNode;
 }
 
 const ratings: Rating[] = [
-  { value: 1, label: 'Very Dissatisfied', icon: '1' },
-  { value: 2, label: 'Dissatisfied', icon: '2' },
-  { value: 3, label: 'Neutral', icon: '3' },
-  { value: 4, label: 'Satisfied', icon: '4' },
-  { value: 5, label: 'Very Satisfied', icon: '5' },
+  { emoji: '😡', value: 1, label: 'Very Dissatisfied' },
+  { emoji: '😕', value: 2, label: 'Dissatisfied' },
+  { emoji: '😐', value: 3, label: 'Neutral' },
+  { emoji: '🙂', value: 4, label: 'Satisfied' },
+  { emoji: '😍', value: 5, label: 'Very Satisfied' },
 ];
 
 export const FeedbackButton = () => {
@@ -44,6 +44,11 @@ export const FeedbackButton = () => {
   const [message, setMessage] = useState('');
   const router = useRouter();
   const { toast } = useToast();
+
+  // Take whole object and use emoji and label from value
+  const handleEmojiClick = (rating: Rating) => {
+    setSelectedRating(rating);
+  };
 
   const handleSendFeedback = async () => {
     if (!selectedRating) {
@@ -58,7 +63,7 @@ export const FeedbackButton = () => {
 
     const templateParams = {
       toolName: router.pathname,
-      rating: `${selectedRating.label} (${selectedRating.value} stars)`,
+      rating: `${selectedRating.emoji} (${selectedRating.value})`,
       message: message || 'No message provided.',
     };
 
@@ -73,25 +78,14 @@ export const FeedbackButton = () => {
         variant: "destructive",
       });
       setIsSubmitting(false);
-    }
-  };
-  
-  const handleClose = () => {
-    setOpen(false);
-    setTimeout(() => {
-      setShowSuccess(false);
+    } 
+    finally {
+      setIsSubmitting(false);
+      setOpen(false);
       setSelectedRating(null);
       setMessage('');
-      setIsSubmitting(false);
-    }, 200);
-  };
-  
-  useEffect(() => {
-    if (showSuccess) {
-      const timer = setTimeout(handleClose, 2000);
-      return () => clearTimeout(timer);
     }
-  }, [showSuccess]);
+  };
 
   return (
     <>
@@ -103,7 +97,7 @@ export const FeedbackButton = () => {
         <FeedbackIcon />
       </Button>
 
-      <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           {!showSuccess ? (
             <>
@@ -113,20 +107,14 @@ export const FeedbackButton = () => {
               </DialogHeader>
               
               <div className="flex justify-around items-center py-4">
-                {ratings.map(({ value, label, icon }) => ( // icon: React.ReactNode
-                  // You should render a digit there, not a graphic component
+                {ratings.map(({ emoji, value, label }) => (
                   <button
                     key={value}
-                    onClick={() => setSelectedRating({ value, label,})} // icon is gone
-                    className={cn(
-                      "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200",
-                      selectedRating?.value === value
-                        ? "scale-125 transform text-ilovepdf-red"
-                        : "scale-100 hover:scale-110 opacity-60 hover:opacity-100"
-                    )}
+                    onClick={() => handleEmojiClick({ emoji, value, label })}
+                    className="flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-ilovepdf-red"
                     aria-label={label}
                   >
-                    {icon} 
+                    {emoji}
                   </button>
                 ))}
               </div>
@@ -135,11 +123,11 @@ export const FeedbackButton = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tell us what you liked or what we can improve... (optional)"
-                className="mt-2 bg-white/10 text-black placeholder:text-gray-300"
+                className="mt-2"
               />
 
               <DialogFooter className="mt-4">
-                <Button type="button" variant="secondary" onClick={handleClose}>Cancel</Button>
+                <Button type="button" variant="secondary" onClick={() => setOpen(false)}>Cancel</Button>
                 <Button onClick={handleSendFeedback} disabled={!selectedRating || isSubmitting}>
                   {isSubmitting ? 'Sending...' : 'Send Feedback'}
                 </Button>
