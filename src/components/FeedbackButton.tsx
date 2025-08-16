@@ -13,7 +13,7 @@ import { useRouter } from 'next/router';
 import emailjs from '@emailjs/browser';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
- import { CheckCircle, Frown, Meh, Smile, Smile2 } from "lucide-react"; // FIX icons
+import { CheckCircle, Frown, Meh, Neutral, Smile, SmilePlus } from 'lucide-react';
 
 const FeedbackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -99,8 +99,6 @@ export const FeedbackButton = () => {
     }
   }, [showSuccess]);
 
-  // use string text for name that is type check or give error
-
   return (
     <>
       <Button
@@ -125,7 +123,9 @@ export const FeedbackButton = () => {
                   <button
                     key={value}
                     onClick={() => handleEmojiClick({ emoji, value, label })}
-                    className="flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-ilovepdf-red"
+                    className={cn(
+                      "flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-transform hover:scale-125 focus:outline-none focus:ring-2 focus:ring-ilovepdf-red"
+                    )}
                     aria-label={label}
                   >
                     {emoji}
