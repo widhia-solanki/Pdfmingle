@@ -1,20 +1,46 @@
-import Link from "next/link";
+import { MobileNav } from "./MobileNav";
+import { ToolsMenu } from "./ToolsMenu";
+import { usePathname } from 'next/navigation';
+import Link from 'next/link'; // Make sure Link is imported
 
-export const PDFMingleLogo = () => (
-  <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
-    {/* 
-      THIS IS THE FIX:
-      1. Use a standard <img> tag for reliability.
-      2. Use a simple text string with a space for the branding.
-    */}
-    <img 
-      src="/pdfmingle_logo.png" 
-      width={32} 
-      height={32} 
-      alt="PDFMingle Logo" 
-    />
-    <span>
-      <span className="text-ilovepdf-red">PDF</span> Mingle
-    </span>
-  </Link>
-);
+export const Header = () => {
+  const pathname = usePathname();
+  const isHomePage = pathname === '/';
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-2">
+          {isHomePage && (
+            <div className="md:hidden">
+              <MobileNav />
+            </div>
+          )}
+          
+          {/* --- THIS IS THE FIX --- */}
+          {/* We are now using a direct Link with the SVG and text inside it. */}
+          <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 100 100"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M50 0 L20 0 L0 20 L0 50 L30 50 L50 30 Z" fill="#10B981" />
+              <path d="M50 0 L80 0 L100 20 L100 50 L70 50 L50 30 Z" fill="#3B82F6" />
+              <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
+              <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
+            </svg>
+            <span>
+              <span className="text-ilovepdf-red">PDF</span> Mingle
+            </span>
+          </Link>
+          {/* --- END OF THE FIX --- */}
+
+        </div>
+        <ToolsMenu />
+      </div>
+    </header>
+  );
+};
