@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 /* 
-  1. DEFINITIONS FIRST:
-  This @layer defines all your color variables. It must come before they are used.
+  1. DEFINITIONS FIRST (All Custom CSS Variables):
 */
 @layer base {
   :root {
@@ -16,44 +15,30 @@
     --popover-foreground: 222.2 84% 4.9%;
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
     --radius: 0.5rem;
+    --ilovepdf-red: #3B82F6;
+    --ilovepdf-red-dark: #2563EB;
+    --ilovepdf-text: #333333;    
   }
 }
 
-/* 
-  2. USAGE SECOND:
-  This @layer uses the variables defined above.
-*/
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-ilovepdf-text;
-    font-family: 'Open Sans', Arial, sans-serif;
-  }
-}
+/* 2. Tailwind Directives */
 
-/* 
-  3. UTILITIES and ANIMATIONS LAST:
-  This is for your custom background styles.
-*/
-@layer utilities {
-  .hero-gradient-background {
-    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
-  }
-}
+@tailwind components;
+@tailwind utilities;
+
+/* 3. Animations */
 
 @keyframes float1 {
   0% { transform: translateY(0px) translateX(0px); }
@@ -72,3 +57,18 @@
   50% { transform: translateY(-10px) translateX(20px); }
   100% { transform: translateY(0px) translateX(0px); }
 }
+
+/* 4. Custom Background Classes */
+
+@layer utilities {
+  .hero-gradient-background {
+    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+  }
+}
+
+/*
+  We separate usage and definitions into three blocks like this:
+    1. First we DEFINE base variables
+    2. Then we USE those variables inside Tailwind’s @layer base
+    3. We add any animation and components into  @layer utilities
+*/
