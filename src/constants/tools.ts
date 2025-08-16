@@ -1,8 +1,6 @@
-
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText, 
-  Unlock, Lock, RotateCw, FileImage, Image, FileKey2, FileDigit, 
-  ScanLine, Scale, BookOpen, Link as LinkIcon, FileHeart, Files
+  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon
 } from "lucide-react";
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
@@ -14,7 +12,7 @@ export interface Tool {
   description: string;
   category: ToolCategory;
   icon: React.ElementType;
-  color: string;
+  color: string; // This is the property we are changing
   metaTitle: string;
   metaDescription: string;
   metaKeywords: string;
@@ -22,7 +20,7 @@ export interface Tool {
 }
 
 export const tools: Tool[] = [
-  // --- ORGANIZE CATEGORY ---
+  // --- THIS IS THE UPDATED SECTION ---
   {
     value: "merge-pdf",
     label: "Merge PDF",
@@ -30,11 +28,8 @@ export const tools: Tool[] = [
     description: "Combine multiple PDFs into a single, unified document.",
     category: "Organize",
     icon: FilePlus,
-    color: "text-red-500",
-    metaTitle: "Merge PDF Files Online - Free PDF Combiner | PDFMingle",
-    metaDescription: "Easily combine multiple PDF files into one single document online. Free, fast, and secure PDF merger tool from PDFMingle.",
-    metaKeywords: "merge pdf, combine pdf, pdf merger, join pdf, pdf combiner",
-    steps: [ "Select PDFs", "Order them as you like", "Click Merge", "Download your file." ]
+    color: "text-red-500", // Red for adding/merging
+    // ... meta info
   },
   {
     value: "split-pdf",
@@ -43,11 +38,8 @@ export const tools: Tool[] = [
     description: "Extract specific pages or save each page as a separate PDF.",
     category: "Organize",
     icon: Scissors,
-    color: "text-orange-500",
-    metaTitle: "Split PDF Files Online - Free PDF Splitter | PDFMingle",
-    metaDescription: "Separate PDF pages or extract specific pages into a new document. Our free online PDF splitter is fast and easy to use.",
-    metaKeywords: "split pdf, pdf splitter, extract pdf pages, separate pdf",
-    steps: [ "Select a PDF", "Choose the pages to extract", "Click Split", "Download your new files." ]
+    color: "text-orange-500", // Orange for cutting/splitting
+    // ... meta info
   },
   {
     value: "organize-pdf",
@@ -56,14 +48,9 @@ export const tools: Tool[] = [
     description: "Sort, add, and remove pages from your PDF document.",
     category: "Organize",
     icon: Files,
-    color: "text-amber-600",
-    metaTitle: "Organize PDF Pages Online - Sort & Delete | PDFMingle",
-    metaDescription: "Easily reorder, rotate, and delete pages in your PDF file online for free. Visual and simple to use.",
-    metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
-    steps: [ "Upload your PDF", "Drag pages to reorder or delete them", "Click Organize", "Download the updated PDF." ]
+    color: "text-amber-600", // Amber for sorting
+    // ... meta info
   },
-
-  // --- OPTIMIZE CATEGORY ---
   {
     value: "compress-pdf",
     label: "Compress PDF",
@@ -71,11 +58,8 @@ export const tools: Tool[] = [
     description: "Reduce the file size of your PDF while maintaining quality.",
     category: "Optimize",
     icon: Archive,
-    color: "text-green-500",
-    metaTitle: "Compress PDF Files Online - Free PDF Reducer | PDFMingle",
-    metaDescription: "Reduce the file size of your PDF files online for free. Our PDF compressor is easy to use and preserves document quality.",
-    metaKeywords: "compress pdf, pdf compressor, reduce pdf size, pdf optimizer",
-    steps: [ "Select a PDF", "Choose a compression level", "Click Compress", "Download your smaller file." ]
+    color: "text-green-500", // Green for optimizing/efficiency
+    // ... meta info
   },
   {
     value: "repair-pdf",
@@ -84,14 +68,9 @@ export const tools: Tool[] = [
     description: "Attempt to recover data from a corrupted or damaged PDF file.",
     category: "Optimize",
     icon: FileHeart,
-    color: "text-emerald-500",
-    metaTitle: "Repair PDF Online - Fix Corrupted PDF Files | PDFMingle",
-    metaDescription: "Try to fix and recover corrupted PDF files with our free online repair tool. Upload your damaged file and see if we can save it.",
-    metaKeywords: "repair pdf, fix pdf, corrupted pdf, damaged pdf",
-    steps: [ "Upload the damaged PDF file", "Click the Repair PDF button", "If successful, preview the recovered data", "Download your repaired file." ]
+    color: "text-emerald-500", // Emerald/Teal for healing/repairing
+    // ... meta info
   },
-
-  // --- CONVERT CATEGORY ---
   {
     value: "pdf-to-word",
     label: "PDF to Word",
@@ -99,11 +78,8 @@ export const tools: Tool[] = [
     description: "Turn your PDF into an editable Microsoft Word document.",
     category: "Convert",
     icon: FileOutput,
-    color: "text-blue-500",
-    metaTitle: "Convert PDF to Word Online - Free | PDFMingle",
-    metaDescription: "Convert your PDFs to editable Microsoft Word documents for free. Accurate conversion with preserved formatting.",
-    metaKeywords: "pdf to word, convert pdf to word, pdf to docx",
-    steps: [ "Upload your PDF", "Click Convert", "Wait for the process to finish", "Download your Word document." ]
+    color: "text-blue-500", // Blue for Word
+    // ... meta info
   },
   {
     value: "word-to-pdf",
@@ -112,11 +88,8 @@ export const tools: Tool[] = [
     description: "Convert Microsoft Word documents to professional PDFs.",
     category: "Convert",
     icon: FileType,
-    color: "text-blue-600",
-    metaTitle: "Convert Word to PDF Online - Free | PDFMingle",
-    metaDescription: "Convert Microsoft Word documents (DOC, DOCX) to PDF format for easy sharing and printing. Free and secure.",
-    metaKeywords: "word to pdf, convert word to pdf, docx to pdf",
-    steps: [ "Upload your Word file", "Click Convert", "Your PDF is ready in seconds", "Download your new PDF." ]
+    color: "text-blue-600", // A different blue for distinction
+    // ... meta info
   },
   {
     value: "pdf-to-jpg",
@@ -125,11 +98,8 @@ export const tools: Tool[] = [
     description: "Extract every page from your PDF into high-quality JPG images.",
     category: "Convert",
     icon: FileImage,
-    color: "text-yellow-500",
-    metaTitle: "Convert PDF to JPG Images Online - Free | PDFMingle",
-    metaDescription: "Turn each page of your PDF into a separate JPG image file. High quality and fast conversion.",
-    metaKeywords: "pdf to jpg, convert pdf to jpg, pdf to image",
-    steps: [ "Upload your PDF", "Choose image quality", "Click Convert", "Download your JPG images." ]
+    color: "text-yellow-500", // Yellow for images/JPG
+    // ... meta info
   },
   {
     value: "jpg-to-pdf",
@@ -138,11 +108,8 @@ export const tools: Tool[] = [
     description: "Combine one or more JPG images into a single PDF document.",
     category: "Convert",
     icon: Image,
-    color: "text-yellow-600",
-    metaTitle: "Convert JPG to PDF Online - Free | PDFMingle",
-    metaDescription: "Combine JPG images into a PDF file. Adjust orientation and margins with our easy-to-use image to PDF converter.",
-    metaKeywords: "jpg to pdf, convert jpg to pdf, image to pdf",
-    steps: [ "Upload your JPG images", "Adjust order and settings", "Click Create PDF", "Download your document." ]
+    color: "text-yellow-600", // A different yellow
+    // ... meta info
   },
   {
     value: "html-to-pdf",
@@ -151,14 +118,9 @@ export const tools: Tool[] = [
     description: "Turn any public webpage into a high-quality PDF document.",
     category: "Convert",
     icon: LinkIcon,
-    color: "text-cyan-500",
-    metaTitle: "Convert HTML to PDF Online - Webpage to PDF | PDFMingle",
-    metaDescription: "Easily convert any live webpage to a PDF document by simply pasting the URL. Free, fast, and no installation needed.",
-    metaKeywords: "html to pdf, webpage to pdf, url to pdf",
-    steps: [ "Paste the URL of the webpage", "Adjust page settings if needed", "Click Convert to PDF", "Download your PDF file." ]
+    color: "text-cyan-500", // Cyan for web/links
+    // ... meta info
   },
-
-  // --- EDIT CATEGORY ---
   {
     value: "rotate-pdf",
     label: "Rotate PDF",
@@ -166,11 +128,8 @@ export const tools: Tool[] = [
     description: "Rotate pages in your PDF document permanently.",
     category: "Edit",
     icon: RotateCw,
-    color: "text-sky-500",
-    metaTitle: "Rotate PDF Files Online - Free PDF Rotator | PDFMingle",
-    metaDescription: "Rotate your PDF files permanently. Rotate all pages or just a single page, clockwise or counter-clockwise.",
-    metaKeywords: "rotate pdf, pdf rotator, flip pdf",
-    steps: [ "Select your PDF", "Choose the rotation angle", "Click Rotate", "Download your file." ]
+    color: "text-sky-500", // Sky blue for movement/rotation
+    // ... meta info
   },
   {
     value: "add-page-numbers",
@@ -179,11 +138,8 @@ export const tools: Tool[] = [
     description: "Insert page numbers into your PDF file with custom positions.",
     category: "Edit",
     icon: FileDigit,
-    color: "text-indigo-500",
-    metaTitle: "Add Page Numbers to PDF - Free Online Tool | PDFMingle",
-    metaDescription: "Easily insert page numbers into your PDF documents. Customize the position, format, and range for free.",
-    metaKeywords: "add page numbers to pdf, number pdf pages, pdf pagination",
-    steps: [ "Upload your PDF", "Select position and style", "Click Add Numbers", "Download the numbered PDF." ]
+    color: "text-indigo-500", // Indigo for precision/editing
+    // ... meta info
   },
   {
     value: "edit-pdf",
@@ -192,14 +148,9 @@ export const tools: Tool[] = [
     description: "Add text, shapes, images, and freehand annotations to your PDF.",
     category: "Edit",
     icon: FileText,
-    color: "text-purple-500",
-    metaTitle: "Edit PDF Online - Free PDF Editor | PDFMingle",
-    metaDescription: "Use our free online PDF editor to add text, images, and annotations to your documents without installing any software.",
-    metaKeywords: "edit pdf, pdf editor, annotate pdf",
-    steps: [ "Upload your PDF", "Use the toolbar to add content", "Click Save", "Download your edited file." ]
+    color: "text-purple-500", // Purple for creative editing
+    // ... meta info
   },
-
-  // --- SECURITY CATEGORY ---
   {
     value: "unlock-pdf",
     label: "Unlock PDF",
@@ -207,11 +158,8 @@ export const tools: Tool[] = [
     description: "Remove a password from your PDF to open and edit it freely.",
     category: "Security",
     icon: Unlock,
-    color: "text-teal-500",
-    metaTitle: "Unlock PDF - Free Online Password Remover | PDFMingle",
-    metaDescription: "Remove password security from your PDF files online, so you can edit and use them without restrictions. Fast and secure.",
-    metaKeywords: "unlock pdf, remove pdf password, decrypt pdf",
-    steps: [ "Select your protected PDF", "Confirm you have the right to edit", "Click Unlock", "Download your password-free PDF." ]
+    color: "text-lime-600", // Lime green for unlocking
+    // ... meta info
   },
   {
     value: "protect-pdf",
@@ -220,11 +168,8 @@ export const tools: Tool[] = [
     description: "Add a strong password to your PDF to prevent unauthorized access.",
     category: "Security",
     icon: Lock,
-    color: "text-gray-600",
-    metaTitle: "Protect PDF - Add Password to PDF Online | PDFMingle",
-    metaDescription: "Encrypt and add a password to your PDF files to keep them secure. Protect sensitive information for free.",
-    metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
-    steps: [ "Select your PDF", "Enter a strong password", "Click Protect", "Download your secured file." ]
+    color: "text-slate-600", // Slate for seriousness/security
+    // ... meta info
   },
 ];
 
