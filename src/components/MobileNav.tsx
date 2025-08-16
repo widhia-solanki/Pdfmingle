@@ -1,9 +1,32 @@
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
+        import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { tools } from "@/constants/tools";
-import Link from "next/link"; // 1. CORRECT IMPORT for Next.js
-import { PDFMingleLogo } from "./PDFMingleLogo";
+import Link from "next/link";
+
+// --- THIS IS THE FIX ---
+// The broken import is removed, and the logo is now directly here.
+const PDFMingleLogo = () => (
+  <Link href="/" className="flex items-center text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
+    <svg
+      width="32"
+      height="32"
+      viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path d="M50 0 L20 0 L0 20 L0 50 L30 50 L50 30 Z" fill="#10B981" />
+      <path d="M50 0 L80 0 L100 20 L100 50 L70 50 L50 30 Z" fill="#3B82F6" />
+      <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
+      <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
+    </svg>
+    <span>
+      <span className="text-ilovepdf-red">PDF</span> Mingle
+    </span>
+  </Link>
+);
+// --- END OF THE FIX ---
 
 export const MobileNav = () => (
   <Sheet>
@@ -21,7 +44,6 @@ export const MobileNav = () => (
         {tools.map((tool) => {
           const Icon = tool.icon;
           return (
-            // 2. CORRECT LINK component with 'href' prop
             <Link
               key={tool.value}
               href={`/${tool.value}`}
