@@ -1,14 +1,11 @@
-
-        import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { tools } from "@/constants/tools";
 import Link from "next/link";
 
-// --- THIS IS THE FIX ---
-// The broken import is removed, and the logo is now directly here.
 const PDFMingleLogo = () => (
-  <Link href="/" className="flex items-center text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
+  <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
     <svg
       width="32"
       height="32"
@@ -21,12 +18,13 @@ const PDFMingleLogo = () => (
       <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
       <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
     </svg>
-    <span>
-      <span className="text-ilovepdf-red">PDF</span> Mingle
-    </span>
+    {/* --- THIS IS THE FIX --- */}
+    <div>
+      <span className="text-ilovepdf-red">PDF</span>Mingle
+    </div>
+    {/* --- END OF THE FIX --- */}
   </Link>
 );
-// --- END OF THE FIX ---
 
 export const MobileNav = () => (
   <Sheet>
