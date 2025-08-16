@@ -1,24 +1,27 @@
-import { PDFMingleLogo } from "./PDFMingleLogo";
-import { MobileNav } from "./MobileNav";
-import { usePathname } from 'next/navigation';
+import React from 'react';
+import Link from 'next/link';
 
-export const Header = () => {
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
-
+/**
+ * The main header component for the PDFMingle application.
+ * It provides navigation and branding.
+ */
+export function Header() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isHomePage && (
-            <div className="md:hidden">
-              <MobileNav />
-            </div>
-          )}
-          <PDFMingleLogo />
+    <header className="w-full bg-white border-b border-slate-200 shadow-sm">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            {/* Logo and App Name */}
+            <Link href="/" className="flex-shrink-0 font-bold text-xl text-slate-800">
+                PDFMingle
+            </Link>
+          </div>
+          {/* Add other navigation items here if needed */}
         </div>
-        {/* The ToolsMenu component has been removed */}
       </div>
     </header>
   );
-};
+}
+
+// Default export for easy import
+export default Header;
