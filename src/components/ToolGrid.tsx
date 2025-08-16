@@ -18,7 +18,9 @@ export const ToolGrid = ({ tools }: ToolGridProps) => {
                 key={tool.value} 
                 className="group flex flex-col items-center text-center p-6 bg-white rounded-lg shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300"
               >
+                {/* --- THIS IS THE FIX --- */}
                 <Icon className={`h-12 w-12 mb-4 ${tool.color}`} />
+                {/* --- END OF THE FIX --- */}
                 <h3 className="font-bold text-ilovepdf-text text-xl">{tool.label}</h3>
                 <p className="text-sm text-gray-600 mt-2 flex-grow">{tool.description}</p>
               </Link>
