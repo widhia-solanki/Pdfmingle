@@ -1,7 +1,7 @@
 import { MobileNav } from "./MobileNav";
 import { ToolsMenu } from "./ToolsMenu";
 import { usePathname } from 'next/navigation';
-import Link from 'next/link';
+import Link from 'next/link'; // Make sure Link is imported
 
 export const Header = () => {
   const pathname = usePathname();
@@ -18,7 +18,8 @@ export const Header = () => {
           )}
           
           {/* --- THIS IS THE FIX --- */}
-          {/* The broken import is removed, and the logo is now directly here. */}
+          {/* The logo and branding are now directly inside this file. */}
+          {/* This removes the need for the PDFMingleLogo component. */}
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
             <svg
               width="32"
