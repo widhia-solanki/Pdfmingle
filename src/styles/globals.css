@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 /* 
-  This is the final, correct structure. 
-  We define the variables inside `@layer base` and then apply them directly to HTML elements using standard CSS.
+  1. DEFINITIONS FIRST:
+  This @layer defines all your color variables. It must come before they are used.
 */
 @layer base {
   :root {
@@ -29,19 +29,46 @@
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
   }
+}
 
-  .dark {
-    /* Dark mode variables can go here later */
+/* 
+  2. USAGE SECOND:
+  This @layer uses the variables defined above.
+*/
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-ilovepdf-text;
+    font-family: 'Open Sans', Arial, sans-serif;
   }
 }
 
-/* Apply base styles using standard CSS, which is more reliable */
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: 'Open Sans', Arial, sans-serif;
+/* 
+  3. UTILITIES and ANIMATIONS LAST:
+  This is for your custom background styles.
+*/
+@layer utilities {
+  .hero-gradient-background {
+    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+  }
 }
 
-* {
-  border-color: hsl(var(--border));
+@keyframes float1 {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-20px) translateX(10px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
+
+@keyframes float2 {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(15px) translateX(-15px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
+
+@keyframes float3 {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-10px) translateX(20px); }
+  100% { transform: translateY(0px) translateX(0px); }
 }
