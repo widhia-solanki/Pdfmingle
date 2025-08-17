@@ -51,7 +51,7 @@ const TermsPage = () => {
                 <p>If you have any questions about these Terms and Conditions, You can contact us:</p>
                 <ul className="list-disc list-inside pl-4">
                   {/* --- THIS LINE IS UPDATED --- */}
-                  <li>By email: contect.bluelay@gmail.com</li>
+                  <li>By email: contact.dafda.pdfmingle@gmail.com</li>
                 </ul>
               </div>
             </div>
