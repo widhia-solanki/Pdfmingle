@@ -5,7 +5,6 @@ import { Menu, X } from "lucide-react";
 import { tools } from "@/constants/tools";
 import Link from "next/link";
 
-// We are including the logo directly in this component to avoid any import issues.
 const PDFMingleLogo = () => (
   <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
     <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -30,6 +29,10 @@ export const NewMobileMenu = () => {
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
+      {/* 
+        --- THIS IS THE FIX ---
+        These classes create the transparent, blurred glass effect.
+      */}
       <SheetContent 
         side="left" 
         className="p-0 bg-white/80 backdrop-blur-lg border-r border-gray-200/50"
