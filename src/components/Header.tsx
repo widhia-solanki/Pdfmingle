@@ -22,7 +22,8 @@ export const Header = () => {
             <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
           </svg>
           <div className="text-3xl">
-            <span className="text-red-500">PDF</span>Mingle
+            {/* --- THIS IS THE FIX --- */}
+            <span className="text-blue-600">PDF</span>Mingle
           </div>
         </Link>
 
