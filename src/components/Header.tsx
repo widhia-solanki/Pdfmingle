@@ -1,4 +1,3 @@
-import { MobileNav } from "./MobileNav";
 import { ToolsMenu } from "./ToolsMenu";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -10,13 +9,11 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
+        
+        {/* --- THIS IS THE FIX --- */}
+        {/* The div containing the MobileNav has been removed. */}
+        {/* The PDFMingle logo is now the only item on the left. */}
         <div className="flex items-center gap-2">
-          {isHomePage && (
-            <div className="md:hidden">
-              <MobileNav />
-            </div>
-          )}
-          
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
             <svg
               width="32"
@@ -30,13 +27,13 @@ export const Header = () => {
               <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
               <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
             </svg>
-            {/* --- THIS IS THE FIX --- */}
             <div>
               <span className="text-ilovepdf-red">PDF</span>Mingle
             </div>
-            {/* --- END OF THE FIX --- */}
           </Link>
         </div>
+        {/* --- END OF THE FIX --- */}
+
         <ToolsMenu />
       </div>
     </header>
