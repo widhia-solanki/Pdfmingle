@@ -17,7 +17,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
   const { toast } = useToast();
   
   const [files, setFiles] = useState<File[]>([]);
-  const [status, setStatus] = useState<"idle" | "processing" | "success">("idle");
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success'>('idle');
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
 
   const handleStartOver = () => {
     setFiles([]);
-    setStatus("idle");
+    setStatus('idle');
     setDownloadUrl(null);
   };
 
@@ -56,7 +56,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
     try {
       let blob: Blob;
 
-      if (!requiresBackend) {
+      if (requiresBackend) {
         const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
@@ -99,6 +99,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
     }
   };
 
+  const Icon = tool.icon;
   const schema = {
     "@context": "https://schema.org",
     "@type": "HowTo",
@@ -114,7 +115,6 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
 
   return (
     <>
-      {/* --- THIS IS THE FIX --- */}
       <Head>
         <title>{tool.metaTitle}</title>
         <meta name="description" content={tool.metaDescription} />
@@ -128,11 +128,14 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
         />
       </Head>
-      {/* --- END OF THE FIX --- */}
 
-      <div className="flex flex-col items-center text-center">
+      <div className="flex flex-col items-center text-center pt-8 md:pt-12">
+        <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
+           <Icon className={`h-10 w-10 ${tool.color}`} />
+        </div>
+
         <h1 className="text-3xl md:text-5xl font-bold text-ilovepdf-text">{tool.h1}</h1>
-        <p className="mt-4 max-w-xl text-base md:text-xl text-muted-foreground">{tool.description}</p>
+        <p className="mt-4 max-w-xl text-base md:text-lg text-muted-foreground">{tool.description}</p>
         
         <div className="mt-8 md:mt-12 w-full">
           {status === 'success' ? (
@@ -143,8 +146,8 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
             />
           ) : status === 'processing' ? (
             <div className="flex flex-col items-center justify-center p-12">
-              <p className="text-lg font-semibold animate-pulse">Processing your files...</p>
-            </div>
+                <p className="text-lg font-semibold animate-pulse">Processing your files...</p>
+             </div>
           ) : (
             <PDFProcessor onFilesSelected={setFiles} />
           )}
