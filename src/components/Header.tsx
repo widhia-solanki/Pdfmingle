@@ -1,7 +1,7 @@
-import { usePathname } from 'next/navigation';
+imimport { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { NewMobileMenu } from './NewMobileMenu';
-import { ToolsMenu } from './ToolsMenu'; // We are adding this back
+// The import for ToolsMenu has been removed.
 
 export const Header = () => {
   const pathname = usePathname();
@@ -36,10 +36,12 @@ export const Header = () => {
           </Link>
         </div>
 
-        {/* --- THIS IS THE FIX --- */}
-        {/* The ToolsMenu is now back, so the grid icon will be visible. */}
-        <ToolsMenu />
-        {/* --- END OF THE FIX --- */}
+        {/* 
+          --- THIS IS THE FIX ---
+          The <ToolsMenu /> component has been completely removed.
+          This will make the grid icon disappear.
+          --- END OF THE FIX ---
+        */}
       </div>
     </header>
   );
