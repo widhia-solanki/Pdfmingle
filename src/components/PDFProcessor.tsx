@@ -78,7 +78,7 @@ export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
         ref={fileInputRef} 
         className="hidden" 
         multiple 
-        accept=".pdf, .doc, .docx, .jpg, .jpeg, .png" // Accept all relevant file types
+        accept=".pdf, .doc, .docx, .jpg, .jpeg, .png"
         onChange={handleFileChange}
       />
     </div>
