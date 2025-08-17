@@ -23,7 +23,7 @@ const PrivacyPage = () => {
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4 max-w-4xl">
             <div className="space-y-6 text-gray-700 text-lg leading-relaxed">
-              <p>X-Way Products Private Limited ("us", "we", or "our") operates the PDFMingle website (the "Service"). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.</p>
+              <p>Dafda Products Private Limited ("us", "we", or "our") operates the PDFMingle website (the "Service"). This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data.</p>
               
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-ilovepdf-text border-b pb-2">Information Collection and Use</h2>
@@ -50,7 +50,7 @@ const PrivacyPage = () => {
                 <p>If you have any questions about this Privacy Policy, please contact us:</p>
                 <ul className="list-disc list-inside pl-4">
                   {/* --- THIS LINE IS UPDATED --- */}
-                  <li>By email: contect.bluelay@gmail.com</li>
+                  <li>By email: contact.dafda.pdfmingle@gmail.com</li>
                 </ul>
               </div>
             </div>
