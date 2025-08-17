@@ -1,7 +1,6 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { NewMobileMenu } from './NewMobileMenu';
-import { ToolsMenu } from './ToolsMenu';
 
 export const Header = () => {
   const pathname = usePathname();
@@ -11,15 +10,12 @@ export const Header = () => {
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
-          {/* This is the hamburger menu for mobile on the homepage */}
           {isHomePage && (
             <div className="md:hidden">
               <NewMobileMenu />
             </div>
           )}
-
-          {/* --- THIS IS THE FIX --- */}
-          {/* Your Logo and Branding are now correctly displayed on all screen sizes. */}
+          
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
             <svg
               width="32"
@@ -37,10 +33,11 @@ export const Header = () => {
               <span className="text-ilovepdf-red">PDF</span>Mingle
             </div>
           </Link>
-          {/* --- END OF THE FIX --- */}
         </div>
 
-        <ToolsMenu />
+        {/* --- THIS IS THE FIX --- */}
+        {/* The <ToolsMenu /> component has been completely removed. */}
+        {/* --- END OF THE FIX --- */}
       </div>
     </header>
   );
