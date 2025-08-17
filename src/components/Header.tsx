@@ -1,4 +1,3 @@
-import { ToolsMenu } from "./ToolsMenu";
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
@@ -9,11 +8,10 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        
-        {/* --- THIS IS THE FIX --- */}
-        {/* The div containing the MobileNav has been removed. */}
-        {/* The PDFMingle logo is now the only item on the left. */}
         <div className="flex items-center gap-2">
+          {/* The hamburger menu has also been removed as per the last step */}
+          
+          {/* This is your logo and brand name */}
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
             <svg
               width="32"
@@ -32,9 +30,13 @@ export const Header = () => {
             </div>
           </Link>
         </div>
-        {/* --- END OF THE FIX --- */}
 
-        <ToolsMenu />
+        {/* 
+          --- THIS IS THE FIX ---
+          The <ToolsMenu /> component has been completely removed from this file.
+          This will make the grid icon disappear.
+          --- END OF THE FIX ---
+        */}
       </div>
     </header>
   );
