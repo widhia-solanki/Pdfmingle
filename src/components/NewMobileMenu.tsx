@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, X, FileQuestion } from "lucide-react"; // Import a fallback icon
-// 1. Import the iconMap and the tools list
+import { Menu, X, FileQuestion } from "lucide-react";
 import { tools, iconMap } from "@/constants/tools";
 import Link from "next/link";
 
@@ -15,7 +14,8 @@ const PDFMingleLogo = () => (
       <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
     </svg>
     <div>
-      <span className="text-red-500">PDF</span>Mingle
+      {/* --- THIS IS THE FIX --- */}
+      <span className="text-blue-600">PDF</span>Mingle
     </div>
   </Link>
 );
@@ -47,8 +47,6 @@ export const NewMobileMenu = () => {
           <h2 className="text-lg font-semibold mb-2 text-gray-800">All PDF Tools</h2>
           <div className="flex flex-col gap-1">
             {tools.map((tool) => {
-              // --- THIS IS THE FIX ---
-              // 2. Look up the component from the map using the tool's icon string
               const Icon = iconMap[tool.icon] || FileQuestion;
               return (
                 <Link
@@ -57,7 +55,6 @@ export const NewMobileMenu = () => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-100 transition-colors"
                 >
-                  {/* 3. Render the icon with its specific color */}
                   <Icon className="h-6 w-6" style={{ color: tool.color }} />
                   <span className="font-medium text-gray-700">{tool.label}</span>
                 </Link>
