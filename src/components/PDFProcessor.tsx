@@ -21,7 +21,6 @@ export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
     }
   };
 
-  // --- NEW DRAG AND DROP HANDLERS ---
   const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,7 +34,7 @@ export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault(); // This is necessary to allow dropping
+    e.preventDefault();
     e.stopPropagation();
   }, []);
   
@@ -48,11 +47,9 @@ export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
       e.dataTransfer.clearData();
     }
   }, [onFilesSelected]);
-  // --- END OF NEW HANDLERS ---
 
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-6">
-      {/* --- THIS IS THE UPDATED DRAG-AND-DROP AREA --- */}
       <div
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
@@ -75,14 +72,13 @@ export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
           Select PDF files
         </Button>
       </div>
-      {/* --- END OF UPDATED AREA --- */}
 
       <input 
         type="file" 
         ref={fileInputRef} 
         className="hidden" 
         multiple 
-        accept=".pdf"
+        accept=".pdf, .doc, .docx, .jpg, .jpeg, .png" // Accept all relevant file types
         onChange={handleFileChange}
       />
     </div>
