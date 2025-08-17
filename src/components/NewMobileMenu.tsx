@@ -31,17 +31,20 @@ export const NewMobileMenu = () => {
       </SheetTrigger>
       <SheetContent 
         side="left" 
-        className="p-0 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col" // Added flex flex-col
+        className="p-0 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col"
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
           <PDFMingleLogo />
-          {/* --- FIX 1: REMOVED the extra SheetClose component --- */}
-          <Button asChild variant="ghost" size="icon" className="rounded-full" onClick={() => setIsOpen(false)}>
-            <X className="h-6 w-6" />
-          </Button>
+          {/* --- THIS IS THE FIX --- */}
+          {/* We now only have one close button, wrapped in SheetClose */}
+          <SheetClose asChild>
+            <Button variant="ghost" size="icon" className="rounded-full">
+              <X className="h-6 w-6" />
+            </Button>
+          </SheetClose>
+          {/* --- END OF THE FIX --- */}
         </div>
         
-        {/* --- FIX 2: MADE THE NAVIGATION SCROLLABLE --- */}
         <nav className="flex-grow overflow-y-auto p-4"> 
           <h2 className="text-lg font-semibold mb-2 text-gray-800">All PDF Tools</h2>
           <div className="flex flex-col gap-1">
