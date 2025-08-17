@@ -29,39 +29,37 @@ export const NewMobileMenu = () => {
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      {/* 
-        --- THIS IS THE FIX ---
-        These classes create the transparent, blurred glass effect.
-      */}
       <SheetContent 
         side="left" 
-        className="p-0 bg-white/80 backdrop-blur-lg border-r border-gray-200/50"
+        className="p-0 bg-white/80 backdrop-blur-lg border-r border-gray-200/50 flex flex-col" // Added flex flex-col
       >
         <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
           <PDFMingleLogo />
-          <SheetClose asChild>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <X className="h-6 w-6" />
-            </Button>
-          </SheetClose>
+          {/* --- FIX 1: REMOVED the extra SheetClose component --- */}
+          <Button asChild variant="ghost" size="icon" className="rounded-full" onClick={() => setIsOpen(false)}>
+            <X className="h-6 w-6" />
+          </Button>
         </div>
         
-        <nav className="flex flex-col gap-1 p-4">
+        {/* --- FIX 2: MADE THE NAVIGATION SCROLLABLE --- */}
+        <nav className="flex-grow overflow-y-auto p-4"> 
           <h2 className="text-lg font-semibold mb-2 text-gray-800">All PDF Tools</h2>
-          {tools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <Link
-                key={tool.value}
-                href={`/${tool.value}`}
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 p-3 rounded-md hover:bg-white/50 transition-colors"
-              >
-                <Icon className={`h-6 w-6 ${tool.color}`} />
-                <span className="font-medium text-gray-700">{tool.label}</span>
-              </Link>
-            );
-          })}
+          <div className="flex flex-col gap-1">
+            {tools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <Link
+                  key={tool.value}
+                  href={`/${tool.value}`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-md hover:bg-white/50 transition-colors"
+                >
+                  <Icon className={`h-6 w-6 ${tool.color}`} />
+                  <span className="font-medium text-gray-700">{tool.label}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       </SheetContent>
     </Sheet>
