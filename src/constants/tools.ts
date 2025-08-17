@@ -1,9 +1,15 @@
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
-  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon
+  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps
 } from "lucide-react";
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
+
+// This creates a type that maps string names to the actual components.
+export const iconMap: { [key: string]: React.ElementType<LucideProps> } = {
+  FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
+  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon
+};
 
 export interface Tool {
   value: string;
@@ -11,24 +17,23 @@ export interface Tool {
   h1: string;
   description: string;
   category: ToolCategory;
-  icon: React.ElementType;
+  icon: keyof typeof iconMap; // The icon is now a string name
   color: string;
   metaTitle: string;
   metaDescription: string;
   metaKeywords: string;
   steps: string[];
-  isBrowserOnly: boolean; // This property is our switch
+  isBrowserOnly: boolean;
 }
 
 export const tools: Tool[] = [
-  // --- BROWSER-ONLY TOOLS (Client-side logic) ---
   {
     value: "merge-pdf",
     label: "Merge PDF",
     h1: "Merge PDF Files",
     description: "Combine multiple PDF documents into one single file.",
     category: "Organize",
-    icon: FilePlus,
+    icon: 'FilePlus', // Changed from component to string
     color: "#4A90E2",
     metaTitle: "Merge PDF Files Online | Combine PDFs for Free",
     metaDescription: "Easily merge multiple PDF files into a single document online. Free, fast, and secure PDF merger tool.",
@@ -42,7 +47,7 @@ export const tools: Tool[] = [
     h1: "Split PDF",
     description: "Extract one or more pages from your PDF or save each page as a separate PDF file.",
     category: "Organize",
-    icon: Scissors,
+    icon: 'Scissors', // Changed from component to string
     color: "#50E3C2",
     metaTitle: "Split PDF Files Online | Extract Pages from PDF",
     metaDescription: "Split a PDF file into multiple documents or extract specific pages. Easy-to-use online PDF splitter.",
@@ -56,7 +61,7 @@ export const tools: Tool[] = [
     h1: "Rotate PDF",
     description: "Rotate one or all pages in your PDF file as you need.",
     category: "Edit",
-    icon: RotateCw,
+    icon: 'RotateCw', // Changed from component to string
     color: "#F5A623",
     metaTitle: "Rotate PDF Online | Free PDF Page Rotation",
     metaDescription: "Rotate PDF pages to the left or right permanently. Fix portrait and landscape issues in your document.",
@@ -70,7 +75,7 @@ export const tools: Tool[] = [
     h1: "JPG to PDF Converter",
     description: "Convert JPG, PNG, BMP, GIF, and TIFF images to PDF.",
     category: "Convert",
-    icon: Image,
+    icon: 'Image', // Changed from component to string
     color: "#BD10E0",
     metaTitle: "JPG to PDF Converter | Convert Images to PDF Online",
     metaDescription: "Free online tool to convert your JPG and other image formats to a single PDF file.",
@@ -84,7 +89,7 @@ export const tools: Tool[] = [
     h1: "Add Page Numbers to PDF",
     description: "Insert page numbers into your PDF documents with ease.",
     category: "Edit",
-    icon: FileText,
+    icon: 'FileText', // Changed from component to string
     color: "#7ED321",
     metaTitle: "Add Page Numbers to PDF | Online PDF Paginator",
     metaDescription: "Easily add page numbers to your PDF files. Customize position, format, and range.",
@@ -92,15 +97,13 @@ export const tools: Tool[] = [
     steps: ["Upload your PDF", "Choose the position and format for the numbers", "Click 'Add Numbers'", "Download your paginated PDF"],
     isBrowserOnly: true,
   },
-
-  // --- BACKEND-REQUIRED TOOLS (Server-side logic) ---
   {
     value: "compress-pdf",
     label: "Compress PDF",
     h1: "Compress PDF",
     description: "Reduce the file size of your PDF while optimizing for maximal quality.",
     category: "Optimize",
-    icon: Archive,
+    icon: 'Archive', // Changed from component to string
     color: "#F8E71C",
     metaTitle: "Compress PDF | Reduce PDF File Size Online",
     metaDescription: "The best online tool to reduce PDF file size. Compress your PDFs for easy sharing and storage.",
@@ -114,7 +117,7 @@ export const tools: Tool[] = [
     h1: "Organize PDF",
     description: "Sort, add, and delete pages in your PDF file.",
     category: "Organize",
-    icon: Files,
+    icon: 'Files', // Changed from component to string
     color: "#4A90E2",
     metaTitle: "Organize PDF Pages | Sort, Add, and Delete PDF Pages",
     metaDescription: "Easily reorder, add, or remove pages from your PDF document online.",
@@ -128,7 +131,7 @@ export const tools: Tool[] = [
     h1: "Repair PDF",
     description: "Attempt to recover data from a corrupt or damaged PDF file.",
     category: "Optimize",
-    icon: FileHeart,
+    icon: 'FileHeart', // Changed from component to string
     color: "#D0021B",
     metaTitle: "Repair PDF | Fix Damaged PDF Files Online",
     metaDescription: "Try to fix your corrupted PDF files and recover your data with our free online PDF repair tool.",
@@ -142,7 +145,7 @@ export const tools: Tool[] = [
     h1: "PDF to Word Converter",
     description: "Convert your PDF to an editable Word document (DOCX).",
     category: "Convert",
-    icon: FileType,
+    icon: 'FileType', // Changed from component to string
     color: "#2B78E4",
     metaTitle: "PDF to Word Converter | Convert PDF to DOCX Online",
     metaDescription: "Convert PDFs to editable Microsoft Word documents for free. High-quality conversion.",
@@ -156,7 +159,7 @@ export const tools: Tool[] = [
     h1: "Word to PDF Converter",
     description: "Convert your Word document (DOCX) to a PDF file.",
     category: "Convert",
-    icon: FileOutput,
+    icon: 'FileOutput', // Changed from component to string
     color: "#2B78E4",
     metaTitle: "Word to PDF Converter | Convert DOCX to PDF Online",
     metaDescription: "Easily convert Microsoft Word documents to high-quality PDF files online for free.",
@@ -170,7 +173,7 @@ export const tools: Tool[] = [
     h1: "PDF to JPG Converter",
     description: "Extract all images from a PDF or convert each page into a JPG image.",
     category: "Convert",
-    icon: FileImage,
+    icon: 'FileImage', // Changed from component to string
     color: "#BD10E0",
     metaTitle: "PDF to JPG Converter | Convert PDF Pages to Images",
     metaDescription: "Convert each page of your PDF to a high-quality JPG image online.",
@@ -184,7 +187,7 @@ export const tools: Tool[] = [
     h1: "HTML to PDF",
     description: "Convert a live webpage into a PDF document by providing a URL.",
     category: "Convert",
-    icon: LinkIcon,
+    icon: 'LinkIcon', // Changed from component to string
     color: "#F5A623",
     metaTitle: "HTML to PDF | Convert Webpage to PDF",
     metaDescription: "Convert any URL or webpage into a high-quality PDF file that you can download and share.",
@@ -198,7 +201,7 @@ export const tools: Tool[] = [
     h1: "Edit PDF",
     description: "Add text, shapes, and annotations to your PDF document.",
     category: "Edit",
-    icon: FileText,
+    icon: 'FileText', // Changed from component to string
     color: "#7ED321",
     metaTitle: "Edit PDF Online | Free PDF Editor",
     metaDescription: "A simple online PDF editor to add text, highlight, draw, and annotate your PDF files.",
@@ -212,7 +215,7 @@ export const tools: Tool[] = [
     h1: "Unlock PDF",
     description: "Remove a password and restrictions from your PDF file.",
     category: "Security",
-    icon: Unlock,
+    icon: 'Unlock', // Changed from component to string
     color: "#9013FE",
     metaTitle: "Unlock PDF | Remove PDF Password Online",
     metaDescription: "Remove password protection from your PDF files so you can edit and use them freely. You must have the rights to the file.",
@@ -226,7 +229,7 @@ export const tools: Tool[] = [
     h1: "Protect PDF",
     description: "Add a password to your PDF to encrypt it and protect it from unauthorized access.",
     category: "Security",
-    icon: Lock,
+    icon: 'Lock', // Changed from component to string
     color: "#000000",
     metaTitle: "Protect PDF | Add Password to PDF Online",
     metaDescription: "Encrypt your PDF files with a password to secure them. Protect sensitive information easily.",
