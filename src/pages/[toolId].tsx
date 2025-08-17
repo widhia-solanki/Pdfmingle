@@ -1,15 +1,16 @@
-
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { tools, Tool } from '@/constants/tools';
+// Import the iconMap we created in tools.ts
+import { tools, Tool, iconMap } from '@/constants/tools';
 import { PDFProcessor } from '@/components/PDFProcessor';
 import { ResultsPage } from '@/components/ResultsPage';
 import { useToast } from '@/hooks/use-toast';
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from '@/lib/pdf-tools';
 import NotFoundPage from '@/pages/404';
+import { FileQuestion } from 'lucide-react';
 
 interface ToolPageProps {
   tool: Tool;
@@ -43,7 +44,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     if (!downloadUrl) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    a.download = `${processedFileName}.pdf`;
+    // The file name state should now include the extension
+    a.download = processedFileName;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -66,6 +68,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     try {
       let blob: Blob;
       let outputName = tool.value;
+      let outputExtension = 'pdf'; // Default to pdf
 
       switch (tool.value) {
         case 'merge-pdf':
@@ -74,12 +77,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           break;
         case 'split-pdf':
           if (files.length > 1) throw new Error("Please select only one file to split.");
-          blob = await splitPDF(files[0]); // Note: This will need UI for range selection later
+          blob = await splitPDF(files[0]);
           outputName = `${files[0].name.replace('.pdf', '')}_split`;
+          outputExtension = 'zip'; // Split tool outputs a zip file
           break;
         case 'rotate-pdf':
           if (files.length > 1) throw new Error("Please select only one file to rotate.");
-          blob = await rotatePDF(files[0], 90); // Note: This will need UI for angle selection
+          blob = await rotatePDF(files[0], 90);
           outputName = `${files[0].name.replace('.pdf', '')}_rotated`;
           break;
         case 'jpg-to-pdf':
@@ -95,9 +99,10 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           throw new Error("This tool is not yet implemented.");
       }
 
+      const finalFileName = `${outputName}.${outputExtension}`;
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setProcessedFileName(outputName);
+      setProcessedFileName(finalFileName); // Set the full file name with extension
       setStatus("success");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An unknown error occurred.";
@@ -106,7 +111,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       toast({ title: "Processing failed", description: message, variant: "destructive" });
     }
   };
-  
+
   // Automatically start processing when files are selected
   useEffect(() => {
     if (files.length > 0 && status === 'idle') {
@@ -114,16 +119,19 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     }
   }, [files, status]);
 
-
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
-  
+
   if (!tool) {
     return <NotFoundPage />;
   }
 
-  const Icon = tool.icon;
+  // --- THIS IS THE FIX ---
+  // Look up the icon component from the map using the string name
+  // Provide a fallback icon in case it's not found
+  const Icon = iconMap[tool.icon] || FileQuestion;
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
@@ -164,7 +172,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
               downloadUrl={downloadUrl}
               onDownload={handleDownload}
               onStartOver={handleStartOver}
-              fileName={`${processedFileName}.pdf`}
+              fileName={processedFileName} // Pass the full file name
             />
           ) : status === 'processing' ? (
             <div className="flex flex-col items-center justify-center p-12 h-64 border-2 border-dashed rounded-lg">
@@ -209,6 +217,7 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   if (!tool) {
     return { notFound: true };
   }
+  // Now the 'tool' object is fully serializable!
   return { props: { tool } };
 };
 
