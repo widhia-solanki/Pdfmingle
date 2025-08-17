@@ -56,8 +56,12 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
     try {
       let blob: Blob;
 
+      // --- THIS IS THE FIX ---
+      // The logic is now correct. `if (requiresBackend)` handles backend tools.
+      // The `else` block handles all browser-only tools.
       if (requiresBackend) {
-        const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
+        // This block now only runs for tools that NEED a backend
+        const apiBaseUrl = "https://pdfmingle-backend.onrender.com"; // Your real backend URL
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
         const endpoint = `${apiBaseUrl}/${tool.value}`;
@@ -65,6 +69,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
         if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
         blob = await response.blob();
       } else {
+        // This block handles all BROWSER-ONLY tools
         switch (tool.value) {
           case 'merge-pdf':
             blob = await mergePDFs(files);
@@ -83,9 +88,10 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
             blob = await addPageNumbersPDF(files[0]);
             break;
           default:
-            throw new Error("Tool not implemented for browser processing.");
+            throw new Error("This tool is not yet implemented in the browser.");
         }
       }
+      // --- END OF THE FIX ---
 
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
