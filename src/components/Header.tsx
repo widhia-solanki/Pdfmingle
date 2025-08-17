@@ -1,25 +1,22 @@
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { NewMobileMenu } from './NewMobileMenu';
-import { ToolsMenu } from './ToolsMenu';
 
-// --- THIS IS THE FIX ---
-// The 'export' keyword was missing from this line.
 export const Header = () => {
-// --- END OF THE FIX ---
   const pathname = usePathname();
   const isHomePage = pathname === '/';
 
   return (
+    // The bg-white class ensures a solid background
     <header className="sticky top-0 z-50 w-full border-b bg-white">
-      <div className="container flex h-16 items-center justify-between">
+      {/* --- THIS IS THE FIX --- */}
+      {/* Added py-2 for vertical padding */}
+      <div className="container flex h-16 items-center justify-between py-2">
         <div className="flex items-center gap-2">
-          {isHomePage ? (
+          {isHomePage && (
             <div className="md:hidden">
               <NewMobileMenu />
             </div>
-          ) : (
-            <></>
           )}
           
           <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
@@ -39,10 +36,6 @@ export const Header = () => {
               <span className="text-ilovepdf-red">PDF</span>Mingle
             </div>
           </Link>
-        </div>
-
-        <div className="hidden md:flex">
-             <ToolsMenu />
         </div>
       </div>
     </header>
