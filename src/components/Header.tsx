@@ -1,42 +1,90 @@
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { NewMobileMenu } from './NewMobileMenu';
+import { useRef, useState, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { Upload } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export const Header = () => {
-  const pathname = usePathname();
-  const isHomePage = pathname === '/';
+interface PDFProcessorProps {
+  onFilesSelected: (files: File[]) => void;
+}
+
+export const PDFProcessor = ({ onFilesSelected }: PDFProcessorProps) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const handleFileSelectClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      onFilesSelected(Array.from(event.target.files));
+    }
+  };
+
+  // --- NEW DRAG AND DROP HANDLERS ---
+  const handleDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // This is necessary to allow dropping
+    e.stopPropagation();
+  }, []);
+  
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      onFilesSelected(Array.from(e.dataTransfer.files));
+      e.dataTransfer.clearData();
+    }
+  }, [onFilesSelected]);
+  // --- END OF NEW HANDLERS ---
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center gap-2">
-          {isHomePage && (
-            <div className="md:hidden">
-              <NewMobileMenu />
-            </div>
-          )}
-          
-          <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-ilovepdf-text no-underline">
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 100 100"
-              xmlns="http://www.w3.org/2000/svg"
-              aria-hidden="true"
-            >
-              <path d="M50 0 L20 0 L0 20 L0 50 L30 50 L50 30 Z" fill="#10B981" />
-              <path d="M50 0 L80 0 L100 20 L100 50 L70 50 L50 30 Z" fill="#3B82F6" />
-              <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
-              <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
-            </svg>
-            <div>
-              <span className="text-ilovepdf-red">PDF</span>Mingle
-            </div>
-          </Link>
-        </div>
-
-        {/* The ToolsMenu component has been removed */}
+    <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-6">
+      {/* --- THIS IS THE UPDATED DRAG-AND-DROP AREA --- */}
+      <div
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        className={cn(
+          "w-full bg-white rounded-lg border-2 border-dashed p-8 md:p-12 flex flex-col items-center justify-center text-center transition-all duration-300",
+          isDragging ? "border-brand-blue bg-blue-50" : "border-gray-300"
+        )}
+      >
+        <Upload className={cn("h-16 w-16 mb-4", isDragging ? "text-brand-blue" : "text-gray-400")} />
+        <h2 className="text-2xl font-bold text-ilovepdf-text">
+          {isDragging ? "Drop your files here!" : "Drag & Drop files here"}
+        </h2>
+        <p className="text-gray-500 my-2">or</p>
+        <Button 
+          onClick={handleFileSelectClick}
+          className="w-full max-w-xs h-14 text-lg font-semibold bg-brand-blue hover:bg-brand-blue-dark text-white rounded-lg"
+        >
+          Select PDF files
+        </Button>
       </div>
-    </header>
+      {/* --- END OF UPDATED AREA --- */}
+
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        className="hidden" 
+        multiple 
+        accept=".pdf"
+        onChange={handleFileChange}
+      />
+    </div>
   );
 };
