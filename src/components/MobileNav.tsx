@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -29,22 +30,25 @@ export const MobileNav = () => {
           <Menu className="h-6 w-6" />
         </Button>
       </SheetTrigger>
-      {/* --- THIS IS THE FIX --- */}
+      {/* 
+        --- THIS IS THE FIX ---
+        The className is updated to create the transparent, blurred effect.
+        - bg-background/80: Makes the background 80% opaque white.
+        - backdrop-blur-lg: Applies a large blur to whatever is behind the menu.
+      */}
       <SheetContent 
         side="left" 
-        className="p-0 bg-background/80 backdrop-blur-sm"
+        className="p-0 bg-background/80 backdrop-blur-lg border-r border-gray-200/50"
       >
-        {/* Top Bar inside the Menu */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200/50">
           <PDFMingleLogo />
           <SheetClose asChild>
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="rounded-full">
               <X className="h-6 w-6" />
             </Button>
           </SheetClose>
         </div>
         
-        {/* Navigation Links */}
         <nav className="flex flex-col gap-1 p-4">
           <h2 className="text-lg font-semibold mb-2 text-gray-800">All PDF Tools</h2>
           {tools.map((tool) => {
@@ -53,8 +57,8 @@ export const MobileNav = () => {
               <Link
                 key={tool.value}
                 href={`/${tool.value}`}
-                onClick={() => setIsOpen(false)} // Close menu on link click
-                className="flex items-center gap-3 p-3 rounded-md hover:bg-gray-100 transition-colors"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-3 p-3 rounded-md hover:bg-white/50 transition-colors"
               >
                 <Icon className={`h-6 w-6 ${tool.color}`} />
                 <span className="font-medium text-gray-700">{tool.label}</span>
