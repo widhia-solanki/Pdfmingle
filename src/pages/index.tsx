@@ -1,5 +1,5 @@
 // src/pages/index.tsx
-
+import FaqSection from "@/components/FaqSection";
 import { useState } from 'react';
 import { tools, categories, ToolCategory } from '@/constants/tools';
 import { Button } from '@/components/ui/button';
