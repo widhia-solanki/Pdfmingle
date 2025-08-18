@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
-import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-// Import the iconMap we created in tools.ts
 import { tools, Tool, iconMap } from '@/constants/tools';
 import { PDFProcessor } from '@/components/PDFProcessor';
 import { ResultsPage } from '@/components/ResultsPage';
@@ -11,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from '@/lib/pdf-tools';
 import NotFoundPage from '@/pages/404';
 import { FileQuestion } from 'lucide-react';
+import { NextSeo } from 'next-seo';
 
 interface ToolPageProps {
   tool: Tool;
@@ -25,7 +24,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [processedFileName, setProcessedFileName] = useState<string>('download');
 
-  // Reset state when the tool changes
   useEffect(() => {
     handleStartOver();
   }, [tool.value]);
@@ -44,10 +42,9 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     if (!downloadUrl) return;
     const a = document.createElement('a');
     a.href = downloadUrl;
-    // The file name state should now include the extension
     a.download = processedFileName;
     document.body.appendChild(a);
-    a.click();
+a.click();
     document.body.removeChild(a);
   };
 
@@ -68,7 +65,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     try {
       let blob: Blob;
       let outputName = tool.value;
-      let outputExtension = 'pdf'; // Default to pdf
+      let outputExtension = 'pdf';
 
       switch (tool.value) {
         case 'merge-pdf':
@@ -79,7 +76,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           if (files.length > 1) throw new Error("Please select only one file to split.");
           blob = await splitPDF(files[0]);
           outputName = `${files[0].name.replace('.pdf', '')}_split`;
-          outputExtension = 'zip'; // Split tool outputs a zip file
+          outputExtension = 'zip';
           break;
         case 'rotate-pdf':
           if (files.length > 1) throw new Error("Please select only one file to rotate.");
@@ -102,7 +99,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       const finalFileName = `${outputName}.${outputExtension}`;
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setProcessedFileName(finalFileName); // Set the full file name with extension
+      setProcessedFileName(finalFileName);
       setStatus("success");
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : "An unknown error occurred.";
@@ -112,7 +109,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     }
   };
 
-  // Automatically start processing when files are selected
   useEffect(() => {
     if (files.length > 0 && status === 'idle') {
       handleProcess();
@@ -127,37 +123,29 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     return <NotFoundPage />;
   }
 
-  // --- THIS IS THE FIX ---
-  // Look up the icon component from the map using the string name
-  // Provide a fallback icon in case it's not found
   const Icon = iconMap[tool.icon] || FileQuestion;
-
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": tool.label,
-    "description": tool.description,
-    "applicationCategory": "Productivity",
-    "operatingSystem": "Any (Web-based)",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD"
-    }
-  };
+  const canonicalUrl = `https://pdfmingle.net/${tool.value}`;
 
   return (
     <>
-      <Head>
-        <title>{tool.metaTitle}</title>
-        <meta name="description" content={tool.metaDescription} />
-        <meta name="keywords" content={tool.metaKeywords} />
-        <link rel="canonical" href={`https://www.pdfmingle.net/${tool.value}`} />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
-        />
-      </Head>
+      <NextSeo
+        title={tool.metaTitle}
+        description={tool.metaDescription}
+        canonical={canonicalUrl}
+        openGraph={{
+          title: tool.metaTitle,
+          description: tool.metaDescription,
+          url: canonicalUrl,
+          images: [
+            {
+              url: 'https://pdfmingle.net/og-image.png',
+              width: 1200,
+              height: 630,
+              alt: tool.label,
+            },
+          ],
+        }}
+      />
 
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
@@ -172,7 +160,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
               downloadUrl={downloadUrl}
               onDownload={handleDownload}
               onStartOver={handleStartOver}
-              fileName={processedFileName} // Pass the full file name
+              fileName={processedFileName}
             />
           ) : status === 'processing' ? (
             <div className="flex flex-col items-center justify-center p-12 h-64 border-2 border-dashed rounded-lg">
@@ -217,7 +205,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   if (!tool) {
     return { notFound: true };
   }
-  // Now the 'tool' object is fully serializable!
   return { props: { tool } };
 };
 
