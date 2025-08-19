@@ -10,6 +10,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "pdf-lib": "^1.17.1",
+    "pdfjs-dist": "^4.2.67",
+    "browser-image-compression": "^2.0.2"
     "@emailjs/browser": "^4.3.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
