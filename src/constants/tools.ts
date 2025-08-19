@@ -1,3 +1,5 @@
+// src/constants/tools.ts
+
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps
@@ -10,6 +12,7 @@ export const iconMap: { [key: string]: React.ElementType<LucideProps> } = {
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon
 };
 
+// --- THIS IS THE FIX: Added 'isMultiFile' property ---
 export interface Tool {
   value: string;
   label: string;
@@ -23,6 +26,7 @@ export interface Tool {
   metaKeywords: string;
   steps: string[];
   isBrowserOnly: boolean;
+  isMultiFile: boolean; // This property is now included
   faqs: { question: string; answer:string; }[];
 }
 
@@ -40,6 +44,7 @@ export const tools: Tool[] = [
     metaKeywords: "merge pdf, combine pdf, pdf joiner, unite pdf",
     steps: ["Upload your PDFs", "Drag and drop to order them", "Click 'Merge PDF' to combine", "Download your merged file"],
     isBrowserOnly: true,
+    isMultiFile: true, // <-- SET TO TRUE
     faqs: [
         { question: "How many PDF files can I merge at once?", answer: "You can upload and merge multiple PDF files at once. The specific limit is designed to handle most common use cases." },
         { question: "Can I reorder the files before merging?", answer: "Yes. After uploading your files, you can drag and drop them into your desired order before clicking the merge button." },
@@ -59,6 +64,7 @@ export const tools: Tool[] = [
     metaKeywords: "split pdf, pdf cutter, extract pdf pages",
     steps: ["Upload your PDF", "Select the pages or ranges to split", "Click 'Split PDF'", "Download your new files in a ZIP archive"],
     isBrowserOnly: true,
+    isMultiFile: false,
     faqs: [
       { question: "Can I select a specific range of pages to extract?", answer: "Yes, our tool allows you to define custom page ranges (e.g., 2-5, 8, 11-13) to extract exactly the pages you need into a new PDF." },
       { question: "Will the split PDFs maintain their original quality?", answer: "Yes, the splitting process does not alter the quality or formatting of your pages. They are simply extracted into new, separate documents." },
@@ -78,6 +84,7 @@ export const tools: Tool[] = [
     metaKeywords: "compress pdf, reduce pdf size, shrink pdf, pdf optimizer",
     steps: ["Upload your PDF", "Choose a compression level", "Click 'Compress PDF'", "Download your smaller, optimized PDF file"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
         { question: "How do I compress a PDF without losing quality?", answer: "Our tool uses advanced algorithms to reduce file size while maintaining the best possible text and image quality. For most documents, the quality difference is negligible." },
         { question: "What is the maximum file size I can compress?", answer: "Our PDF compressor is designed to handle large files, but for best results, we recommend files under 100MB. Performance may vary based on your connection speed." },
@@ -97,6 +104,7 @@ export const tools: Tool[] = [
     metaKeywords: "pdf to word, convert pdf to word, pdf to docx",
     steps: ["Upload your PDF file", "Click 'Convert to Word'", "Download your editable DOCX file in seconds"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
         { question: "Will my formatting be preserved when converting from PDF to Word?", answer: "Our converter does its best to preserve the original layout, images, and text formatting. However, very complex PDFs may see minor differences." },
         { question: "Is the converted Word document fully editable?", answer: "Yes. The output is a standard .DOCX file that you can open and edit in Microsoft Word, Google Docs, or any other compatible software." },
@@ -116,6 +124,7 @@ export const tools: Tool[] = [
     metaKeywords: "word to pdf, docx to pdf, convert word to pdf",
     steps: ["Upload your Word document", "Click 'Convert to PDF'", "Download your professional PDF"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Will my Word document look the same as a PDF?", answer: "Yes, converting to PDF is the best way to preserve your document's formatting, fonts, and images, ensuring it looks the same on any device." },
       { question: "Can I convert older .DOC files to PDF?", answer: "Yes, our converter supports both modern .DOCX files and older .DOC formats." },
@@ -135,6 +144,7 @@ export const tools: Tool[] = [
     metaKeywords: "pdf to excel, convert pdf to excel, pdf to xlsx",
     steps: ["Upload your PDF", "Click 'Convert to Excel'", "Download your editable spreadsheet"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
         { question: "Can this tool extract complex tables accurately?", answer: "Our tool uses advanced data extraction to accurately convert tables from your PDF to Excel rows and columns. Accuracy may vary with highly complex layouts." },
         { question: "Will my formulas be preserved?", answer: "The converter extracts the text and data from your PDF. It does not transfer Excel formulas, which you would need to re-apply in the spreadsheet." },
@@ -154,6 +164,7 @@ export const tools: Tool[] = [
     metaKeywords: "excel to pdf, xlsx to pdf, convert excel to pdf",
     steps: ["Upload your Excel file", "Adjust settings like page orientation", "Click 'Convert to PDF'", "Download your formatted PDF"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Will the entire Excel workbook be converted?", answer: "You can choose to convert the active sheet, specific sheets, or the entire workbook into a single PDF." },
       { question: "How will my Excel charts and graphs look in the PDF?", answer: "The conversion process is designed to preserve the formatting of your charts, graphs, and tables, ensuring the PDF looks just like your spreadsheet." },
@@ -173,6 +184,7 @@ export const tools: Tool[] = [
     metaKeywords: "pdf to powerpoint, pdf to ppt, convert pdf to ppt",
     steps: ["Upload your PDF", "Click 'Convert to PPT'", "Download your editable presentation"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Will each PDF page become a separate PowerPoint slide?", answer: "Yes, the standard conversion process turns each page of your PDF into an individual, editable slide in the PowerPoint presentation." },
       { question: "Can I edit the text and images after converting?", answer: "Absolutely. The goal of the conversion is to provide an editable PPTX file where you can modify text, images, and other elements." },
@@ -192,6 +204,7 @@ export const tools: Tool[] = [
     metaKeywords: "powerpoint to pdf, ppt to pdf, convert ppt to pdf",
     steps: ["Upload your PowerPoint file", "Click 'Convert to PDF'", "Download your universally shareable PDF"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Why should I convert my PowerPoint to a PDF?", answer: "Converting to PDF ensures that your presentation's formatting, fonts, and images are preserved and viewable on any device, regardless of whether they have PowerPoint installed." },
       { question: "Will my animations and transitions be included in the PDF?", answer: "No, the PDF format does not support animations or transitions. The PDF will be a static version of your slides." },
@@ -199,7 +212,7 @@ export const tools: Tool[] = [
     ]
   },
   {
-    value: "jpg-to-pdf", // Image to PDF
+    value: "jpg-to-pdf",
     label: "Image to PDF",
     h1: "Image to PDF Converter – JPG/PNG to PDF",
     description: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
@@ -211,6 +224,7 @@ export const tools: Tool[] = [
     metaKeywords: "image to pdf, jpg to pdf, png to pdf",
     steps: ["Upload your JPG or other image files", "Adjust orientation and margins if needed", "Click 'Convert to PDF'", "Download your PDF document"],
     isBrowserOnly: true,
+    isMultiFile: true, // <-- SET TO TRUE
     faqs: [
       { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you uploaded them." },
       { question: "What other image formats do you support?", answer: "Besides JPG, our converter also supports PNG, GIF, BMP, and TIFF image formats." },
@@ -218,7 +232,7 @@ export const tools: Tool[] = [
     ]
   },
   {
-    value: "pdf-to-jpg", // PDF to Image
+    value: "pdf-to-jpg",
     label: "PDF to Image",
     h1: "PDF to JPG/PNG – Convert PDF to Images",
     description: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
@@ -230,6 +244,7 @@ export const tools: Tool[] = [
     metaKeywords: "pdf to jpg, pdf to image, convert pdf to png",
     steps: ["Upload your PDF", "Choose image format (JPG or PNG)", "Click 'Convert'", "Download your images in a ZIP file"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "What is the difference between converting to JPG and PNG?", answer: "JPG is great for photos and offers smaller file sizes, while PNG is ideal for graphics with sharp lines or transparency." },
       { question: "Can I choose the image quality?", answer: "Yes, our tool provides different quality settings, allowing you to balance file size and image resolution for your needs." },
@@ -249,6 +264,7 @@ export const tools: Tool[] = [
     metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
     steps: ["Upload your PDF", "Set a strong password", "Click 'Protect PDF'", "Download your encrypted file"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "How strong is the encryption used to protect my PDF?", answer: "We use strong AES encryption to protect your PDF, which is the industry standard for securing documents." },
       { question: "Can I remove the password later if I need to?", answer: "Yes, you can use our 'Unlock PDF' tool to remove the password, provided you remember what it is." },
@@ -268,6 +284,7 @@ export const tools: Tool[] = [
     metaKeywords: "unlock pdf, remove pdf password, pdf password remover",
     steps: ["Upload your protected PDF", "Confirm you have the rights to the file", "Click 'Unlock PDF'", "Download your password-free PDF"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Is it legal to remove a password from a PDF?", answer: "You should only remove passwords from PDFs that you own or have explicit permission to edit. By using our service, you agree that you have the necessary rights to the file." },
       { question: "What if I don't know the password?", answer: "Our tool can remove owner passwords that restrict editing or printing. However, if the PDF requires a user password to open, you will need to provide it to unlock the file." },
@@ -287,6 +304,7 @@ export const tools: Tool[] = [
     metaKeywords: "rotate pdf, fix pdf orientation, pdf rotator",
     steps: ["Upload your PDF", "Choose to rotate all pages or select specific ones", "Set the rotation angle (90°, 180°, 270°)", "Download your rotated PDF"],
     isBrowserOnly: true,
+    isMultiFile: false,
     faqs: [
         { question: "Can I rotate only one page in a PDF?", answer: "Yes, our tool provides an option to rotate all pages at once or to select and rotate specific pages individually." },
         { question: "Is the rotation permanent?", answer: "Yes, when you download the file, the rotation is saved permanently in the PDF document." },
@@ -299,13 +317,14 @@ export const tools: Tool[] = [
     h1: "Sign PDF Online – Add Digital Signatures",
     description: "Add your electronic signature to PDFs quickly. Free and secure PDF signing tool.",
     category: "Security",
-    icon: 'FileHeart', // Placeholder, consider a more fitting icon
+    icon: 'FileHeart',
     color: "#FF4136",
     metaTitle: "Sign PDF Online – Add Digital Signatures",
     metaDescription: "Add your electronic signature to PDFs quickly. Free and secure PDF signing tool.",
     metaKeywords: "esign pdf, sign pdf, digital signature, electronic signature",
     steps: ["Upload your PDF", "Create or upload your signature", "Place your signature on the document", "Download your signed PDF"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Is an electronic signature legally binding?", answer: "Electronic signatures are legally recognized in many countries around the world for most types of documents. However, you should consult local laws for specific requirements." },
       { question: "Can I create my own signature?", answer: "Yes, our tool allows you to draw your signature, type it, or upload an image of your signature." },
@@ -325,6 +344,7 @@ export const tools: Tool[] = [
     metaKeywords: "edit pdf, pdf editor, annotate pdf, modify pdf",
     steps: ["Upload your PDF", "Use the toolbar to add text, images, or shapes", "Save your changes", "Download the edited PDF"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Can I edit the existing text in a PDF?", answer: "Our editor allows you to add new text, images, and shapes on top of the PDF. Editing the original, underlying text is a more complex feature that we are developing." },
       { question: "Are my edits saved automatically?", answer: "You will need to click the 'Save' or 'Download' button to process and finalize your edits into a new PDF file." },
@@ -344,6 +364,7 @@ export const tools: Tool[] = [
     metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
     steps: ["Upload your PDF", "Drag pages to reorder them, or use the delete button", "Click 'Organize PDF'", "Download the modified file"],
     isBrowserOnly: false,
+    isMultiFile: false,
     faqs: [
       { question: "Can I move multiple pages at once?", answer: "Yes, our interface allows you to select and drag multiple pages to reorder your document more quickly." },
       { question: "Is it possible to add a blank page to my PDF?", answer: "Yes, you can insert blank pages at any point in your document using the organization tool." },
@@ -352,4 +373,4 @@ export const tools: Tool[] = [
   },
 ];
 
-export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
+export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];```
