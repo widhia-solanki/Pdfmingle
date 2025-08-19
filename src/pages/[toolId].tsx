@@ -23,18 +23,19 @@ interface ToolPageProps {
 const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const router = useRouter();
   
+  // --- FIX #1: State is now an array to handle multiple files ---
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<ToolPageStatus>('idle');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFilesSelected = (files: File[]) => {
-    setSelectedFile(files[0] || null);
+    setSelectedFiles(files);
     setError(null);
   };
 
   const handleProcess = () => {
-    if (!selectedFile) {
-      setError('Please select a file to process.');
+    if (selectedFiles.length === 0) {
+      setError('Please select at least one file to process.');
       return;
     }
     setError(null);
@@ -42,20 +43,16 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     
     setTimeout(() => {
       setStatus('success');
-    }, Math.random() * 2000 + 3000);
+    }, 3000);
   };
 
   const handleStartOver = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setStatus('idle');
     setError(null);
   };
 
-  if (router.isFallback) {
-    return <div>Loading...</div>;
-  }
-  
-  if (!tool) {
+  if (router.isFallback || !tool) {
     return <NotFoundPage />;
   }
 
@@ -76,7 +73,9 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             onProcess={handleProcess}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={actionButtonText}
-            selectedFile={selectedFile}
+            // --- FIX #2: Pass the plural 'selectedFiles' prop ---
+            selectedFiles={selectedFiles}
+            isMultiFile={tool.isMultiFile}
             error={error}
           />
         );
@@ -153,7 +152,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-// --- THIS IS THE FIX: Fully implemented data-fetching functions ---
 export const getStaticPaths: GetStaticPaths = async () => {
   const paths = tools.map(tool => ({
     params: { toolId: tool.value },
