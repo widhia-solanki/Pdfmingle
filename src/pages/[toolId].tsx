@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Link from 'next/link';
@@ -9,12 +7,12 @@ import NotFoundPage from '@/pages/404';
 import { FileQuestion } from 'lucide-react';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
-
 import { mergePDFs } from '@/lib/pdf/merge';
+// --- THIS IS THE FIX: Import the 'Button' component ---
+import { Button } from '@/components/ui/button';
 
 type ToolPageStatus = 'idle' | 'processing' | 'success' | 'error';
 
@@ -56,7 +54,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           break;
         
         default:
-          console.warn(`No real logic for ${tool.value}. Using mock.`);
+          console.warn(`No real logic implemented for ${tool.value}.`);
           await new Promise(resolve => setTimeout(resolve, 3000));
           const response = await fetch('/sample-output.pdf');
           resultBlob = await response.blob();
@@ -146,6 +144,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
           {renderContent()}
         </div>
+        {/* ... (Your other page sections) ... */}
       </div>
     </>
   );
