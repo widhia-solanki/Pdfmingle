@@ -1,5 +1,3 @@
-// src/constants/tools.ts
-
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps
@@ -12,7 +10,6 @@ export const iconMap: { [key: string]: React.ElementType<LucideProps> } = {
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon
 };
 
-// --- THIS IS THE FIX: Added 'isMultiFile' property ---
 export interface Tool {
   value: string;
   label: string;
@@ -26,7 +23,7 @@ export interface Tool {
   metaKeywords: string;
   steps: string[];
   isBrowserOnly: boolean;
-  isMultiFile: boolean; // This property is now included
+  isMultiFile: boolean;
   faqs: { question: string; answer:string; }[];
 }
 
@@ -44,7 +41,7 @@ export const tools: Tool[] = [
     metaKeywords: "merge pdf, combine pdf, pdf joiner, unite pdf",
     steps: ["Upload your PDFs", "Drag and drop to order them", "Click 'Merge PDF' to combine", "Download your merged file"],
     isBrowserOnly: true,
-    isMultiFile: true, // <-- SET TO TRUE
+    isMultiFile: true,
     faqs: [
         { question: "How many PDF files can I merge at once?", answer: "You can upload and merge multiple PDF files at once. The specific limit is designed to handle most common use cases." },
         { question: "Can I reorder the files before merging?", answer: "Yes. After uploading your files, you can drag and drop them into your desired order before clicking the merge button." },
@@ -224,7 +221,7 @@ export const tools: Tool[] = [
     metaKeywords: "image to pdf, jpg to pdf, png to pdf",
     steps: ["Upload your JPG or other image files", "Adjust orientation and margins if needed", "Click 'Convert to PDF'", "Download your PDF document"],
     isBrowserOnly: true,
-    isMultiFile: true, // <-- SET TO TRUE
+    isMultiFile: true,
     faqs: [
       { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you uploaded them." },
       { question: "What other image formats do you support?", answer: "Besides JPG, our converter also supports PNG, GIF, BMP, and TIFF image formats." },
@@ -373,4 +370,4 @@ export const tools: Tool[] = [
   },
 ];
 
-export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];```
+export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
