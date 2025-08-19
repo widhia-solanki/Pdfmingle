@@ -5,12 +5,12 @@ import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
-import NotFoundPage from '@/pages/4ok';
+// --- THIS IS THE FIX: Changed '4ok' to '404' ---
+import NotFoundPage from '@/pages/404';
 import { FileQuestion } from 'lucide-react';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-// --- THIS IS THE FIX: Corrected import paths ---
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -75,7 +75,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           <ToolUploader
             onFilesSelected={handleFilesSelected}
             onProcess={handleProcess}
-            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} // Mock: accept only PDFs for now
+            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={actionButtonText}
             selectedFile={selectedFile}
             error={error}
