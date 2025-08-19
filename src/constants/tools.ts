@@ -299,7 +299,7 @@ export const tools: Tool[] = [
     metaTitle: "Rotate PDF Pages – Free Online Tool",
     metaDescription: "Rotate and flip PDF pages easily. Free, secure, and simple to use online tool.",
     metaKeywords: "rotate pdf, fix pdf orientation, pdf rotator",
-    steps: ["Upload your PDF", "Choose to rotate all pages or select specific ones", "Set the rotation angle (90°, 180°, 270°)", "Download your rotated PDF"],
+    steps: ["Upload your PDF", "Choose to rotate all pages or select specific ones", "Set the rotation angle (90°, 180°, 2D0°)", "Download your rotated PDF"],
     isBrowserOnly: true,
     isMultiFile: false,
     faqs: [
