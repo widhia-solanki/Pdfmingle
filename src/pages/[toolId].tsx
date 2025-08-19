@@ -1,17 +1,19 @@
+// src/pages/[toolId].tsx
+
 import { useState } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
-import NotFoundPage from '@/pages/404';
+import NotFoundPage from '@/pages/4ok';
 import { FileQuestion } from 'lucide-react';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-// --- Import the NEW reusable tool components ---
-import { ToolUploader } from '@/components/tools/ToolUploader';
-import { ToolProcessor } from '@/components/tools/ToolProcessor';
-import { ToolDownloader } from '@/components/tools/ToolDownloader';
+// --- THIS IS THE FIX: Corrected import paths ---
+import { ToolUploader } from '@/components/ToolUploader';
+import { ToolProcessor } from '@/components/ToolProcessor';
+import { ToolDownloader } from '@/components/ToolDownloader';
 
 type ToolPageStatus = 'idle' | 'processing' | 'success';
 
@@ -22,15 +24,13 @@ interface ToolPageProps {
 const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const router = useRouter();
   
-  // --- This is the new, simplified state for the mock workflow ---
   const [status, setStatus] = useState<ToolPageStatus>('idle');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleFilesSelected = (files: File[]) => {
-    // Only allow one file for this mock version
     setSelectedFile(files[0] || null);
-    setError(null); // Clear previous errors
+    setError(null);
   };
 
   const handleProcess = () => {
@@ -41,7 +41,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     setError(null);
     setStatus('processing');
     
-    // Mock processing delay (3-5 seconds)
     setTimeout(() => {
       setStatus('success');
     }, Math.random() * 2000 + 3000);
@@ -64,24 +63,19 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const Icon = iconMap[tool.icon] || FileQuestion;
   const canonicalUrl = `https://pdfmingle.net/${tool.value}`;
 
-  // --- This function renders the correct component based on the current status ---
   const renderContent = () => {
     switch (status) {
       case 'processing':
         return <ToolProcessor />;
       case 'success':
-        // The download URL points to the dummy file in your /public folder
         return <ToolDownloader downloadUrl="/sample-output.pdf" onStartOver={handleStartOver} />;
-      case 'idle':
       default:
-        // For the mock, we will use a generic action button text
         const actionButtonText = tool.label.includes("PDF") ? `Process ${tool.label}` : `${tool.label} PDF`;
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
             onProcess={handleProcess}
-            // For this mock, we will accept any PDF file for any tool
-            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} // Mock: accept only PDFs for now
             actionButtonText={actionButtonText}
             selectedFile={selectedFile}
             error={error}
@@ -92,8 +86,24 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
   return (
     <>
-      <NextSeo /* ... your SEO tags ... */ />
-      <FAQPageJsonLd /* ... your FAQ schema ... */ />
+      <NextSeo
+        title={tool.metaTitle}
+        description={tool.metaDescription}
+        canonical={canonicalUrl}
+        openGraph={{
+          title: tool.metaTitle,
+          description: tool.metaDescription,
+          url: canonicalUrl,
+          images: [{ url: `https://pdfmingle.net/og-image.png`, width: 1200, height: 630, alt: tool.label }],
+        }}
+      />
+      
+      <FAQPageJsonLd
+        mainEntity={tool.faqs.map(faq => ({
+          questionName: faq.question,
+          acceptedAnswerText: faq.answer,
+        }))}
+      />
 
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
@@ -102,7 +112,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         <h1 className="text-3xl md:text-5xl font-bold text-gray-800">{tool.h1}</h1>
         <p className="mt-4 max-w-xl text-base md:text-lg text-gray-600">{tool.description}</p>
         
-        {/* --- The content area is now powered by our new render function --- */}
         <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
           {renderContent()}
         </div>
@@ -117,19 +126,47 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         <section className="w-full max-w-3xl mx-auto mt-16 md:mt-24 px-4">
             <h2 className="text-2xl font-bold text-center mb-8 text-gray-800">Questions about {tool.label}?</h2>
             <Accordion type="single" collapsible>
-                {/* ... your FAQ accordion ... */}
+                {tool.faqs.map((faq, index) => (
+                    <AccordionItem value={`item-${index}`} key={index}>
+                        <AccordionTrigger className="text-left font-semibold text-lg hover:no-underline">
+                            {faq.question}
+                        </AccordionTrigger>
+                        <AccordionContent className="text-base text-gray-600 leading-relaxed">
+                            {faq.answer}
+                        </AccordionContent>
+                    </AccordionItem>
+                ))}
             </Accordion>
         </section>
 
         <section className="mt-16 text-center w-full px-4">
-            {/* ... your "other tools" section ... */}
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Try our other tools:</h3>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
+                {tools.filter(t => t.value !== tool.value).slice(0, 4).map(otherTool => (
+                    <Link key={otherTool.value} href={`/${otherTool.value}`} className="text-red-500 hover:underline font-medium">
+                        {otherTool.label}
+                    </Link>
+                ))}
+            </div>
         </section>
       </div>
     </>
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => { /* ... Unchanged ... */ };
-export const getStaticProps: GetStaticProps = async ({ params }) => { /* ... Unchanged ... */ };
+export const getStaticPaths: GetStaticPaths = async () => {
+  const paths = tools.map(tool => ({
+    params: { toolId: tool.value },
+  }));
+  return { paths, fallback: false };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const tool = tools.find(t => t.value === params?.toolId);
+  if (!tool) {
+    return { notFound: true };
+  }
+  return { props: { tool } };
+};
 
 export default ToolPage;
