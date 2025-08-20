@@ -1,3 +1,5 @@
+// src/pages/[toolId].tsx
+
 import { useState } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -33,7 +35,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [downloadFilename, setDownloadFilename] = useState<string>('');
-  
   const [pageOrder, setPageOrder] = useState<number[]>([]);
 
   const handleFilesSelected = (files: File[]) => {
@@ -42,7 +43,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     if (tool.value === 'merge-pdf' || tool.value === 'organize-pdf') {
       setStatus('arranging');
     } else {
-        handleProcess(files);
+      handleProcess(files);
     }
   };
 
@@ -60,6 +61,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
       switch (tool.value) {
         case 'merge-pdf':
+          // The merge function should accept the file order, not the page order
           const mergedBytes = await mergePDFs(filesToProcess);
           resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
           filename = 'merged.pdf';
@@ -113,41 +115,37 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       );
       
       case 'arranging':
-        // --- THIS IS THE CRITICAL LOGIC ---
-        // Show the FileArranger for merging multiple files
         if (tool.value === 'merge-pdf') {
-            return (
-                <div className="w-full">
-                    <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-                    <p className="text-gray-600 mb-6">Drag and drop to set the order of your PDFs before merging.</p>
-                    <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
-                        const newFiles = [...selectedFiles];
-                        newFiles.splice(index, 1);
-                        setSelectedFiles(newFiles);
-                        if (newFiles.length === 0) setStatus('idle');
-                    }} />
-                    <div className="mt-8 flex justify-center gap-4">
-                        <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                        <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
-                    </div>
-                </div>
-            );
+          return (
+            <div className="w-full">
+              <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
+              <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
+              <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
+                  const newFiles = [...selectedFiles];
+                  newFiles.splice(index, 1);
+                  setSelectedFiles(newFiles);
+                  if (newFiles.length === 0) setStatus('idle');
+              }} />
+              <div className="mt-8 flex justify-center gap-4">
+                  <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
+                  <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
+              </div>
+            </div>
+          );
         }
-        // Show the PageArranger for organizing a single file's pages
         if (tool.value === 'organize-pdf') {
-            return (
-                <div className="w-full">
-                    <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
-                    <p className="text-gray-600 mb-6">Drag and drop to reorder the pages within your PDF.</p>
-                    <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
-                    <div className="mt-8 flex justify-center gap-4">
-                        <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
-                        <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
-                    </div>
-                </div>
-            );
+          return (
+            <div className="w-full">
+              <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
+              <p className="text-gray-600 mb-6">Drag and drop to reorder the pages within your PDF.</p>
+              <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
+              <div className="mt-8 flex justify-center gap-4">
+                  <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
+                  <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
+              </div>
+            </div>
+          );
         }
-        // Fallback for any other case
         return null;
 
       default:
@@ -167,12 +165,30 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
   return (
     <>
-      <NextSeo /* ... */ />
-      <FAQPageJsonLd /* ... */ />
+      {/* --- THIS IS THE FIX: Restored the full SEO components --- */}
+      <NextSeo
+        title={tool.metaTitle}
+        description={tool.metaDescription}
+        canonical={`https://pdfmingle.net/${tool.value}`}
+        openGraph={{
+            url: `https://pdfmingle.net/${tool.value}`,
+            title: tool.metaTitle,
+            description: tool.metaDescription,
+        }}
+      />
+      <FAQPageJsonLd
+        mainEntity={tool.faqs.map(faq => ({
+          questionName: faq.question,
+          acceptedAnswerText: faq.answer,
+        }))}
+      />
+      
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
-        <div /* ... */> <Icon /* ... */ /> </div>
-        <h1 /* ... */>{tool.h1}</h1>
-        <p /* ... */>{tool.description}</p>
+        <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
+          <Icon className={`h-10 w-10`} style={{ color: tool.color }} />
+        </div>
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-800">{tool.h1}</h1>
+        <p className="mt-4 max-w-xl text-base md:text-lg text-gray-600">{tool.description}</p>
         
         <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
           {renderContent()}
@@ -182,7 +198,19 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => { /* ... */ };
-export const getStaticProps: GetStaticProps = async ({ params }) => { /* ... */ };
+export const getStaticPaths: GetStaticPaths = async () => {
+    const paths = tools.map(tool => ({
+        params: { toolId: tool.value },
+    }));
+    return { paths, fallback: false };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+    const tool = tools.find(t => t.value === params?.toolId);
+    if (!tool) {
+        return { notFound: true };
+    }
+    return { props: { tool } };
+};
 
 export default ToolPage;
