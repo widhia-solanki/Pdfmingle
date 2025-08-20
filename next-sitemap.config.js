@@ -9,7 +9,7 @@ module.exports = {
   transform: async (config, path) => {
     let priority = 0.7; // Default priority for pages like about, contact, etc.
     
-    // Manually check if the path is a tool page
+    // Manually define the list of tool pages for priority checking
     const toolPages = [
       '/merge-pdf', '/split-pdf', '/compress-pdf', '/pdf-to-word', '/word-to-pdf',
       '/pdf-to-excel', '/excel-to-pdf', '/pdf-to-ppt', '/ppt-to-pdf', '/image-to-pdf',
@@ -22,7 +22,7 @@ module.exports = {
     } else if (toolPages.includes(path)) {
       priority = 0.9;
     } else if (path.startsWith('/blog')) {
-      priority = 0.8;
+      priority = 0.8; // Give blog pages a slightly higher priority than default
     }
     
     return {
