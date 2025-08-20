@@ -1,3 +1,5 @@
+// src/pages/[toolId].tsx
+
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -6,6 +8,7 @@ import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
+// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -15,9 +18,11 @@ import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 
+// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 
+// ... other imports ...
 import { FileQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -85,7 +90,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
-
     if (tool.value === 'split-pdf' || tool.value === 'organize-pdf') {
       setStatus('options');
     } else if (tool.value === 'merge-pdf') {
@@ -95,7 +99,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
   const handleProcess = async () => {
     if (selectedFiles.length === 0) {
-      setError('Please select at least one file to process.');
+      setError('Please select a file.');
       return;
     }
     setError(null);
@@ -112,6 +116,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           filename = 'merged.pdf';
           break;
         case 'split-pdf':
+          // --- THIS IS THE FIX: Ensure we use the correct state variables ---
           resultBlob = await splitPDF(selectedFiles[0], splitRanges);
           filename = `${selectedFiles[0].name.replace(/\.pdf$/i, '')}_split.zip`;
           break;
