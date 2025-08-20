@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Link from 'next/link';
@@ -16,7 +14,6 @@ import { PageArranger } from '@/components/tools/PageArranger';
 import { mergePDFs } from '@/lib/pdf/merge';
 import { Button } from '@/components/ui/button';
 
-// --- NEW STATE TO HANDLE THE WORKFLOW ---
 type ToolPageStatus = 'idle' | 'arranging' | 'processing' | 'success' | 'error';
 
 interface ToolPageProps {
@@ -31,11 +28,11 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [downloadFilename, setDownloadFilename] = useState<string>('');
+  const [pageOrder, setPageOrder] = useState<{ pageIndex: number; originalFileIndex: number }[]>([]);
 
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
-    // --- NEW LOGIC: Move to 'arranging' state for specific tools ---
     if (tool.value === 'merge-pdf' || tool.value === 'organize-pdf') {
       setStatus('arranging');
     }
@@ -55,7 +52,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
       switch (tool.value) {
         case 'merge-pdf':
-          const mergedBytes = await mergePDFs(selectedFiles);
+          const mergedBytes = await mergePDFs(selectedFiles, pageOrder);
           resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
           filename = 'merged.pdf';
           break;
@@ -114,14 +111,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           </div>
         );
       
-      // --- NEW CASE TO RENDER THE PAGE ARRANGER ---
       case 'arranging':
         const actionButtonText = tool.value === 'merge-pdf' ? 'Merge PDFs' : 'Organize PDF';
         return (
           <div className="w-full">
             <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
             <p className="text-gray-600 mb-6">Drag and drop the pages to set the final order.</p>
-            <PageArranger files={selectedFiles} onArrangementChange={() => {}} />
+            <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
             <div className="mt-8 flex justify-center gap-4">
                 <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
                 <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">
@@ -136,7 +132,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            // --- Hide the main action button if this tool uses the arranger ---
             onProcess={tool.value === 'merge-pdf' || tool.value === 'organize-pdf' ? () => {} : handleProcess}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={defaultActionButtonText}
@@ -170,7 +165,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
           {renderContent()}
         </div>
-        {/* ... (Your other page sections) ... */}
       </div>
     </>
   );
@@ -191,4 +185,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return { props: { tool } };
 };
 
-export default ToolPage;```
+export default ToolPage;
