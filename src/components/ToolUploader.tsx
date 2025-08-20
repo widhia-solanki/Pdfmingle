@@ -1,5 +1,3 @@
-// src/components/ToolUploader.tsx
-
 import { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
@@ -21,7 +19,7 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
     if (isMultiFile) {
       onFilesSelected([...selectedFiles, ...acceptedFiles]);
     } else {
-      onFilesSelected([acceptedFiles[0]]);
+      onFilesSelected([acceptedFiles]);
     }
   }, [isMultiFile, selectedFiles, onFilesSelected]);
 
@@ -29,7 +27,7 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
     onDrop,
     accept: acceptedFileTypes,
     multiple: isMultiFile,
-    noClick: true, // This prevents the whole dropzone from being clickable
+    noClick: true,
     noKeyboard: true,
   });
 
@@ -50,10 +48,9 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
           <UploadCloud className="w-16 h-16" />
           <p className="text-lg font-semibold">Drag & drop files here</p>
           <p className="text-gray-400">- or -</p>
-          {/* --- THIS IS THE NEW BUTTON --- */}
           <Button
             type="button"
-            onClick={open} // This function is provided by react-dropzone to open the file dialog
+            onClick={open}
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg"
           >
             Select File
@@ -87,12 +84,4 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
       </Button>
     </div>
   );
-};```
-
-**Changes I made:**
-
-1.  **Modified `useDropzone`:** I added `noClick: true` and `noKeyboard: true` to the `useDropzone` hook. This tells the library that we want to handle the file dialog trigger manually.
-2.  **Added the Button:** I added a new `<Button>` inside the dropzone area.
-3.  **Connected `onClick`:** The `useDropzone` hook provides a special function called `open`. I connected this function to the `onClick` event of the new button. When the button is clicked, it will now open the native file selection window.
-
-After updating this one file, your uploader will now have a clear and functional "Select File" button in addition to the drag-and-drop area.
+};
