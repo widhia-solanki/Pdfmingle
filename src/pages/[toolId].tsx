@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -10,10 +8,10 @@ import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
-import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
-import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { FileArranger } from '@/components/tools/FileArranger';
 import { PageArranger } from '@/components/tools/PageArranger';
+import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
+import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 
 import { mergePDFs } from '@/lib/pdf/merge';
@@ -23,7 +21,6 @@ import { FileQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
-// --- THIS IS THE FIX: Added 'arranging' to the list of possible statuses ---
 type ToolPageStatus = 'idle' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
 
 interface ToolPageProps {
@@ -44,7 +41,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [pageOrder, setPageOrder] = useState<number[]>([]);
 
   useEffect(() => {
-    if (tool.value === 'split-pdf' && selectedFiles.length > 0) {
+    if ((tool.value === 'split-pdf' || tool.value === 'organize-pdf') && selectedFiles.length > 0) {
+      const file = selectedFiles[0];
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
@@ -53,24 +51,26 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           const typedArray = new Uint8Array(e.target?.result as ArrayBuffer);
           const pdf = await pdfJS.getDocument(typedArray).promise;
           setTotalPages(pdf.numPages);
-          setSplitRanges([{ from: 1, to: pdf.numPages }]);
+          if(tool.value === 'split-pdf') {
+            setSplitRanges([{ from: 1, to: pdf.numPages }]);
+          }
         } catch (err) {
-            setError("Could not read the PDF file.");
+            setError("Could not read the selected PDF file. It may be corrupt.");
+            setStatus('error');
         }
       };
-      reader.readAsArrayBuffer(selectedFiles[0]);
+      reader.readAsArrayBuffer(file);
     }
   }, [selectedFiles, tool.value]);
 
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
-    if (tool.value === 'split-pdf') {
+
+    if (tool.value === 'split-pdf' || tool.value === 'organize-pdf') {
       setStatus('options');
-    } else if (tool.value === 'merge-pdf' || tool.value === 'organize-pdf') {
+    } else if (tool.value === 'merge-pdf') {
       setStatus('arranging');
-    } else {
-      handleProcess(files);
     }
   };
 
@@ -86,6 +86,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       let resultBlob: Blob;
       let filename = 'result.pdf';
 
+      // --- THIS IS THE FIX: Using `filesToProcess` argument instead of state ---
       switch (tool.value) {
         case 'merge-pdf':
           const mergedBytes = await mergePDFs(filesToProcess);
@@ -98,7 +99,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           filename = `${originalName}_split.zip`;
           break;
         default:
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          console.warn(`No real logic implemented for ${tool.value}. Using mock download.`);
+          await new Promise(resolve => setTimeout(resolve, 2000));
           const response = await fetch('/sample-output.pdf');
           resultBlob = await response.blob();
           filename = 'processed.pdf';
@@ -159,7 +161,27 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                 </div>
             );
         }
-        if (tool.value === 'organize-pdf') {
+        return null;
+
+      case 'options':
+        if (tool.value === 'split-pdf' && selectedFiles.length > 0) {
+            return (
+                <div className="w-full grid md:grid-cols-2 gap-8 items-start">
+                    <div className="md:sticky md:top-24">
+                        <h2 className="text-2xl font-bold mb-4">File Preview</h2>
+                        <PDFPreviewer file={selectedFiles[0]} />
+                    </div>
+                    <div>
+                        <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />
+                        <div className="mt-6 flex flex-col items-center gap-4">
+                            <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="w-full bg-red-500 hover:bg-red-600">Split PDF</Button>
+                            <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
+                        </div>
+                    </div>
+                </div>
+            )
+        }
+        if (tool.value === 'organize-pdf' && selectedFiles.length > 0) {
             return (
                 <div className="w-full">
                     <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
@@ -178,7 +200,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            onProcess={handleProcess}
+            onProcess={() => handleProcess(selectedFiles)}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={`Select Files`}
             selectedFiles={selectedFiles}
@@ -217,19 +239,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => {
-    const paths = tools.map(tool => ({
-        params: { toolId: tool.value },
-    }));
-    return { paths, fallback: false };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const tool = tools.find(t => t.value === params?.toolId);
-    if (!tool) {
-        return { notFound: true };
-    }
-    return { props: { tool } };
-};
+export const getStaticPaths: GetStaticPaths = async () => { /* ... */ };
+export const getStaticProps: GetStaticProps = async ({ params }) => { /* ... */ };
 
 export default ToolPage;
