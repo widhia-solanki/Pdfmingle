@@ -35,9 +35,10 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
 
       if (image.width < 100 || image.height < 100) continue;
       
-      const imageBytes = await image.embed();
-      const mimeType = detectImageType(imageBytes);
+      // --- THIS IS THE FIX: A new, direct way to get the raw bytes ---
+      const imageBytes = (image as any).encodedBytes;
       
+      const mimeType = detectImageType(imageBytes);
       if (!mimeType) {
         console.warn(`Skipping an image with an unknown type (Ref: ${ref}).`);
         continue;
