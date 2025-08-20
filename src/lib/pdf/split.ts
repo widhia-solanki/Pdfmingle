@@ -1,11 +1,9 @@
 // src/lib/pdf/split.ts
 
 import { PDFDocument } from 'pdf-lib';
-import JSZip from 'jszip';
+import type { SplitRange } from '@/components/tools/SplitOptions'; // Import the type
 
-// This function splits a PDF into single-page PDFs and returns a ZIP file Blob
-export const splitPDF = async (file: File): Promise<Blob> => {
-  // Dynamically import jszip to keep the main bundle small
+export const splitPDF = async (file: File, ranges: SplitRange[]): Promise<Blob> => {
   const JSZip = (await import('jszip')).default;
   const zip = new JSZip();
 
@@ -13,24 +11,31 @@ export const splitPDF = async (file: File): Promise<Blob> => {
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const totalPages = pdfDoc.getPageCount();
 
-  if (totalPages <= 1) {
-    throw new Error("Cannot split a PDF with only one page.");
+  if (ranges.length === 0) {
+    throw new Error("No split ranges were defined. Please add at least one range.");
   }
 
-  for (let i = 0; i < totalPages; i++) {
-    // Create a new PDF document for each page
-    const newPdfDoc = await PDFDocument.create();
-    const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [i]);
-    newPdfDoc.addPage(copiedPage);
-
-    // Save the new single-page PDF as bytes
-    const newPdfBytes = await newPdfDoc.save();
+  for (let i = 0; i < ranges.length; i++) {
+    const range = ranges[i];
+    const { from, to } = range;
     
-    // Add the new PDF to the ZIP file
+    if (from > to || from < 1 || to > totalPages) {
+        throw new Error(`Invalid page range provided: ${from}-${to}. Please ensure ranges are within 1 and ${totalPages}.`);
+    }
+
+    const newPdfDoc = await PDFDocument.create();
+    const pageIndices = [];
+    for (let j = from - 1; j < to; j++) {
+      pageIndices.push(j);
+    }
+    
+    const copiedPages = await newPdfDoc.copyPages(pdfDoc, pageIndices);
+    copiedPages.forEach((page) => newPdfDoc.addPage(page));
+    
+    const newPdfBytes = await newPdfDoc.save();
     const originalName = file.name.replace(/\.pdf$/i, '');
-    zip.file(`${originalName}_page_${i + 1}.pdf`, newPdfBytes);
+    zip.file(`${originalName}_range_${from}-${to}.pdf`, newPdfBytes);
   }
 
-  // Generate the ZIP file as a Blob
   return zip.generateAsync({ type: 'blob' });
 };
