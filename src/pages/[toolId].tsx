@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
 import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
-
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -13,10 +12,8 @@ import { PageArranger } from '@/components/tools/PageArranger';
 import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
-
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
-
 import { FileQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -35,13 +32,11 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [downloadFilename, setDownloadFilename] = useState<string>('');
-  
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [totalPages, setTotalPages] = useState(0);
   const [pageOrder, setPageOrder] = useState<number[]>([]);
 
   useEffect(() => {
-    // --- THIS IS THE FIX: Only run this logic for specific tools ---
     if ((tool.value === 'split-pdf' || tool.value === 'organize-pdf') && selectedFiles.length > 0) {
       const file = selectedFiles[0];
       const reader = new FileReader();
@@ -67,13 +62,11 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
-
     if (tool.value === 'split-pdf' || tool.value === 'organize-pdf') {
       setStatus('options');
     } else if (tool.value === 'merge-pdf') {
       setStatus('arranging');
     } else {
-      // For simple tools, process immediately after selection
       handleProcess(files);
     }
   };
@@ -144,7 +137,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>
         </div>
       );
-      
       case 'arranging':
         if (tool.value === 'merge-pdf') {
             return (
@@ -165,7 +157,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             );
         }
         return null;
-
       case 'options':
         if (tool.value === 'split-pdf' && selectedFiles.length > 0) {
             return (
@@ -198,7 +189,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             );
         }
         return null;
-
       default:
         return (
           <ToolUploader
@@ -233,7 +223,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         </div>
         <h1 className="text-3xl md:text-5xl font-bold text-gray-800">{tool.h1}</h1>
         <p className="mt-4 max-w-xl text-base md:text-lg text-gray-600">{tool.description}</p>
-        
         <div className="mt-8 md:mt-12 w-full max-w-6xl px-4">
           {renderContent()}
         </div>
@@ -242,6 +231,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
+// --- THIS IS THE FIX: The full, correct functions are restored ---
 export const getStaticPaths: GetStaticPaths = async () => {
     const paths = tools.map(tool => ({
         params: { toolId: tool.value },
