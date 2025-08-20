@@ -7,18 +7,16 @@ import { tools, Tool, iconMap } from '@/constants/tools';
 import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 
-// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
-import { PDFPreviewer } from '@/components/PDFPreviewer'; // We need this for page count
+import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 
-// ... other imports ...
 import { FileQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -38,12 +36,10 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [downloadFilename, setDownloadFilename] = useState<string>('');
   
-  // --- NEW STATE FOR SPLIT OPTIONS ---
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    // When a file is selected for the split tool, read its page count
     if (tool.value === 'split-pdf' && selectedFiles.length > 0) {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -53,7 +49,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           const typedArray = new Uint8Array(e.target?.result as ArrayBuffer);
           const pdf = await pdfJS.getDocument(typedArray).promise;
           setTotalPages(pdf.numPages);
-          // Set default range to the full document
           setSplitRanges([{ from: 1, to: pdf.numPages }]);
         } catch (err) {
             setError("Could not read the PDF file.");
@@ -66,17 +61,61 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
-    // Move to the options state for the split tool
     if (tool.value === 'split-pdf') {
       setStatus('options');
     }
   };
 
   const handleProcess = async () => {
-    // ... (Your handleProcess logic)
+    if (selectedFiles.length === 0) {
+      setError('Please select at least one file to process.');
+      return;
+    }
+    setError(null);
+    setStatus('processing');
+
+    try {
+      let resultBlob: Blob;
+      let filename = 'result.pdf';
+
+      switch (tool.value) {
+        case 'merge-pdf':
+          const mergedBytes = await mergePDFs(selectedFiles);
+          resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
+          filename = 'merged.pdf';
+          break;
+        case 'split-pdf':
+          resultBlob = await splitPDF(selectedFiles[0], splitRanges);
+          const originalName = selectedFiles[0].name.replace(/\.pdf$/i, '');
+          filename = `${originalName}_split.zip`;
+          break;
+        default:
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          const response = await fetch('/sample-output.pdf');
+          resultBlob = await response.blob();
+          filename = 'processed.pdf';
+          break;
+      }
+
+      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      const url = URL.createObjectURL(resultBlob);
+      setDownloadUrl(url);
+      setDownloadFilename(filename);
+      setStatus('success');
+
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
+      setStatus('error');
+    }
   };
   
-  const handleStartOver = () => { /* ... unchanged ... */ };
+  const handleStartOver = () => {
+    setSelectedFiles([]);
+    setStatus('idle');
+    setError(null);
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    setDownloadUrl('');
+  };
 
   if (router.isFallback || !tool) return <NotFoundPage />;
   
@@ -86,9 +125,15 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     switch (status) {
       case 'processing': return <ToolProcessor />;
       case 'success': return <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={downloadFilename} />;
-      case 'error': return ( /* ... unchanged ... */ );
       
-      // --- NEW CASE TO RENDER SPLIT OPTIONS ---
+      // --- THIS IS THE FIX: The error display JSX is now correctly included ---
+      case 'error': return (
+        <div className="text-center text-red-500 font-semibold p-8">
+            <p>Error: {error}</p>
+            <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>
+        </div>
+      );
+      
       case 'options':
         if (tool.value === 'split-pdf' && selectedFiles.length > 0) {
             return (
@@ -113,7 +158,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            onProcess={handleProcess} // This button will now be hidden for arranger tools
+            onProcess={handleProcess}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={`Select PDF File`}
             selectedFiles={selectedFiles}
@@ -128,10 +173,12 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     <>
       <NextSeo /* ... */ />
       <FAQPageJsonLd /* ... */ />
-      <div /* ... */>
-        <div /* ... */> <Icon /* ... */ /> </div>
-        <h1 /* ... */>{tool.h1}</h1>
-        <p /* ... */>{tool.description}</p>
+      <div className="flex flex-col items-center text-center pt-8 md:pt-12">
+        <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
+          <Icon className={`h-10 w-10`} style={{ color: tool.color }} />
+        </div>
+        <h1 className="text-3xl md:text-5xl font-bold text-gray-800">{tool.h1}</h1>
+        <p className="mt-4 max-w-xl text-base md:text-lg text-gray-600">{tool.description}</p>
         
         <div className="mt-8 md:mt-12 w-full max-w-6xl px-4">
           {renderContent()}
