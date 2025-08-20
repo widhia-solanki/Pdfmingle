@@ -86,7 +86,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     setSelectedFiles(files);
     setError(null);
 
-    // --- THIS IS THE FIX: We ONLY set the next state. We do NOT process. ---
     if (tool.value === 'split-pdf' || tool.value === 'organize-pdf') {
       setStatus('options');
     } else if (tool.value === 'merge-pdf') {
@@ -211,7 +210,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            onProcess={handleProcess} // This button will now be used for simple tools
+            onProcess={handleProcess}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={tool.label}
             selectedFiles={selectedFiles}
@@ -264,4 +263,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     return { props: { tool } };
 };
 
-export default ToolPage;```
+export default ToolPage;
