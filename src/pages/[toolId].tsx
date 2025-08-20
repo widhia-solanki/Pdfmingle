@@ -62,17 +62,18 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
+
+    // --- THIS IS THE FIX: We decide the next step here ---
     if (tool.value === 'split-pdf' || tool.value === 'organize-pdf') {
       setStatus('options');
     } else if (tool.value === 'merge-pdf') {
       setStatus('arranging');
-    } else {
-      handleProcess(files);
     }
+    // For simple tools, we wait for the user to click the process button
   };
 
-  const handleProcess = async (filesToProcess = selectedFiles) => {
-    if (filesToProcess.length === 0) {
+  const handleProcess = async () => {
+    if (selectedFiles.length === 0) {
       setError('Please select at least one file to process.');
       return;
     }
@@ -85,13 +86,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
       switch (tool.value) {
         case 'merge-pdf':
-          const mergedBytes = await mergePDFs(filesToProcess);
+          const mergedBytes = await mergePDFs(selectedFiles);
           resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
           filename = 'merged.pdf';
           break;
         case 'split-pdf':
-          resultBlob = await splitPDF(filesToProcess[0], splitRanges);
-          const originalName = filesToProcess[0].name.replace(/\.pdf$/i, '');
+          resultBlob = await splitPDF(selectedFiles[0], splitRanges);
+          const originalName = selectedFiles[0].name.replace(/\.pdf$/i, '');
           filename = `${originalName}_split.zip`;
           break;
         default:
@@ -137,6 +138,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>
         </div>
       );
+      
       case 'arranging':
         if (tool.value === 'merge-pdf') {
             return (
@@ -151,12 +153,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                     }} />
                     <div className="mt-8 flex justify-center gap-4">
                         <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                        <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
+                        <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
                     </div>
                 </div>
             );
         }
         return null;
+
       case 'options':
         if (tool.value === 'split-pdf' && selectedFiles.length > 0) {
             return (
@@ -168,7 +171,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                     <div>
                         <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />
                         <div className="mt-6 flex flex-col items-center gap-4">
-                            <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="w-full bg-red-500 hover:bg-red-600">Split PDF</Button>
+                            <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600">Split PDF</Button>
                             <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
                         </div>
                     </div>
@@ -183,17 +186,18 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                     <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
                     <div className="mt-8 flex justify-center gap-4">
                         <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
-                        <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
+                        <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
                     </div>
                 </div>
             );
         }
         return null;
+
       default:
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            onProcess={() => handleProcess(selectedFiles)}
+            onProcess={handleProcess}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             actionButtonText={`Select Files`}
             selectedFiles={selectedFiles}
@@ -223,6 +227,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         </div>
         <h1 className="text-3xl md:text-5xl font-bold text-gray-800">{tool.h1}</h1>
         <p className="mt-4 max-w-xl text-base md:text-lg text-gray-600">{tool.description}</p>
+        
         <div className="mt-8 md:mt-12 w-full max-w-6xl px-4">
           {renderContent()}
         </div>
@@ -231,7 +236,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-// --- THIS IS THE FIX: The full, correct functions are restored ---
 export const getStaticPaths: GetStaticPaths = async () => {
     const paths = tools.map(tool => ({
         params: { toolId: tool.value },
