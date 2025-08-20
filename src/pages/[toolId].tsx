@@ -111,14 +111,11 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           resultBlob = await splitPDF(selectedFiles[0], splitRanges);
           filename = `${originalName}_split.zip`;
           break;
-        
-        // --- THIS IS THE NEW LOGIC ---
         case 'compress-pdf':
           const compressedBytes = await compressPDF(selectedFiles[0], compressionLevel);
           resultBlob = new Blob([compressedBytes], { type: 'application/pdf' });
           filename = `${originalName}_compressed.pdf`;
           break;
-
         default:
           await new Promise(resolve => setTimeout(resolve, 2000));
           const response = await fetch('/sample-output.pdf');
@@ -160,8 +157,29 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline">Try Again</Button>
         </div>
       );
+      
+      // --- THIS IS THE FIX: The correct UI is now included ---
       case 'arranging':
-        return (/* ... FileArranger for Merge PDF ... */);
+        if (tool.value === 'merge-pdf') {
+          return (
+            <div className="w-full">
+                <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
+                <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
+                <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
+                    const newFiles = [...selectedFiles];
+                    newFiles.splice(index, 1);
+                    setSelectedFiles(newFiles);
+                    if (newFiles.length === 0) setStatus('idle');
+                }} />
+                <div className="mt-8 flex justify-center gap-4">
+                    <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
+                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
+                </div>
+            </div>
+          );
+        }
+        return null;
+
       case 'options':
         if (selectedFiles.length > 0) {
             return (
@@ -191,6 +209,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             )
         }
         return null;
+
       default:
         return (
           <ToolUploader
@@ -233,7 +252,19 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => { /* ... */ };
-export const getStaticProps: GetStaticProps = async ({ params }) => { /* ... */ };
+export const getStaticPaths: GetStaticPaths = async () => {
+    const paths = tools.map(tool => ({
+        params: { toolId: tool.value },
+    }));
+    return { paths, fallback: false };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+    const tool = tools.find(t => t.value === params?.toolId);
+    if (!tool) {
+        return { notFound: true };
+    }
+    return { props: { tool } };
+};
 
 export default ToolPage;
