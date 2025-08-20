@@ -4,26 +4,38 @@ import { PDFDocument, PDFImage } from 'pdf-lib';
 import imageCompression from 'browser-image-compression';
 import type { CompressionLevel } from '@/components/tools/CompressOptions';
 
-// Maps our friendly names to options for the browser-image-compression library
 const compressionOptions = {
-  low: { maxSizeMB: 2, maxWidthOrHeight: 1920 },
-  medium: { maxSizeMB: 1, maxWidthOrHeight: 1080 },
-  high: { maxSizeMB: 0.5, maxWidthOrHeight: 720 },
+  low: { maxSizeMB: 2, maxWidthOrHeight: 1920, useWebWorker: true },
+  medium: { maxSizeMB: 1, maxWidthOrHeight: 1080, useWebWorker: true },
+  high: { maxSizeMB: 0.5, maxWidthOrHeight: 720, useWebWorker: true },
 };
 
 export const compressPDF = async (file: File, level: CompressionLevel): Promise<Uint8Array> => {
   const pdfBytes = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(pdfBytes);
-  const imageObjects = pdfDoc.context.indirectObjects.filter(obj => obj instanceof PDFImage);
 
-  // A map to avoid re-compressing the same image if it appears on multiple pages
-  const compressedImageCache = new Map<string, PDFImage>();
+  // --- THIS IS THE FIX: Use the correct public API to get images ---
+  const pages = pdfDoc.getPages();
+  const imageRefs = new Set();
 
-  for (const image of imageObjects) {
-    const ref = image.ref.toString();
-    if (compressedImageCache.has(ref)) continue; // Skip if already processed
+  // Find all unique image references in the document
+  for (const page of pages) {
+    const images = page.getXObjects();
+    images.forEach((xobject, ref) => {
+      if (xobject instanceof PDFImage) {
+        imageRefs.add(ref);
+      }
+    });
+  }
+
+  // A map to avoid re-compressing the same image
+  const compressedImageCache = new Map();
+
+  for (const ref of Array.from(imageRefs)) {
+    if (compressedImageCache.has(ref)) continue;
 
     try {
+      const image = pdfDoc.context.lookup(ref) as PDFImage;
       const imageBytes = await image.embed();
       const mimeType = image.isJpg() ? 'image/jpeg' : 'image/png';
       
@@ -38,14 +50,13 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
       } else {
         newImage = await pdfDoc.embedPng(compressedBytes);
       }
-
-      // Replace the old image object with our new, smaller one
-      pdfDoc.context.assign(image.ref, newImage.ref);
+      
+      // Replace the image in the document's context
+      pdfDoc.context.assign(ref, newImage.ref);
       compressedImageCache.set(ref, newImage);
-
+      
     } catch (error) {
       console.warn("Could not compress an image within the PDF:", error);
-      // If an image fails to compress, we simply skip it and continue.
     }
   }
 
