@@ -1,52 +1,84 @@
-// src/components/tools/CompressOptions.tsx
+// src/components/tools/SplitOptions.tsx
 
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { PlusCircle, X } from 'lucide-react';
 
-export type CompressionLevel = 'low' | 'medium' | 'high';
-
-interface CompressOptionsProps {
-  level: CompressionLevel;
-  onLevelChange: (level: CompressionLevel) => void;
+export interface SplitRange {
+  from: number;
+  to: number;
 }
 
-// Helper to map our friendly names to numerical values for the slider
-const levelToValue = (level: CompressionLevel): number => {
-  if (level === 'low') return 0;
-  if (level === 'medium') return 1;
-  return 2;
-};
+interface SplitOptionsProps {
+  totalPages: number;
+  ranges: SplitRange[];
+  onRangesChange: (ranges: SplitRange[]) => void;
+}
 
-const valueToLevel = (value: number): CompressionLevel => {
-  if (value === 0) return 'low';
-  if (value === 2) return 'high';
-  return 'medium';
-};
+export const SplitOptions = ({ totalPages, ranges, onRangesChange }: SplitOptionsProps) => {
+  const addRange = () => {
+    onRangesChange([...ranges, { from: 1, to: totalPages }]);
+  };
 
-export const CompressOptions = ({ level, onLevelChange }: CompressOptionsProps) => {
-  const sliderValue = levelToValue(level);
+  const updateRange = (index: number, field: 'from' | 'to', value: string) => {
+    const newRanges = [...ranges];
+    const numValue = parseInt(value, 10);
+    if (!isNaN(numValue) && numValue > 0 && numValue <= totalPages) {
+      newRanges[index][field] = numValue;
+      onRangesChange(newRanges);
+    } else {
+        // Handle case where input is cleared
+        if(value === '') {
+            newRanges[index][field] = 1; // Or some default
+            onRangesChange(newRanges);
+        }
+    }
+  };
+
+  const removeRange = (index: number) => {
+    const newRanges = [...ranges];
+    newRanges.splice(index, 1);
+    onRangesChange(newRanges);
+  };
 
   return (
-    <div className="w-full max-w-md mx-auto p-8 bg-white border rounded-xl shadow-lg space-y-6">
-      <h3 className="text-xl font-bold text-center text-gray-800">
-        Level of Compression
-      </h3>
+    <div className="w-full max-w-md mx-auto p-6 bg-white border rounded-lg shadow-sm space-y-4">
+      <h3 className="text-lg font-semibold text-center text-gray-800">Define Split Ranges</h3>
       
-      <div className="px-2 pt-4">
-        <Slider
-          value={[sliderValue]}
-          onValueChange={(value) => onLevelChange(valueToLevel(value[0]))}
-          min={0}
-          max={2}
-          step={1}
-          className="w-full"
-        />
-        <div className="flex justify-between text-sm text-gray-600 mt-3 px-1">
-          <Label className={level === 'low' ? 'font-bold' : ''}>Basic Compress</Label>
-          <Label className={level === 'medium' ? 'font-bold' : ''}>Medium Compress</Label>
-          <Label className={level === 'high' ? 'font-bold' : ''}>High Compress</Label>
+      {ranges.map((range, index) => (
+        <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
+          <p className="font-medium">Range {index + 1}:</p>
+          <div className="flex items-center gap-2">
+            <Input
+              type="number"
+              min="1"
+              max={totalPages}
+              value={range.from}
+              onChange={(e) => updateRange(index, 'from', e.target.value)}
+              className="w-20 text-center"
+              aria-label={`Range ${index + 1} from page`}
+            />
+            <span>to</span>
+            <Input
+              type="number"
+              min="1"
+              max={totalPages}
+              value={range.to}
+              onChange={(e) => updateRange(index, 'to', e.target.value)}
+              className="w-20 text-center"
+              aria-label={`Range ${index + 1} to page`}
+            />
+          </div>
+          <Button variant="ghost" size="icon" onClick={() => removeRange(index)} className="h-8 w-8 text-red-500 hover:text-red-700">
+            <X className="h-5 w-5" />
+          </Button>
         </div>
-      </div>
+      ))}
+      
+      <Button variant="outline" onClick={addRange} className="w-full">
+        <PlusCircle className="mr-2 h-4 w-4" />
+        Add another range
+      </Button>
     </div>
   );
 };
