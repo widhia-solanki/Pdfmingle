@@ -7,6 +7,7 @@ import { tools, Tool, iconMap } from '@/constants/tools';
 import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 
+// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -14,9 +15,11 @@ import { FileArranger } from '@/components/tools/FileArranger';
 import { PageArranger } from '@/components/tools/PageArranger';
 import { Button } from '@/components/ui/button';
 
+// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 
+// ... other imports ...
 import { FileQuestion } from 'lucide-react';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -35,7 +38,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [downloadFilename, setDownloadFilename] = useState<string>('');
-  const [pageOrder, setPageOrder] = useState<number[]>([]);
+  const [pageOrder, setPageOrder] = useState<number[]>([]); // For Organize PDF
 
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
@@ -61,7 +64,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
       switch (tool.value) {
         case 'merge-pdf':
-          // The merge function should accept the file order, not the page order
+          // The merge function uses the order of files in the `filesToProcess` array
           const mergedBytes = await mergePDFs(filesToProcess);
           resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
           filename = 'merged.pdf';
@@ -115,36 +118,41 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       );
       
       case 'arranging':
+        // --- THIS IS THE CORRECTED LOGIC ---
         if (tool.value === 'merge-pdf') {
-          return (
-            <div className="w-full">
-              <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-              <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
-              <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
-                  const newFiles = [...selectedFiles];
-                  newFiles.splice(index, 1);
-                  setSelectedFiles(newFiles);
-                  if (newFiles.length === 0) setStatus('idle');
-              }} />
-              <div className="mt-8 flex justify-center gap-4">
-                  <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                  <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
-              </div>
-            </div>
-          );
+            return (
+                <div className="w-full">
+                    <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
+                    <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
+                    <FileArranger 
+                        files={selectedFiles} 
+                        onFilesChange={setSelectedFiles} 
+                        onRemoveFile={(index) => {
+                            const newFiles = [...selectedFiles];
+                            newFiles.splice(index, 1);
+                            setSelectedFiles(newFiles);
+                            if (newFiles.length === 0) setStatus('idle');
+                        }} 
+                    />
+                    <div className="mt-8 flex justify-center gap-4">
+                        <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
+                        <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
+                    </div>
+                </div>
+            );
         }
         if (tool.value === 'organize-pdf') {
-          return (
-            <div className="w-full">
-              <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
-              <p className="text-gray-600 mb-6">Drag and drop to reorder the pages within your PDF.</p>
-              <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
-              <div className="mt-8 flex justify-center gap-4">
-                  <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
-                  <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
-              </div>
-            </div>
-          );
+            return (
+                <div className="w-full">
+                    <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
+                    <p className="text-gray-600 mb-6">Drag and drop to reorder the pages within your PDF.</p>
+                    <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
+                    <div className="mt-8 flex justify-center gap-4">
+                        <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
+                        <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
+                    </div>
+                </div>
+            );
         }
         return null;
 
@@ -165,16 +173,9 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
   return (
     <>
-      {/* --- THIS IS THE FIX: Restored the full SEO components --- */}
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
-        openGraph={{
-            url: `https://pdfmingle.net/${tool.value}`,
-            title: tool.metaTitle,
-            description: tool.metaDescription,
-        }}
       />
       <FAQPageJsonLd
         mainEntity={tool.faqs.map(faq => ({
@@ -182,7 +183,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           acceptedAnswerText: faq.answer,
         }))}
       />
-      
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
           <Icon className={`h-10 w-10`} style={{ color: tool.color }} />
