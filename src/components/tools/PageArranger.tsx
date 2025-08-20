@@ -1,47 +1,99 @@
-// src/components/tools/FileArranger.tsx
+import { useState, useEffect } from 'react';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { PDFDocument } from 'pdf-lib';
 
-import { Button } from '@/components/ui/button';
-import { File as FileIcon, ArrowLeft, ArrowRight, X } from 'lucide-react';
-
-interface FileArrangerProps {
-  files: File[];
-  onFilesChange: (files: File[]) => void;
-  onRemoveFile: (index: number) => void;
+interface PageThumbnail {
+  id: string;
+  dataUrl: string;
+  pageIndex: number;
 }
 
-export const FileArranger = ({ files, onFilesChange, onRemoveFile }: FileArrangerProps) => {
-  const moveFile = (index: number, direction: 'left' | 'right') => {
-    const newFiles = [...files];
-    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+interface PageArrangerProps {
+  files: File[];
+  onArrangementChange: (newOrder: number[]) => void;
+}
 
-    if (targetIndex >= 0 && targetIndex < newFiles.length) {
-      // Simple swap
-      [newFiles[index], newFiles[targetIndex]] = [newFiles[targetIndex], newFiles[index]];
-      onFilesChange(newFiles);
-    }
+export const PageArranger = ({ files, onArrangementChange }: PageArrangerProps) => {
+  const [thumbnails, setThumbnails] = useState<PageThumbnail[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const generateThumbnails = async () => {
+      setIsLoading(true);
+      const allThumbs: PageThumbnail[] = [];
+      
+      // Organize PDF only works with one file
+      const file = files[0];
+      if (!file) {
+          setIsLoading(false);
+          return;
+      }
+      
+      try {
+        const pdfBytes = await file.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+        const totalPages = pdfDoc.getPageCount();
+
+        for (let i = 0; i < totalPages; i++) {
+          allThumbs.push({
+            id: `page${i}`,
+            dataUrl: `Page ${i + 1}`,
+            pageIndex: i,
+          });
+        }
+      } catch (e) {
+        console.error("Failed to load PDF for page arrangement:", e);
+      }
+      
+      setThumbnails(allThumbs);
+      setIsLoading(false);
+    };
+
+    generateThumbnails();
+  }, [files]);
+
+  const onDragEnd = (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const items = Array.from(thumbnails);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setThumbnails(items);
+    
+    const newOrder = items.map(item => item.pageIndex);
+    onArrangementChange(newOrder);
   };
+  
+  if (isLoading) return <p className="text-center my-8">Loading Pages...</p>;
 
   return (
-    <div className="w-full space-y-3">
-      {files.map((file, index) => (
-        <div key={index} className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg shadow-sm">
-          <div className="flex items-center gap-3 overflow-hidden">
-            <FileIcon className="w-6 h-6 text-gray-600 flex-shrink-0" />
-            <span className="font-medium truncate">{file.name}</span>
+    <DragDropContext onDragEnd={onDragEnd}>
+      <Droppable droppableId="pages" direction="horizontal">
+        {(provided) => (
+          <div
+            {...provided.droppableProps}
+            ref={provided.innerRef}
+            className="flex flex-wrap items-center justify-center gap-4 p-4 border rounded-lg bg-gray-100 min-h-[10rem]"
+          >
+            {thumbnails.map((thumb, index) => (
+              <Draggable key={thumb.id} draggableId={thumb.id} index={index}>
+                {(provided) => (
+                  <div
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                    className="w-24 h-32 border bg-white rounded shadow-md flex items-center justify-center text-center text-xs p-1"
+                  >
+                    {thumb.dataUrl}
+                  </div>
+                )}
+              </Draggable>
+            ))}
+            {provided.placeholder}
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'left')} disabled={index === 0} className="h-8 w-8">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'right')} disabled={index === files.length - 1} className="h-8 w-8">
-              <ArrowRight className="h-5 w-5" />
-            </Button>
-            <Button variant="destructive" size="icon" onClick={() => onRemoveFile(index)} className="h-8 w-8">
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
+        )}
+      </Droppable>
+    </DragDropContext>
   );
-};```
+};
