@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -43,6 +41,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [pageOrder, setPageOrder] = useState<number[]>([]);
 
   useEffect(() => {
+    // --- THIS IS THE FIX: Only run this logic for specific tools ---
     if ((tool.value === 'split-pdf' || tool.value === 'organize-pdf') && selectedFiles.length > 0) {
       const file = selectedFiles[0];
       const reader = new FileReader();
@@ -74,6 +73,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     } else if (tool.value === 'merge-pdf') {
       setStatus('arranging');
     } else {
+      // For simple tools, process immediately after selection
       handleProcess(files);
     }
   };
@@ -242,7 +242,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-// --- THIS IS THE FIX: Restored the full data-fetching functions ---
 export const getStaticPaths: GetStaticPaths = async () => {
     const paths = tools.map(tool => ({
         params: { toolId: tool.value },
