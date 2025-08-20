@@ -35,12 +35,9 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
 
       if (image.width < 100 || image.height < 100) continue;
       
-      // --- THIS IS THE FIX: A new, direct way to get the raw bytes ---
-      const imageBytes = (image as any).dict.get(image.dict.context.obj('Filter')) === 'DCTDecode'
-        ? image.embed() // Re-embedding JPGs is complex, handle as-is for now
-        : await image.embed();
-        
+      const imageBytes = await image.embed();
       const mimeType = detectImageType(imageBytes);
+      
       if (!mimeType) {
         console.warn(`Skipping an image with an unknown type (Ref: ${ref}).`);
         continue;
