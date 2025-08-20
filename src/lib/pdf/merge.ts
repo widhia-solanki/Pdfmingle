@@ -1,3 +1,5 @@
+// src/lib/pdf/merge.ts
+
 import { PDFDocument } from 'pdf-lib';
 
 // The function now only needs the array of files in the correct order
@@ -12,3 +14,7 @@ export const mergePDFs = async (files: File[]): Promise<Uint8Array> => {
       mergedPdfDoc.addPage(page);
     });
   }
+
+  // --- THIS IS THE FIX: The missing 'return' statement is now added ---
+  return await mergedPdfDoc.save();
+};
