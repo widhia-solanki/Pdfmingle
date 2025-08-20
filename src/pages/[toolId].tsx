@@ -43,22 +43,15 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
 
   useEffect(() => {
-    // This is the core logic for loading the PDF for preview
-    if (selectedFiles.length === 0) {
-      setPdfDoc(null);
-      setTotalPages(0);
-      return;
-    }
-
-    if ((tool.value === 'split-pdf' || tool.value === 'organize-pdf')) {
+    if (status === 'options' && selectedFiles.length > 0) {
       const file = selectedFiles[0];
       const reader = new FileReader();
 
-      setPdfDoc(null); // Show loading state in previewer
+      setPdfDoc(null);
 
       reader.onload = async (e) => {
         if (!e.target?.result) {
-          setError("Failed to read the file buffer.");
+          setError("Failed to read file buffer.");
           setStatus('error');
           return;
         }
@@ -73,7 +66,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           if (tool.value === 'split-pdf') {
             setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
           }
-          setStatus('options'); // Switch to options view ONLY AFTER success
         } catch (err) {
           console.error("PDF Loading Error:", err);
           setError("Could not read the PDF. It may be corrupt or password-protected.");
@@ -82,22 +74,31 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       };
       
       reader.onerror = () => {
-        setError("An error occurred while trying to read the file.");
+        setError("An error occurred while reading the file.");
         setStatus('error');
       };
 
       reader.readAsArrayBuffer(file);
     }
-  }, [selectedFiles, tool.value]);
+  }, [status, selectedFiles, tool.value]);
 
   const handleFilesSelected = (files: File[]) => {
+    setSelectedFiles(files);
     setError(null);
-    setStatus('idle'); // Reset status to idle before setting files
-    setSelectedFiles(files); // This will trigger the useEffect to load the PDF
+
+    // --- THIS IS THE FIX: We ONLY set the next state. We do NOT process. ---
+    if (tool.value === 'split-pdf' || tool.value === 'organize-pdf') {
+      setStatus('options');
+    } else if (tool.value === 'merge-pdf') {
+      setStatus('arranging');
+    }
   };
 
-  const handleProcess = async (filesToProcess = selectedFiles) => {
-    if (filesToProcess.length === 0) return;
+  const handleProcess = async () => {
+    if (selectedFiles.length === 0) {
+      setError('Please select at least one file to process.');
+      return;
+    }
     setError(null);
     setStatus('processing');
 
@@ -107,13 +108,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
       switch (tool.value) {
         case 'merge-pdf':
-          const mergedBytes = await mergePDFs(filesToProcess);
+          const mergedBytes = await mergePDFs(selectedFiles);
           resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
           filename = 'merged.pdf';
           break;
         case 'split-pdf':
-          resultBlob = await splitPDF(filesToProcess[0], splitRanges);
-          filename = `${filesToProcess[0].name.replace(/\.pdf$/i, '')}_split.zip`;
+          resultBlob = await splitPDF(selectedFiles[0], splitRanges);
+          filename = `${selectedFiles[0].name.replace(/\.pdf$/i, '')}_split.zip`;
           break;
         default:
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -160,7 +161,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         return (
             <div className="w-full">
                 <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-                <p className="text-gray-600 mb-6">Drag and drop to set the order of your PDFs before merging.</p>
+                <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
                 <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
                     const newFiles = [...selectedFiles];
                     newFiles.splice(index, 1);
@@ -169,7 +170,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                 }} />
                 <div className="mt-8 flex justify-center gap-4">
                     <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                    <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
+                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
                 </div>
             </div>
         );
@@ -186,7 +187,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                             <>
                                 <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />
                                 <div className="mt-6 flex flex-col items-center gap-4">
-                                    <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>Split PDF</Button>
+                                    <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>Split PDF</Button>
                                 </div>
                             </>
                         )}
@@ -196,7 +197,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                                 <p className="text-gray-600 mb-6">Drag and drop to reorder pages.</p>
                                 <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
                                 <div className="mt-8 flex justify-center gap-4">
-                                    <Button size="lg" onClick={() => handleProcess(selectedFiles)} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
+                                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Organize PDF</Button>
                                 </div>
                             </div>
                         )}
@@ -210,9 +211,9 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            onProcess={handleProcess}
+            onProcess={handleProcess} // This button will now be used for simple tools
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-            actionButtonText={`Select Files`}
+            actionButtonText={tool.label}
             selectedFiles={selectedFiles}
             isMultiFile={tool.isMultiFile}
             error={error}
@@ -263,4 +264,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     return { props: { tool } };
 };
 
-export default ToolPage;
+export default ToolPage;```
