@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -35,28 +33,27 @@ interface ToolPageProps {
 
 const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const router = useRouter();
-  
+
   const [status, setStatus] = useState<ToolPageStatus>('idle');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [downloadFilename, setDownloadFilename] = useState<string>('');
-  
+
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [totalPages, setTotalPages] = useState(0);
   const [pageOrder, setPageOrder] = useState<number[]>([]);
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
 
   useEffect(() => {
-    if (status === 'options' && selectedFiles.length > 0) {
+    if (status === 'options' && selectedFiles.length > 0 && (tool.value === 'split-pdf' || tool.value === 'organize-pdf')) {
       const file = selectedFiles[0];
       const reader = new FileReader();
-
-      setPdfDoc(null);
+      setPdfDoc(null); // Reset preview while loading new file
 
       reader.onload = async (e) => {
         if (!e.target?.result) {
-          setError("Failed to read file buffer.");
+          setError("Failed to read the file.");
           setStatus('error');
           return;
         }
@@ -65,24 +62,21 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
           const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
           const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
-          
+
           setPdfDoc(loadedPdfDoc);
           setTotalPages(loadedPdfDoc.numPages);
           if (tool.value === 'split-pdf') {
             setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
           }
         } catch (err) {
-          console.error("PDF Loading Error:", err);
           setError("Could not read the PDF. It may be corrupt or password-protected.");
           setStatus('error');
         }
       };
-      
       reader.onerror = () => {
         setError("An error occurred while reading the file.");
         setStatus('error');
       };
-
       reader.readAsArrayBuffer(file);
     }
   }, [status, selectedFiles, tool.value]);
@@ -115,11 +109,14 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
           filename = 'merged.pdf';
           break;
+        
+        // --- THIS IS THE CRITICAL FIX ---
+        // It now correctly passes the `splitRanges` from the state to the function.
         case 'split-pdf':
-          // --- THIS IS THE FIX: Ensure we use the correct state variables ---
           resultBlob = await splitPDF(selectedFiles[0], splitRanges);
           filename = `${selectedFiles[0].name.replace(/\.pdf$/i, '')}_split.zip`;
           break;
+
         default:
           await new Promise(resolve => setTimeout(resolve, 2000));
           const response = await fetch('/sample-output.pdf');
@@ -162,7 +159,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         </div>
       );
       case 'arranging':
-        return (
+        if (tool.value === 'merge-pdf') {
+          return (
             <div className="w-full">
                 <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
                 <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
@@ -177,7 +175,9 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                     <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
                 </div>
             </div>
-        );
+          );
+        }
+        return null;
       case 'options':
         if ((tool.value === 'split-pdf' || tool.value === 'organize-pdf') && selectedFiles.length > 0) {
             return (
