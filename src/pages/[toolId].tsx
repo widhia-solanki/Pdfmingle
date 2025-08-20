@@ -1,3 +1,5 @@
+// src/pages/[toolId].tsx
+
 import { useState } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import Link from 'next/link';
@@ -10,11 +12,12 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
+import { PageArranger } from '@/components/tools/PageArranger';
 import { mergePDFs } from '@/lib/pdf/merge';
-// --- THIS IS THE FIX: Import the 'Button' component ---
 import { Button } from '@/components/ui/button';
 
-type ToolPageStatus = 'idle' | 'processing' | 'success' | 'error';
+// --- NEW STATE TO HANDLE THE WORKFLOW ---
+type ToolPageStatus = 'idle' | 'arranging' | 'processing' | 'success' | 'error';
 
 interface ToolPageProps {
   tool: Tool;
@@ -32,6 +35,10 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
+    // --- NEW LOGIC: Move to 'arranging' state for specific tools ---
+    if (tool.value === 'merge-pdf' || tool.value === 'organize-pdf') {
+      setStatus('arranging');
+    }
   };
 
   const handleProcess = async () => {
@@ -106,14 +113,33 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>
           </div>
         );
+      
+      // --- NEW CASE TO RENDER THE PAGE ARRANGER ---
+      case 'arranging':
+        const actionButtonText = tool.value === 'merge-pdf' ? 'Merge PDFs' : 'Organize PDF';
+        return (
+          <div className="w-full">
+            <h2 className="text-2xl font-bold mb-4">Arrange Your Pages</h2>
+            <p className="text-gray-600 mb-6">Drag and drop the pages to set the final order.</p>
+            <PageArranger files={selectedFiles} onArrangementChange={() => {}} />
+            <div className="mt-8 flex justify-center gap-4">
+                <Button variant="outline" size="lg" onClick={handleStartOver}>Back</Button>
+                <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">
+                    {actionButtonText}
+                </Button>
+            </div>
+          </div>
+        );
+
       default:
-        const actionButtonText = `Process ${tool.label}`;
+        const defaultActionButtonText = `Process ${tool.label}`;
         return (
           <ToolUploader
             onFilesSelected={handleFilesSelected}
-            onProcess={handleProcess}
+            // --- Hide the main action button if this tool uses the arranger ---
+            onProcess={tool.value === 'merge-pdf' || tool.value === 'organize-pdf' ? () => {} : handleProcess}
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-            actionButtonText={actionButtonText}
+            actionButtonText={defaultActionButtonText}
             selectedFiles={selectedFiles}
             isMultiFile={tool.isMultiFile}
             error={error}
@@ -165,4 +191,4 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
   return { props: { tool } };
 };
 
-export default ToolPage;
+export default ToolPage;```
