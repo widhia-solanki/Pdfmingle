@@ -1,80 +1,43 @@
-// src/components/tools/SplitOptions.tsx
+// src/lib/pdf/split.ts
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { PlusCircle, X } from 'lucide-react';
+import { PDFDocument } from 'pdf-lib';
+import JSZip from 'jszip';
+import type { SplitRange } from '@/components/tools/SplitOptions';
 
-// --- THIS IS THE FIX: Add the 'export' keyword ---
-export interface SplitRange {
-  from: number;
-  to: number;
-}
+export const splitPDF = async (file: File, ranges: SplitRange[]): Promise<Blob> => {
+  const zip = new JSZip();
 
-interface SplitOptionsProps {
-  totalPages: number;
-  ranges: SplitRange[];
-  onRangesChange: (ranges: SplitRange[]) => void;
-}
+  const pdfBytes = await file.arrayBuffer();
+  const originalPdfDoc = await PDFDocument.load(pdfBytes);
+  const totalPages = originalPdfDoc.getPageCount();
 
-export const SplitOptions = ({ totalPages, ranges, onRangesChange }: SplitOptionsProps) => {
-  const addRange = () => {
-    onRangesChange([...ranges, { from: 1, to: totalPages }]);
-  };
+  if (ranges.length === 0) {
+    throw new Error("Please define at least one page range to split.");
+  }
 
-  const updateRange = (index: number, field: 'from' | 'to', value: string) => {
-    const newRanges = [...ranges];
-    const numValue = parseInt(value, 10);
-    if (!isNaN(numValue) && numValue > 0 && numValue <= totalPages) {
-      newRanges[index][field] = numValue;
-      onRangesChange(newRanges);
+  for (let i = 0; i < ranges.length; i++) {
+    const range = ranges[i];
+    const { from, to } = range;
+    
+    if (from > to || from < 1 || to > totalPages) {
+      throw new Error(`Invalid page range: ${from}-${to}. Pages must be between 1 and ${totalPages}.`);
     }
-  };
 
-  const removeRange = (index: number) => {
-    const newRanges = [...ranges];
-    newRanges.splice(index, 1);
-    onRangesChange(newRanges);
-  };
+    const newPdfDoc = await PDFDocument.create();
+    
+    const pageIndicesToCopy = [];
+    for (let j = from - 1; j < to; j++) {
+      pageIndicesToCopy.push(j);
+    }
+    
+    const copiedPages = await newPdfDoc.copyPages(originalPdfDoc, pageIndicesToCopy);
+    copiedPages.forEach((page) => newPdfDoc.addPage(page));
+    
+    const newPdfBytes = await newPdfDoc.save();
+    
+    const originalName = file.name.replace(/\.pdf$/i, '');
+    zip.file(`${originalName}_range_${from}-${to}.pdf`, newPdfBytes);
+  }
 
-  return (
-    <div className="w-full max-w-md mx-auto p-6 bg-white border rounded-lg shadow-sm space-y-4">
-      <h3 className="text-lg font-semibold text-center text-gray-800">Define Split Ranges</h3>
-      
-      {ranges.map((range, index) => (
-        <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-md">
-          <p className="font-medium">Range {index + 1}:</p>
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              min="1"
-              max={totalPages}
-              value={range.from}
-              onChange={(e) => updateRange(index, 'from', e.target.value)}
-              className="w-20 text-center"
-              aria-label={`Range ${index + 1} from page`}
-            />
-            <span>to</span>
-            <Input
-              type="number"
-              min="1"
-              max={totalPages}
-              value={range.to}
-              onChange={(e) => updateRange(index, 'to', e.target.value)}
-              className="w-20 text-center"
-              aria-label={`Range ${index + 1} to page`}
-            />
-          </div>
-          <Button variant="ghost" size="icon" onClick={() => removeRange(index)} className="h-8 w-8 text-red-500 hover:text-red-700">
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
-      ))}
-      
-      <Button variant="outline" onClick={addRange} className="w-full">
-        <PlusCircle className="mr-2 h-4 w-4" />
-        Add another range
-      </Button>
-    </div>
-  );
+  return zip.generateAsync({ type: 'blob' });
 };
