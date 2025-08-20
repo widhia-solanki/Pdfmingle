@@ -19,7 +19,9 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
     if (isMultiFile) {
       onFilesSelected([...selectedFiles, ...acceptedFiles]);
     } else {
-      onFilesSelected([acceptedFiles]);
+      // --- THIS IS THE CORRECT FIX ---
+      // We only take the first file from the acceptedFiles array.
+      onFilesSelected(acceptedFiles.length > 0 ? [acceptedFiles[0]] : []);
     }
   }, [isMultiFile, selectedFiles, onFilesSelected]);
 
