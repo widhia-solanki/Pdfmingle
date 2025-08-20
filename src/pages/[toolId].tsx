@@ -1,3 +1,5 @@
+// src/pages/[toolId].tsx
+
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -71,6 +73,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       setStatus('options');
     } else if (tool.value === 'merge-pdf') {
       setStatus('arranging');
+    } else {
+      handleProcess(files);
     }
   };
 
@@ -86,7 +90,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       let resultBlob: Blob;
       let filename = 'result.pdf';
 
-      // --- THIS IS THE FIX: Using `filesToProcess` argument instead of state ---
       switch (tool.value) {
         case 'merge-pdf':
           const mergedBytes = await mergePDFs(filesToProcess);
@@ -239,7 +242,20 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => { /* ... */ };
-export const getStaticProps: GetStaticProps = async ({ params }) => { /* ... */ };
+// --- THIS IS THE FIX: Restored the full data-fetching functions ---
+export const getStaticPaths: GetStaticPaths = async () => {
+    const paths = tools.map(tool => ({
+        params: { toolId: tool.value },
+    }));
+    return { paths, fallback: false };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+    const tool = tools.find(t => t.value === params?.toolId);
+    if (!tool) {
+        return { notFound: true };
+    }
+    return { props: { tool } };
+};
 
 export default ToolPage;
