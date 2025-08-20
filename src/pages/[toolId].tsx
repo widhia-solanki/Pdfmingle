@@ -63,6 +63,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     setError(null);
     if (tool.value === 'split-pdf') {
       setStatus('options');
+    } else if (tool.value === 'merge-pdf') {
+        setStatus('arranging'); // Assuming you have an arranger for merge
     }
   };
 
@@ -125,8 +127,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     switch (status) {
       case 'processing': return <ToolProcessor />;
       case 'success': return <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={downloadFilename} />;
-      
-      // --- THIS IS THE FIX: The error display JSX is now correctly included ---
       case 'error': return (
         <div className="text-center text-red-500 font-semibold p-8">
             <p>Error: {error}</p>
@@ -171,8 +171,17 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 
   return (
     <>
-      <NextSeo /* ... */ />
-      <FAQPageJsonLd /* ... */ />
+      <NextSeo
+        title={tool.metaTitle}
+        description={tool.metaDescription}
+        canonical={`https://pdfmingle.net/${tool.value}`}
+      />
+      <FAQPageJsonLd
+        mainEntity={tool.faqs.map(faq => ({
+          questionName: faq.question,
+          acceptedAnswerText: faq.answer,
+        }))}
+      />
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
           <Icon className={`h-10 w-10`} style={{ color: tool.color }} />
