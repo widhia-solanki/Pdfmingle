@@ -1,6 +1,6 @@
 // src/pages/[toolId].tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
@@ -8,25 +8,19 @@ import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
-// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { FileArranger } from '@/components/tools/FileArranger';
-import { PageArranger } from '@/components/tools/PageArranger';
 import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 
-// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
-
 import { FileQuestion } from 'lucide-react';
-import Link from 'next/link';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 type ToolPageStatus = 'idle' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
 
@@ -45,61 +39,79 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [totalPages, setTotalPages] = useState(0);
-  const [pageOrder, setPageOrder] = useState<number[]>([]);
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
 
+  const handleStartOver = useCallback(() => {
+    setSelectedFiles([]);
+    setStatus('idle');
+    setError(null);
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    setDownloadUrl('');
+    setPdfDoc(null);
+  }, [downloadUrl]);
+
   useEffect(() => {
-    if (status === 'options' && selectedFiles.length > 0) {
-      const file = selectedFiles[0];
+    // Automatically reset when the tool changes
+    handleStartOver();
+  }, [tool.value, handleStartOver]);
+
+  const loadPdfForPreview = async (file: File) => {
+    try {
+      const pdfJS = await import('pdfjs-dist');
+      pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
       const reader = new FileReader();
-      setPdfDoc(null);
-
-      reader.onload = async (e) => {
-        if (!e.target?.result) {
-          setError("Failed to read file buffer.");
-          setStatus('error');
-          return;
-        }
-        try {
-          const pdfJS = await import('pdfjs-dist');
-          pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
-          const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
-          const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
-          
-          setPdfDoc(loadedPdfDoc);
-          setTotalPages(loadedPdfDoc.numPages);
-          if (tool.value === 'split-pdf') {
-            setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
-          }
-        } catch (err) {
-          setError("Could not read the PDF. It may be corrupt or password-protected.");
-          setStatus('error');
-        }
-      };
       reader.readAsArrayBuffer(file);
+      await new Promise<void>((resolve, reject) => {
+        reader.onload = async (e) => {
+          if (!e.target?.result) {
+            reject(new Error("Failed to read file buffer."));
+            return;
+          }
+          try {
+            const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
+            const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
+            setPdfDoc(loadedPdfDoc);
+            setTotalPages(loadedPdfDoc.numPages);
+            if (tool.value === 'split-pdf') {
+              setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
+            }
+            resolve();
+          } catch (err) {
+            reject(err);
+          }
+        };
+        reader.onerror = () => reject(new Error("An error occurred while reading the file."));
+      });
+    } catch (err) {
+      console.error("PDF Loading Error:", err);
+      setError("Could not read the PDF. It may be corrupt or password-protected.");
+      setStatus('error');
     }
-  }, [status, selectedFiles, tool.value]);
+  };
 
-  const handleFilesSelected = (files: File[]) => {
+  const handleFilesSelected = async (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
-    if (tool.value === 'split-pdf' || tool.value === 'organize-pdf' || tool.value === 'compress-pdf') {
-      setStatus('options');
-    } else if (tool.value === 'merge-pdf') {
+    if (tool.value === 'merge-pdf') {
       setStatus('arranging');
+    } else if (tool.value === 'split-pdf' || tool.value === 'compress-pdf' || tool.value === 'organize-pdf') {
+      if(files.length > 0) {
+        await loadPdfForPreview(files[0]);
+        setStatus('options');
+      }
     }
   };
 
   const handleProcess = async () => {
     if (selectedFiles.length === 0) return;
-    setError(null);
     setStatus('processing');
+    setError(null);
 
     try {
       let resultBlob: Blob;
       let filename: string;
-      const originalName = selectedFiles.length > 0 ? selectedFiles[0].name.replace(/\.pdf$/i, '') : 'file';
+      const originalName = selectedFiles[0]?.name.replace(/\.pdf$/i, '') || 'file';
 
       switch (tool.value) {
         case 'merge-pdf':
@@ -135,14 +147,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     }
   };
   
-  const handleStartOver = () => {
-    setSelectedFiles([]);
-    setStatus('idle');
-    setError(null);
-    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    setDownloadUrl('');
-  };
-
   if (router.isFallback || !tool) return <NotFoundPage />;
   
   const Icon = iconMap[tool.icon] || FileQuestion;
@@ -157,59 +161,37 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline">Try Again</Button>
         </div>
       );
-      
-      // --- THIS IS THE FIX: The correct UI is now included ---
       case 'arranging':
-        if (tool.value === 'merge-pdf') {
-          return (
-            <div className="w-full">
+        return (
+            <div className="w-full max-w-2xl mx-auto">
                 <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
                 <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
-                <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
-                    const newFiles = [...selectedFiles];
-                    newFiles.splice(index, 1);
-                    setSelectedFiles(newFiles);
-                    if (newFiles.length === 0) setStatus('idle');
-                }} />
+                <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} />
                 <div className="mt-8 flex justify-center gap-4">
                     <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
                     <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
                 </div>
             </div>
-          );
-        }
-        return null;
-
+        );
       case 'options':
-        if (selectedFiles.length > 0) {
-            return (
-                <div className="w-full grid md:grid-cols-2 gap-8 items-start">
-                    <div className="md:sticky md:top-24">
-                        <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-                        <PDFPreviewer pdfDoc={pdfDoc} />
-                    </div>
-                    <div>
-                        {tool.value === 'split-pdf' && (
-                            <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />
-                        )}
-                        {tool.value === 'compress-pdf' && (
-                            <CompressOptions level={compressionLevel} onLevelChange={setCompressionLevel} />
-                        )}
-                        {tool.value === 'organize-pdf' && (
-                             <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
-                        )}
-                        <div className="mt-6 flex flex-col items-center gap-4">
-                            <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc && (tool.value === 'split-pdf' || tool.value === 'compress-pdf' || tool.value === 'organize-pdf')}>
-                                {tool.label}
-                            </Button>
-                            <Button variant="outline" onClick={handleStartOver} className="w-full">Choose a different file</Button>
-                        </div>
+        return (
+            <div className="w-full grid md:grid-cols-2 gap-8 items-start">
+                <div className="md:sticky md:top-24">
+                    <h2 className="text-2xl font-bold mb-4">File Preview</h2>
+                    <PDFPreviewer pdfDoc={pdfDoc} />
+                </div>
+                <div>
+                    {tool.value === 'split-pdf' && <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />}
+                    {tool.value === 'compress-pdf' && <CompressOptions level={compressionLevel} onLevelChange={setCompressionLevel} />}
+                    <div className="mt-6 flex flex-col items-center gap-4">
+                        <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
+                            {tool.label}
+                        </Button>
+                        <Button variant="outline" onClick={handleStartOver} className="w-full">Choose a different file</Button>
                     </div>
                 </div>
-            )
-        }
-        return null;
-
+            </div>
+        );
       default:
         return (
           <ToolUploader
@@ -232,12 +214,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         description={tool.metaDescription}
         canonical={`https://pdfmingle.net/${tool.value}`}
       />
-      <FAQPageJsonLd
-        mainEntity={tool.faqs.map(faq => ({
-          questionName: faq.question,
-          acceptedAnswerText: faq.answer,
-        }))}
-      />
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
           <Icon className={`h-10 w-10`} style={{ color: tool.color }} />
@@ -253,17 +229,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
 };
 
 export const getStaticPaths: GetStaticPaths = async () => {
-    const paths = tools.map(tool => ({
-        params: { toolId: tool.value },
-    }));
+    const paths = tools.map(tool => ({ params: { toolId: tool.value } }));
     return { paths, fallback: false };
 };
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
     const tool = tools.find(t => t.value === params?.toolId);
-    if (!tool) {
-        return { notFound: true };
-    }
+    if (!tool) { return { notFound: true }; }
     return { props: { tool } };
 };
 
