@@ -59,7 +59,7 @@ export const compressPDF = async (
     }
   });
 
-  for (const ref of imageRefs) {
+  for (const ref of Array.from(imageRefs)) {
     try {
       const stream = pdfDoc.context.lookup(ref);
 
