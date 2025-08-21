@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState, useEffect, useCallback } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -21,9 +19,9 @@ import { Button } from '@/components/ui/button';
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
-import { FileQuestion } from 'lucide-react';
+import { FileQuestion, Loader2 } from 'lucide-react';
 
-type ToolPageStatus = 'idle' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
+type ToolPageStatus = 'idle' | 'loading_preview' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
 
 interface ToolPageProps {
   tool: Tool;
@@ -57,49 +55,51 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     handleStartOver();
   }, [tool.value, handleStartOver]);
 
-  const loadPdfForPreview = async (file: File) => {
-    try {
-      const pdfJS = await import('pdfjs-dist');
-      pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
-      const reader = new FileReader();
-      reader.readAsArrayBuffer(file);
-      await new Promise<void>((resolve, reject) => {
-        reader.onload = async (e) => {
-          if (!e.target?.result) {
-            reject(new Error("Failed to read file buffer."));
-            return;
-          }
-          try {
-            const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
-            const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
-            setPdfDoc(loadedPdfDoc);
-            setTotalPages(loadedPdfDoc.numPages);
-            if (tool.value === 'split-pdf') {
-              setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
-            }
-            resolve();
-          } catch (err) {
-            reject(err);
-          }
-        };
-        reader.onerror = () => reject(new Error("An error occurred while reading the file."));
-      });
-    } catch (err) {
-      console.error("PDF Loading Error:", err);
-      setError("Could not read the PDF. It may be corrupt or password-protected.");
-      setStatus('error');
-    }
-  };
-
   const handleFilesSelected = async (files: File[]) => {
+    if (files.length === 0) {
+      handleStartOver();
+      return;
+    }
+
     setSelectedFiles(files);
     setError(null);
+
+    const needsPreview = ['split-pdf', 'compress-pdf', 'organize-pdf'].includes(tool.value);
+    
     if (tool.value === 'merge-pdf') {
       setStatus('arranging');
-    } else if (tool.value === 'split-pdf' || tool.value === 'compress-pdf' || tool.value === 'organize-pdf') {
-      if(files.length > 0) {
-        setStatus('options'); // Go to options to trigger the loading
-        await loadPdfForPreview(files[0]);
+    } else if (needsPreview) {
+      setStatus('loading_preview'); // Go to a dedicated loading state FIRST
+      try {
+        const file = files[0];
+        const pdfJS = await import('pdfjs-dist');
+        pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
+        
+        const reader = new FileReader();
+        reader.readAsArrayBuffer(file);
+        reader.onload = async (e) => {
+            if (!e.target?.result) {
+              setError("Failed to read file.");
+              setStatus('error');
+              return;
+            }
+            try {
+                const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
+                const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
+                setPdfDoc(loadedPdfDoc);
+                setTotalPages(loadedPdfDoc.numPages);
+                if (tool.value === 'split-pdf') {
+                  setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
+                }
+                setStatus('options'); // NOW switch to options
+            } catch (err) {
+                setError("Could not read the PDF. It may be corrupt or password-protected.");
+                setStatus('error');
+            }
+        };
+      } catch (err) {
+        setError("An unexpected error occurred while loading the file.");
+        setStatus('error');
       }
     }
   };
@@ -162,18 +162,20 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline">Try Again</Button>
         </div>
       );
+      case 'loading_preview':
+        return (
+            <div className="flex flex-col items-center justify-center p-12 gap-4">
+                <Loader2 className="w-12 h-12 text-gray-500 animate-spin" />
+                <p className="text-lg font-semibold text-gray-700">Reading your PDF...</p>
+            </div>
+        );
       case 'arranging':
         return (
             <div className="w-full max-w-2xl mx-auto">
                 <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-                <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
                 <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} />
                 <div className="mt-8 flex justify-center gap-4">
-                    <Button variant="outline" size="lg" onClick={() => {
-                        // Allow adding more files by going back to the uploader state
-                        // The uploader will see existing files and add to them
-                        setStatus('idle');
-                    }}>Add More Files</Button>
+                    <Button variant="outline" size="lg" onClick={() => { setSelectedFiles([]); setStatus('idle'); }}>Add More Files</Button>
                     <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
                 </div>
             </div>
