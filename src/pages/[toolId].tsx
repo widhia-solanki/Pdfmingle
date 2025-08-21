@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
@@ -6,7 +6,6 @@ import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
-// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -18,11 +17,9 @@ import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
-// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
-
 import { FileQuestion } from 'lucide-react';
 
 type ToolPageStatus = 'idle' | 'loading_preview' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
@@ -90,9 +87,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             }
             // Only switch to options AFTER the PDF is successfully loaded
             setStatus('options');
-        } catch (err) {
+        } catch (err: any) {
             console.error("PDF Loading Error:", err);
-            setError("Could not read the PDF. It may be corrupt or password-protected.");
+            let errorMessage = "Could not read the PDF. It may be corrupt.";
+            if (err.name === 'PasswordException') {
+                errorMessage = "This PDF is password-protected and cannot be processed.";
+            }
+            setError(errorMessage);
             setStatus('error');
         }
     }
