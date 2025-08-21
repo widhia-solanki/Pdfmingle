@@ -1,6 +1,7 @@
 // src/lib/pdf/compress.ts
 
 import {
+  PDFDict,
   PDFDocument,
   PDFImage,
   PDFName,
@@ -39,20 +40,22 @@ export const compressPDF = async (
 ): Promise<Uint8Array> => {
   const pdfBytes = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(pdfBytes, {
-    // This option is crucial for preserving the structure
     updateMetadata: false,
   });
 
   const imageRefs = new Set<any>();
   pdfDoc.getPages().forEach((page) => {
-    const xObject = page.node.XObjects();
-    if (xObject) {
-      xObject.keys().forEach((key) => {
-        const streamRef = xObject.get(key);
-        if (streamRef) {
-          imageRefs.add(streamRef);
-        }
-      });
+    const resources = page.node.get(PDFName.of('Resources'));
+    if (resources instanceof PDFDict) {
+      const xObjects = resources.get(PDFName.of('XObject'));
+      if (xObjects instanceof PDFDict) {
+        xObjects.keys().forEach((key) => {
+          const streamRef = xObjects.get(key);
+          if (streamRef) {
+            imageRefs.add(streamRef);
+          }
+        });
+      }
     }
   });
 
@@ -101,15 +104,24 @@ export const compressPDF = async (
           newImage = await pdfDoc.embedPng(compressedBytes);
         }
 
-        // This is a bit of a hack to replace the image data directly
-        // We're replacing the underlying PDFStream's dictionary with the new image's dictionary
         const newStream = pdfDoc.context.lookup(newImage.ref) as PDFRawStream;
-        stream.dict.set(PDFName.of('Length'), PDFNumber.of(compressedBytes.byteLength));
-        stream.dict.set(PDFName.of('Filter'), newStream.dict.get(PDFName.of('Filter')) as any);
+        stream.dict.set(
+          PDFName.of('Length'),
+          PDFNumber.of(compressedBytes.byteLength)
+        );
+        stream.dict.set(
+          PDFName.of('Filter'),
+          newStream.dict.get(PDFName.of('Filter')) as any
+        );
         (stream as any).contents = newStream.contents;
+
+        pdfDoc.context.delete(newImage.ref);
       }
     } catch (error) {
-      console.warn(`Could not compress an image (Ref: ${ref}). Skipping.`, error);
+      console.warn(
+        `Could not compress an image (Ref: ${ref}). Skipping.`,
+        error
+      );
     }
   }
 
