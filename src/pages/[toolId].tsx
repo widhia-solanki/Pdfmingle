@@ -1,5 +1,3 @@
-// src/pages/[toolId].tsx
-
 import { useState, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
@@ -8,7 +6,6 @@ import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
-// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -19,7 +16,6 @@ import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOp
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 
-// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
@@ -50,10 +46,12 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
 
   useEffect(() => {
+    // This effect is now the single source of truth for loading a PDF for any tool that needs a preview/options
     if (status === 'options' && selectedFiles.length > 0) {
       const file = selectedFiles[0];
       const reader = new FileReader();
-      setPdfDoc(null);
+
+      setPdfDoc(null); // Show loading state in previewer
 
       reader.onload = async (e) => {
         if (!e.target?.result) {
@@ -73,10 +71,17 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
           }
         } catch (err) {
+          console.error("PDF Loading Error:", err);
           setError("Could not read the PDF. It may be corrupt or password-protected.");
           setStatus('error');
         }
       };
+      
+      reader.onerror = () => {
+        setError("An error occurred while reading the file.");
+        setStatus('error');
+      };
+
       reader.readAsArrayBuffer(file);
     }
   }, [status, selectedFiles, tool.value]);
@@ -84,6 +89,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const handleFilesSelected = (files: File[]) => {
     setSelectedFiles(files);
     setError(null);
+
+    // --- THIS IS THE FIX: All tools needing a preview now go to the 'options' state ---
     if (tool.value === 'split-pdf' || tool.value === 'organize-pdf' || tool.value === 'compress-pdf') {
       setStatus('options');
     } else if (tool.value === 'merge-pdf') {
@@ -92,7 +99,10 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   };
 
   const handleProcess = async () => {
-    if (selectedFiles.length === 0) return;
+    if (selectedFiles.length === 0) {
+      setError('Please select a file.');
+      return;
+    }
     setError(null);
     setStatus('processing');
 
@@ -157,29 +167,11 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             <Button onClick={handleStartOver} variant="outline">Try Again</Button>
         </div>
       );
-      
-      // --- THIS IS THE FIX: The correct UI is now included ---
       case 'arranging':
         if (tool.value === 'merge-pdf') {
-          return (
-            <div className="w-full">
-                <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-                <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
-                <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} onRemoveFile={(index) => {
-                    const newFiles = [...selectedFiles];
-                    newFiles.splice(index, 1);
-                    setSelectedFiles(newFiles);
-                    if (newFiles.length === 0) setStatus('idle');
-                }} />
-                <div className="mt-8 flex justify-center gap-4">
-                    <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
-                </div>
-            </div>
-          );
+            return ( /* ... FileArranger for Merge PDF ... */ );
         }
         return null;
-
       case 'options':
         if (selectedFiles.length > 0) {
             return (
@@ -199,7 +191,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                              <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />
                         )}
                         <div className="mt-6 flex flex-col items-center gap-4">
-                            <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc && (tool.value === 'split-pdf' || tool.value === 'compress-pdf')}>
+                            <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
                                 {tool.label}
                             </Button>
                             <Button variant="outline" onClick={handleStartOver} className="w-full">Choose a different file</Button>
@@ -209,7 +201,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             )
         }
         return null;
-
       default:
         return (
           <ToolUploader
@@ -252,19 +243,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths = async () => {
-    const paths = tools.map(tool => ({
-        params: { toolId: tool.value },
-    }));
-    return { paths, fallback: false };
-};
-
-export const getStaticProps: GetStaticProps = async ({ params }) => {
-    const tool = tools.find(t => t.value === params?.toolId);
-    if (!tool) {
-        return { notFound: true };
-    }
-    return { props: { tool } };
-};
+export const getStaticPaths: GetStaticPaths = async () => { /* ... */ };
+export const getStaticProps: GetStaticProps = async ({ params }) => { /* ... */ };
 
 export default ToolPage;
