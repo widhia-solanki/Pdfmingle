@@ -16,8 +16,8 @@ PDFMingle is a powerful, user-friendly, and secure web application for all your 
 -   **Multi-Tool Functionality:** Merge, Split, Compress, Convert, and more.
 -   **SEO-Optimized:** Built with Next.js for statically generated, SEO-friendly pages for each tool.
 -   **Fully Responsive:** Modern UI that works perfectly on desktop, tablet, and mobile devices.
--   **Client-Side Processing:** Lightweight tools like Merge and Split run entirely in your browser for speed and privacy.
--   **Powerful Backend:** Heavy tasks like Compression are handled by a robust Python & Flask backend.
+-   **Secure & Private:** All tools, including compression, run directly in your browser. Your files never leave your computer.
+-   **Fast & Efficient:** Client-side processing means no uploads or downloads, providing a much faster user experience.
 -   **Clean & Modern UI:** Styled with Tailwind CSS and shadcn/ui for a professional user experience.
 
 ---
@@ -26,7 +26,7 @@ PDFMingle is a powerful, user-friendly, and secure web application for all your 
 
 -   **Frontend:** Next.js, React, TypeScript
 -   **Styling:** Tailwind CSS, shadcn/ui
--   **Backend:** Python, Flask, PyPDF2
+-   **Backend:** Python, Flask (for serving and future extensions)
 -   **Deployment:** Vercel (Frontend), Render (Backend)
 
 ---

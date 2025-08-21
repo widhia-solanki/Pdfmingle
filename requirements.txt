@@ -1,7 +1,2 @@
 Flask
 Flask-Cors
-PyPDF2
-pdf2docx
-python-docx
-pdf2image
-Pillow
