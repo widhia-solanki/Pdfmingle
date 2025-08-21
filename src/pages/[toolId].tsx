@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
@@ -6,6 +6,7 @@ import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
+// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -15,11 +16,14 @@ import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
+import { Loader2 } from 'lucide-react';
 
+// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
-import { FileQuestion, Loader2 } from 'lucide-react';
+
+import { FileQuestion } from 'lucide-react';
 
 type ToolPageStatus = 'idle' | 'loading_preview' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
 
@@ -52,55 +56,45 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   }, [downloadUrl]);
 
   useEffect(() => {
+    // Reset the tool state whenever the user navigates to a new tool
     handleStartOver();
   }, [tool.value, handleStartOver]);
-
+  
   const handleFilesSelected = async (files: File[]) => {
     if (files.length === 0) {
       handleStartOver();
       return;
     }
-
+    
     setSelectedFiles(files);
     setError(null);
-
+    
     const needsPreview = ['split-pdf', 'compress-pdf', 'organize-pdf'].includes(tool.value);
     
     if (tool.value === 'merge-pdf') {
-      setStatus('arranging');
+        setStatus('arranging');
     } else if (needsPreview) {
-      setStatus('loading_preview'); // Go to a dedicated loading state FIRST
-      try {
-        const file = files[0];
-        const pdfJS = await import('pdfjs-dist');
-        pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
-        
-        const reader = new FileReader();
-        reader.readAsArrayBuffer(file);
-        reader.onload = async (e) => {
-            if (!e.target?.result) {
-              setError("Failed to read file.");
-              setStatus('error');
-              return;
+        setStatus('loading_preview'); // Immediately show loading screen
+        try {
+            const file = files[0];
+            const pdfJS = await import('pdfjs-dist');
+            pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
+            const fileBuffer = await file.arrayBuffer();
+            const typedArray = new Uint8Array(fileBuffer);
+            const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
+
+            setPdfDoc(loadedPdfDoc);
+            setTotalPages(loadedPdfDoc.numPages);
+            if (tool.value === 'split-pdf') {
+                setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
             }
-            try {
-                const typedArray = new Uint8Array(e.target.result as ArrayBuffer);
-                const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
-                setPdfDoc(loadedPdfDoc);
-                setTotalPages(loadedPdfDoc.numPages);
-                if (tool.value === 'split-pdf') {
-                  setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
-                }
-                setStatus('options'); // NOW switch to options
-            } catch (err) {
-                setError("Could not read the PDF. It may be corrupt or password-protected.");
-                setStatus('error');
-            }
-        };
-      } catch (err) {
-        setError("An unexpected error occurred while loading the file.");
-        setStatus('error');
-      }
+            // Only switch to options AFTER the PDF is successfully loaded
+            setStatus('options');
+        } catch (err) {
+            console.error("PDF Loading Error:", err);
+            setError("Could not read the PDF. It may be corrupt or password-protected.");
+            setStatus('error');
+        }
     }
   };
 
