@@ -12,6 +12,7 @@ import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { FileArranger } from '@/components/tools/FileArranger';
+import { PageArranger } from '@/components/tools/PageArranger';
 import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
@@ -39,6 +40,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [totalPages, setTotalPages] = useState(0);
+  const [pageOrder, setPageOrder] = useState<number[]>([]);
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
 
@@ -52,7 +54,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   }, [downloadUrl]);
 
   useEffect(() => {
-    // Automatically reset when the tool changes
     handleStartOver();
   }, [tool.value, handleStartOver]);
 
@@ -97,8 +98,8 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
       setStatus('arranging');
     } else if (tool.value === 'split-pdf' || tool.value === 'compress-pdf' || tool.value === 'organize-pdf') {
       if(files.length > 0) {
+        setStatus('options'); // Go to options to trigger the loading
         await loadPdfForPreview(files[0]);
-        setStatus('options');
       }
     }
   };
@@ -168,7 +169,11 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                 <p className="text-gray-600 mb-6">Set the order of your PDFs before merging.</p>
                 <FileArranger files={selectedFiles} onFilesChange={setSelectedFiles} />
                 <div className="mt-8 flex justify-center gap-4">
-                    <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
+                    <Button variant="outline" size="lg" onClick={() => {
+                        // Allow adding more files by going back to the uploader state
+                        // The uploader will see existing files and add to them
+                        setStatus('idle');
+                    }}>Add More Files</Button>
                     <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
                 </div>
             </div>
@@ -183,6 +188,7 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
                 <div>
                     {tool.value === 'split-pdf' && <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />}
                     {tool.value === 'compress-pdf' && <CompressOptions level={compressionLevel} onLevelChange={setCompressionLevel} />}
+                    {tool.value === 'organize-pdf' && <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />}
                     <div className="mt-6 flex flex-col items-center gap-4">
                         <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
                             {tool.label}
