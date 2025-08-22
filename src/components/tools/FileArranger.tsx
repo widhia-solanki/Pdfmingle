@@ -1,5 +1,3 @@
-// src/components/tools/FileArranger.tsx
-
 import { Button } from '@/components/ui/button';
 import { File as FileIcon, ArrowUp, ArrowDown, X } from 'lucide-react';
 
@@ -34,15 +32,9 @@ export const FileArranger = ({ files, onFilesChange }: FileArrangerProps) => {
             <span className="font-medium truncate">{file.name}</span>
           </div>
           <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'up')} disabled={index === 0}>
-              <ArrowUp className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'down')} disabled={index === files.length - 1}>
-              <ArrowDown className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={() => removeFile(index)} className="text-red-500 hover:text-red-700">
-              <X className="h-5 w-5" />
-            </Button>
+            <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'up')} disabled={index === 0}><ArrowUp className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'down')} disabled={index === files.length - 1}><ArrowDown className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => removeFile(index)} className="text-red-500 hover:text-red-700"><X className="h-5 w-5" /></Button>
           </div>
         </div>
       ))}
