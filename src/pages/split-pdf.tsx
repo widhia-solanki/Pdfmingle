@@ -46,7 +46,6 @@ const SplitPdfPage = () => {
 
     try {
       const pdfJS = await import('pdfjs-dist');
-      // --- THIS IS THE CRITICAL FIX ---
       pdfJS.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.mjs`;
       
       const fileBuffer = await selectedFile.arrayBuffer();
@@ -91,6 +90,12 @@ const SplitPdfPage = () => {
             <ToolUploader 
                 onFilesSelected={handleFileSelected} 
                 isMultiFile={false} 
+                // --- THIS IS THE FIX: Added all required props ---
+                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                selectedFiles={file ? [file] : []}
+                error={error}
+                onProcess={handleProcess}
+                actionButtonText="Split PDF"
             />
         );
       case 'loading_preview':
