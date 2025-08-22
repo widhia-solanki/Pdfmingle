@@ -1,3 +1,5 @@
+// src/components/tools/FileArranger.tsx
+
 import { Button } from '@/components/ui/button';
 import { File as FileIcon, ArrowUp, ArrowDown, X } from 'lucide-react';
 
