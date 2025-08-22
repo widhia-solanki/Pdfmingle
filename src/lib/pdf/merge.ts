@@ -1,20 +1,21 @@
-// src/lib/pdf/merge.ts
-
 import { PDFDocument } from 'pdf-lib';
 
-// The function now only needs the array of files in the correct order
 export const mergePDFs = async (files: File[]): Promise<Uint8Array> => {
   const mergedPdfDoc = await PDFDocument.create();
 
   for (const file of files) {
-    const pdfBytes = await file.arrayBuffer();
-    const pdfDoc = await PDFDocument.load(pdfBytes);
-    const copiedPages = await mergedPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
-    copiedPages.forEach((page) => {
-      mergedPdfDoc.addPage(page);
-    });
+    try {
+      const pdfBytes = await file.arrayBuffer();
+      const pdfDoc = await PDFDocument.load(pdfBytes);
+      const copiedPages = await mergedPdfDoc.copyPages(pdfDoc, pdfDoc.getPageIndices());
+      copiedPages.forEach((page) => {
+        mergedPdfDoc.addPage(page);
+      });
+    } catch (err) {
+      console.error(`Failed to process file ${file.name}:`, err);
+      throw new Error(`Could not process ${file.name}. It may be corrupt or password-protected.`);
+    }
   }
 
-  // --- THIS IS THE FIX: The missing 'return' statement is now added ---
   return await mergedPdfDoc.save();
 };
