@@ -1,4 +1,4 @@
- {
+{
   "name": "pdfmingle-next",
   "private": true,
   "version": "0.0.0",
@@ -6,7 +6,6 @@
     "dev": "next dev",
     "build": "next build",
     "postbuild": "next-sitemap",
-    "postinstall": "cp node_modules/pdfjs-dist/build/pdf.worker.min.js public/",
     "start": "next start",
     "lint": "next lint"
   },
