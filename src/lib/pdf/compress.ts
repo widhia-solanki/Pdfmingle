@@ -24,23 +24,18 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
   const pdfBytes = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(pdfBytes);
 
-  // --- THIS IS THE CORRECTED LOGIC ---
-  // We get all image objects from the document's resources directly
   const imageRefs = pdfDoc.context.enumerateIndirectObjects()
     .filter(([ref, obj]) => obj instanceof PDFImage)
     .map(([ref]) => ref);
 
-  const compressedImageCache = new Map();
-
   for (const ref of imageRefs) {
-    if (compressedImageCache.has(ref)) continue;
-
     try {
       const image = pdfDoc.context.lookup(ref);
       if (!(image instanceof PDFImage)) continue;
 
       if (image.width < 100 || image.height < 100) continue;
       
+      // --- THIS IS THE CRITICAL FIX: Access the raw encodedBytes ---
       const imageBytes: Uint8Array = (image as any).encodedBytes;
       if (!imageBytes) continue;
       
@@ -62,7 +57,6 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
         newImage = await pdfDoc.embedPng(compressedBytes);
       }
       
-      // The most important part: replace the old object with the new one
       pdfDoc.context.assign(ref, newImage.ref);
       
     } catch (error) {
