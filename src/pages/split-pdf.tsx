@@ -92,8 +92,8 @@ const SplitPdfPage = () => {
                 acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
                 selectedFiles={file ? [file] : []}
                 error={error}
-                onProcess={() => {}} // Not used in this specific flow
-                actionButtonText="Split PDF" // Not displayed, but required
+                onProcess={() => {}}
+                actionButtonText="Split PDF"
             />
         );
       case 'loading_preview':
