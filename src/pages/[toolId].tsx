@@ -1,6 +1,4 @@
-// src/pages/[toolId].tsx
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
@@ -16,7 +14,6 @@ import { FileArranger } from '@/components/tools/FileArranger';
 import { PageArranger } from '@/components/tools/PageArranger';
 import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
-import { PageRotator, PageRotation } from '@/components/tools/PageRotator';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -29,6 +26,7 @@ import { rotatePDF } from '@/lib/pdf/rotate';
 import { FileQuestion } from 'lucide-react';
 
 type ToolPageStatus = 'idle' | 'loading_preview' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
+interface PageRotation { [pageIndex: number]: number; }
 
 interface ToolPageProps {
   tool: Tool;
@@ -50,7 +48,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   const [pageRotations, setPageRotations] = useState<PageRotation>({});
   const [pageOrder, setPageOrder] = useState<number[]>([]);
 
-  // --- THIS IS THE FIX: The full handleStartOver function is restored ---
   const handleStartOver = useCallback(() => {
     setSelectedFiles([]);
     setStatus('idle');
@@ -61,11 +58,16 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   }, [downloadUrl]);
 
   useEffect(() => {
+    // Reset the tool state whenever the user navigates to a new tool
     handleStartOver();
   }, [tool.value, handleStartOver]);
-
+  
   const handleFilesSelected = async (files: File[]) => {
-    if (files.length === 0) { handleStartOver(); return; }
+    if (files.length === 0) {
+      handleStartOver();
+      return;
+    }
+    
     setSelectedFiles(files);
     setError(null);
     
@@ -74,12 +76,20 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     if (tool.value === 'merge-pdf') {
         setStatus('arranging');
     } else if (needsPreview) {
-        setStatus('loading_preview');
+        setStatus('loading_preview'); // Immediately show loading screen
         try {
             const file = files[0];
             const pdfJS = await import('pdfjs-dist');
             pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
-            const fileBuffer = await file.arrayBuffer();
+            
+            // --- THIS IS THE CRITICAL FIX: Wrap FileReader in a Promise ---
+            const fileBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result as ArrayBuffer);
+                reader.onerror = () => reject(new Error("Failed to read the file."));
+                reader.readAsArrayBuffer(file);
+            });
+
             const typedArray = new Uint8Array(fileBuffer);
             const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
 
@@ -88,9 +98,15 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             if (tool.value === 'split-pdf') {
                 setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
             }
+            // Only switch to options AFTER the PDF is successfully loaded
             setStatus('options');
-        } catch (err) {
-            setError("Could not read the PDF. It may be corrupt or password-protected.");
+        } catch (err: any) {
+            console.error("PDF Loading Error:", err);
+            let errorMessage = "Could not read the PDF. It may be corrupt.";
+            if (err.name === 'PasswordException') {
+                errorMessage = "This PDF is password-protected and cannot be processed.";
+            }
+            setError(errorMessage);
             setStatus('error');
         }
     }
@@ -122,10 +138,10 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
           filename = `${originalName}_compressed.pdf`;
           break;
         case 'rotate-pdf':
-          const rotatedBytes = await rotatePDF(selectedFiles[0], pageRotations);
-          resultBlob = new Blob([rotatedBytes], { type: 'application/pdf' });
-          filename = `${originalName}_rotated.pdf`;
-          break;
+            const rotatedBytes = await rotatePDF(selectedFiles[0], pageRotations);
+            resultBlob = new Blob([rotatedBytes], { type: 'application/pdf' });
+            filename = `${originalName}_rotated.pdf`;
+            break;
         default:
           await new Promise(resolve => setTimeout(resolve, 2000));
           const response = await fetch('/sample-output.pdf');
@@ -179,27 +195,21 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
         );
       case 'options':
         return (
-            <div className="w-full">
-                {tool.value === 'rotate-pdf' ? (
-                    <PageRotator pdfDoc={pdfDoc} onRotationsChange={setPageRotations} />
-                ) : (
-                    <div className="grid md:grid-cols-2 gap-8 items-start">
-                        <div className="md:sticky md:top-24">
-                            <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-                            <PDFPreviewer pdfDoc={pdfDoc} />
-                        </div>
-                        <div>
-                            {tool.value === 'split-pdf' && <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />}
-                            {tool.value === 'compress-pdf' && <CompressOptions level={compressionLevel} onLevelChange={setCompressionLevel} />}
-                            {tool.value === 'organize-pdf' && <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />}
-                        </div>
+            <div className="w-full grid md:grid-cols-2 gap-8 items-start">
+                <div className="md:sticky md:top-24">
+                    <h2 className="text-2xl font-bold mb-4">File Preview</h2>
+                    <PDFPreviewer pdfDoc={pdfDoc} />
+                </div>
+                <div>
+                    {tool.value === 'split-pdf' && <SplitOptions totalPages={totalPages} ranges={splitRanges} onRangesChange={setSplitRanges} />}
+                    {tool.value === 'compress-pdf' && <CompressOptions level={compressionLevel} onLevelChange={setCompressionLevel} />}
+                    {tool.value === 'organize-pdf' && <PageArranger files={selectedFiles} onArrangementChange={setPageOrder} />}
+                    <div className="mt-6 flex flex-col items-center gap-4">
+                        <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
+                            {tool.label}
+                        </Button>
+                        <Button variant="outline" onClick={handleStartOver} className="w-full">Choose a different file</Button>
                     </div>
-                )}
-                <div className="mt-8 flex justify-center gap-4">
-                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
-                        {tool.label}
-                    </Button>
-                    <Button variant="outline" size="lg" onClick={handleStartOver}>Choose a different file</Button>
                 </div>
             </div>
         );
