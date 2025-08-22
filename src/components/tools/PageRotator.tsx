@@ -2,11 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { RotateCw, ZoomIn } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 
-interface PageRotation {
-  [pageIndex: number]: number; // e.g., { 0: 90, 1: 180 }
+// --- THIS IS THE FIX: Add the 'export' keyword ---
+export interface PageRotation {
+  [pageIndex: number]: number;
 }
 
 interface PageRotatorProps {
@@ -38,7 +39,7 @@ export const PageRotator = ({ pdfDoc, onRotationsChange }: PageRotatorProps) => 
       const allPages: PDFPageProxy[] = [];
       const promises = Array.from({ length: pdfDoc.numPages }, (_, i) => pdfDoc.getPage(i + 1));
       Promise.all(promises).then(setPages);
-      setRotations({}); // Reset rotations on new file
+      setRotations({});
     }
   }, [pdfDoc]);
 
