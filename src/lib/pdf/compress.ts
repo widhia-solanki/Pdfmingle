@@ -1,5 +1,3 @@
-// src/lib/pdf/compress.ts
-
 import { PDFDocument, PDFImage } from 'pdf-lib';
 import imageCompression from 'browser-image-compression';
 import type { CompressionLevel } from '@/components/tools/CompressOptions';
@@ -10,7 +8,6 @@ const compressionOptions = {
   high: { maxSizeMB: 0.5, maxWidthOrHeight: 720, useWebWorker: true },
 };
 
-// Helper to reliably detect image type from raw bytes
 const detectImageType = (bytes: Uint8Array): 'image/jpeg' | 'image/png' | null => {
   if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
     return 'image/jpeg';
@@ -25,7 +22,6 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
   const pdfBytes = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(pdfBytes);
 
-  // Use the documented public API to find all image objects in the document
   const imageRefs = pdfDoc.context.enumerateIndirectObjects()
     .filter(([ref, obj]) => obj instanceof PDFImage)
     .map(([ref]) => ref);
@@ -33,22 +29,12 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
   for (const ref of imageRefs) {
     try {
       const image = pdfDoc.context.lookup(ref);
+      if (!(image instanceof PDFImage)) continue;
 
-      // A robust type guard to satisfy TypeScript
-      if (!(image instanceof PDFImage)) {
-        continue;
-      }
+      if (image.width < 100 || image.height < 100) continue;
       
-      // Skip very small images that won't benefit from compression
-      if (image.width < 100 || image.height < 100) {
-        continue;
-      }
-      
-      // THIS IS THE CRITICAL FIX: Access the raw, unmodified image data
       const imageBytes: Uint8Array = (image as any).encodedBytes;
-      if (!imageBytes) {
-        continue;
-      }
+      if (!imageBytes) continue;
       
       const mimeType = detectImageType(imageBytes);
       if (!mimeType) {
@@ -57,6 +43,7 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
       }
       
       const imageFile = new File([imageBytes], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+      
       const compressedFile = await imageCompression(imageFile, compressionOptions[level]);
       const compressedBytes = await compressedFile.arrayBuffer();
       
@@ -67,7 +54,6 @@ export const compressPDF = async (file: File, level: CompressionLevel): Promise<
         newImage = await pdfDoc.embedPng(compressedBytes);
       }
       
-      // Replace the old image object with the new, smaller one
       pdfDoc.context.assign(ref, newImage.ref);
       
     } catch (error) {
