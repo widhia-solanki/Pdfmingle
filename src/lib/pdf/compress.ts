@@ -1,12 +1,6 @@
 // src/lib/pdf/compress.ts
 
-import {
-  PDFDocument,
-  PDFImage,
-  PDFName,
-  PDFNumber,
-  PDFRawStream,
-} from 'pdf-lib';
+import { PDFDocument, PDFImage } from 'pdf-lib';
 import imageCompression from 'browser-image-compression';
 import type { CompressionLevel } from '@/components/tools/CompressOptions';
 
@@ -16,102 +10,70 @@ const compressionOptions = {
   high: { maxSizeMB: 0.5, maxWidthOrHeight: 720, useWebWorker: true },
 };
 
-const detectImageType = (
-  bytes: Uint8Array
-): 'image/jpeg' | 'image/png' | null => {
-  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+// Helper to reliably detect image type from raw bytes
+const detectImageType = (bytes: Uint8Array): 'image/jpeg' | 'image/png' | null => {
+  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
     return 'image/jpeg';
   }
-  if (
-    bytes[0] === 0x89 &&
-    bytes[1] === 0x50 &&
-    bytes[2] === 0x4e &&
-    bytes[3] === 0x47
-  ) {
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
     return 'image/png';
   }
   return null;
 };
 
-export const compressPDF = async (
-  file: File,
-  level: CompressionLevel
-): Promise<Uint8Array> => {
+export const compressPDF = async (file: File, level: CompressionLevel): Promise<Uint8Array> => {
   const pdfBytes = await file.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(pdfBytes, {
-    // This option is crucial for preserving the structure
-    updateMetadata: false, 
-  });
+  const pdfDoc = await PDFDocument.load(pdfBytes);
 
-  const imageRefs = new Set<any>();
-  pdfDoc.getPages().forEach((page) => {
-    const xObject = page.node.XObjects();
-    if (xObject) {
-      xObject.keys().forEach((key) => {
-        const streamRef = xObject.get(key);
-        if (streamRef) {
-          imageRefs.add(streamRef);
-        }
-      });
-    }
-  });
+  // Use the documented public API to find all image objects in the document
+  const imageRefs = pdfDoc.context.enumerateIndirectObjects()
+    .filter(([ref, obj]) => obj instanceof PDFImage)
+    .map(([ref]) => ref);
 
   for (const ref of imageRefs) {
     try {
-      const stream = pdfDoc.context.lookup(ref);
+      const image = pdfDoc.context.lookup(ref);
 
-      if (
-        stream instanceof PDFRawStream &&
-        stream.dict.get(PDFName.of('Subtype')) === PDFName.of('Image')
-      ) {
-        const imageBytes = stream.contents;
-        const widthObj = stream.dict.get(PDFName.of('Width'));
-        const heightObj = stream.dict.get(PDFName.of('Height'));
-
-        if (
-          widthObj instanceof PDFNumber &&
-          heightObj instanceof PDFNumber &&
-          (widthObj.asNumber() < 100 || heightObj.asNumber() < 100)
-        ) {
-          continue;
-        }
-        
-        const mimeType = detectImageType(imageBytes);
-        if (!mimeType) {
-          console.warn(`Skipping an image with an unknown type (Ref: ${ref}).`);
-          continue;
-        }
-
-        const imageFile = new File(
-          [imageBytes],
-          `image.${mimeType.split('/')[1]}`,
-          { type: mimeType }
-        );
-
-        const compressedFile = await imageCompression(
-          imageFile,
-          compressionOptions[level]
-        );
-        const compressedBytes = await compressedFile.arrayBuffer();
-
-        let newImage: PDFImage;
-        if (mimeType === 'image/jpeg') {
-          newImage = await pdfDoc.embedJpg(compressedBytes);
-        } else {
-          newImage = await pdfDoc.embedPng(compressedBytes);
-        }
-        
-        // This is a bit of a hack to replace the image data directly
-        // We're replacing the underlying PDFStream's dictionary with the new image's dictionary
-        const newStream = pdfDoc.context.lookup(newImage.ref) as PDFRawStream;
-        stream.dict.set(PDFName.of('Length'), PDFNumber.of(compressedBytes.byteLength));
-        stream.dict.set(PDFName.of('Filter'), newStream.dict.get(PDFName.of('Filter')) as any);
-        (stream as any).contents = newStream.contents;
+      // A robust type guard to satisfy TypeScript
+      if (!(image instanceof PDFImage)) {
+        continue;
       }
+      
+      // Skip very small images that won't benefit from compression
+      if (image.width < 100 || image.height < 100) {
+        continue;
+      }
+      
+      // THIS IS THE CRITICAL FIX: Access the raw, unmodified image data
+      const imageBytes: Uint8Array = (image as any).encodedBytes;
+      if (!imageBytes) {
+        continue;
+      }
+      
+      const mimeType = detectImageType(imageBytes);
+      if (!mimeType) {
+        console.warn(`Skipping an image with an unknown type (Ref: ${ref}).`);
+        continue;
+      }
+      
+      const imageFile = new File([imageBytes], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+      const compressedFile = await imageCompression(imageFile, compressionOptions[level]);
+      const compressedBytes = await compressedFile.arrayBuffer();
+      
+      let newImage: PDFImage;
+      if (mimeType === 'image/jpeg') {
+        newImage = await pdfDoc.embedJpg(compressedBytes);
+      } else {
+        newImage = await pdfDoc.embedPng(compressedBytes);
+      }
+      
+      // Replace the old image object with the new, smaller one
+      pdfDoc.context.assign(ref, newImage.ref);
+      
     } catch (error) {
       console.warn(`Could not compress an image (Ref: ${ref}). Skipping.`, error);
     }
   }
 
-  return pdfDoc.save({ useObjectStreams: false });
+  return pdfDoc.save();
 };
