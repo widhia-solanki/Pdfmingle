@@ -1,4 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+// src/pages/[toolId].tsx
+
+import { useState, useEffect, useCallback } from 'react';
 import { GetStaticPaths, GetStaticProps, NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { tools, Tool, iconMap } from '@/constants/tools';
@@ -6,7 +8,6 @@ import NotFoundPage from '@/pages/404';
 import { NextSeo, FAQPageJsonLd } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
-// Import all our components
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -16,14 +17,13 @@ import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
-import { Loader2, FileQuestion } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
-// Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
 import { rotatePDF } from '@/lib/pdf/rotate';
-
+import { FileQuestion } from 'lucide-react';
 
 type ToolPageStatus = 'idle' | 'loading_preview' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
 interface PageRotation { [pageIndex: number]: number; }
@@ -92,7 +92,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             }
             setStatus('options');
         } catch (err: any) {
-            console.error("PDF Loading Error:", err);
             let errorMessage = "Could not read the PDF. It may be corrupt.";
             if (err.name === 'PasswordException') {
                 errorMessage = "This PDF is password-protected and cannot be processed.";
