@@ -87,7 +87,13 @@ const CompressPdfPage = () => {
         return (
             <ToolUploader 
                 onFilesSelected={handleFileSelected} 
-                isMultiFile={false} 
+                isMultiFile={false}
+                // --- THIS IS THE FIX: Added all required props ---
+                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                selectedFiles={file ? [file] : []}
+                error={error}
+                onProcess={handleProcess}
+                actionButtonText="Compress PDF"
             />
         );
       case 'loading_preview':
