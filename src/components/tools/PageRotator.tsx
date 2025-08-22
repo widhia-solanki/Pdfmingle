@@ -1,11 +1,9 @@
-// src/components/tools/PageRotator.tsx
-
 import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { RotateCw } from 'lucide-react';
 import type { PDFDocumentProxy, PDFPageProxy } from 'pdfjs-dist';
 
-// --- THIS IS THE FIX: Add the 'export' keyword ---
+// --- THIS IS THE FIX: The 'export' keyword is correctly placed ---
 export interface PageRotation {
   [pageIndex: number]: number;
 }
