@@ -62,7 +62,15 @@ const MergePdfPage = () => {
         
         <div className="mt-8 md:mt-12 w-full max-w-3xl px-4">
           {status === 'idle' && (
-            <ToolUploader onFilesSelected={handleFilesSelected} isMultiFile={true} />
+            <ToolUploader
+                onFilesSelected={handleFilesSelected}
+                isMultiFile={true}
+                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                selectedFiles={files}
+                error={error}
+                onProcess={() => {}} // Not used in idle state for this tool
+                actionButtonText="" // Not used in idle state for this tool
+            />
           )}
 
           {status === 'arranging' && (
