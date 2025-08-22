@@ -23,7 +23,15 @@ const RotatePdfPage = () => {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [rotationDirection, setRotationDirection] = useState<RotationDirection>('right');
 
-  const handleStartOver = useCallback(() => { /* ... Unchanged ... */ });
+  // --- THIS IS THE FIX: The full handleStartOver function is restored ---
+  const handleStartOver = useCallback(() => {
+    setFile(null);
+    setStatus('idle');
+    setError(null);
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+    setDownloadUrl('');
+    setPdfDoc(null);
+  }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
     if (files.length === 0) return;
@@ -69,7 +77,12 @@ const RotatePdfPage = () => {
       case 'idle':
         return <ToolUploader onFilesSelected={handleFileSelected} isMultiFile={false} />;
       case 'loading_preview':
-        return (/* ... Loading UI ... */);
+        return (
+          <div className="flex flex-col items-center justify-center p-12 gap-4">
+            <Loader2 className="w-12 h-12 text-gray-500 animate-spin" />
+            <p className="text-lg font-semibold text-gray-700">Reading your PDF...</p>
+          </div>
+        );
       case 'options':
         return (
           <div className="w-full grid md:grid-cols-2 gap-8 items-start">
@@ -90,7 +103,12 @@ const RotatePdfPage = () => {
         );
       case 'processing': return <ToolProcessor />;
       case 'success': return <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={file?.name.replace(/\.pdf$/i, '_rotated.pdf') || 'rotated.pdf'} />;
-      case 'error': return (/* ... Error UI ... */);
+      case 'error': return (
+        <div className="text-center p-8">
+            <p className="text-red-500 font-semibold mb-4">Error: {error}</p>
+            <Button onClick={handleStartOver} variant="outline">Try Again</Button>
+        </div>
+      );
     }
   };
 
