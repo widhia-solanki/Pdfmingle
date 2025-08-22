@@ -30,6 +30,7 @@ const CompressPdfPage = () => {
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl('');
     setPdfDoc(null);
+    setCompressionLevel('medium'); // Reset to default
   }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
@@ -87,13 +88,7 @@ const CompressPdfPage = () => {
         return (
             <ToolUploader 
                 onFilesSelected={handleFileSelected} 
-                isMultiFile={false}
-                // --- THIS IS THE FIX: Added all required props ---
-                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-                selectedFiles={file ? [file] : []}
-                error={error}
-                onProcess={handleProcess}
-                actionButtonText="Compress PDF"
+                isMultiFile={false} 
             />
         );
       case 'loading_preview':
