@@ -46,7 +46,9 @@ const SplitPdfPage = () => {
 
     try {
       const pdfJS = await import('pdfjs-dist');
-      pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
+      // --- THIS IS THE CRITICAL FIX ---
+      pdfJS.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+      
       const fileBuffer = await selectedFile.arrayBuffer();
       const typedArray = new Uint8Array(fileBuffer);
       const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
@@ -149,4 +151,4 @@ const SplitPdfPage = () => {
   );
 };
 
-export default SplitPdfPage;
+export default SplitPdfPage;```
