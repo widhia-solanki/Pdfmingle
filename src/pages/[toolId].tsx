@@ -16,14 +16,14 @@ import { SplitOptions, SplitRange } from '@/components/tools/SplitOptions';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, FileQuestion } from 'lucide-react';
 
 // Import our REAL PDF utility functions
 import { mergePDFs } from '@/lib/pdf/merge';
 import { splitPDF } from '@/lib/pdf/split';
 import { compressPDF } from '@/lib/pdf/compress';
 import { rotatePDF } from '@/lib/pdf/rotate';
-import { FileQuestion } from 'lucide-react';
+
 
 type ToolPageStatus = 'idle' | 'loading_preview' | 'options' | 'arranging' | 'processing' | 'success' | 'error';
 interface PageRotation { [pageIndex: number]: number; }
@@ -58,7 +58,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
   }, [downloadUrl]);
 
   useEffect(() => {
-    // Reset the tool state whenever the user navigates to a new tool
     handleStartOver();
   }, [tool.value, handleStartOver]);
   
@@ -76,20 +75,13 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
     if (tool.value === 'merge-pdf') {
         setStatus('arranging');
     } else if (needsPreview) {
-        setStatus('loading_preview'); // Immediately show loading screen
+        setStatus('loading_preview');
         try {
             const file = files[0];
             const pdfJS = await import('pdfjs-dist');
             pdfJS.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.min.js`;
             
-            // --- THIS IS THE CRITICAL FIX: Wrap FileReader in a Promise ---
-            const fileBuffer = await new Promise<ArrayBuffer>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result as ArrayBuffer);
-                reader.onerror = () => reject(new Error("Failed to read the file."));
-                reader.readAsArrayBuffer(file);
-            });
-
+            const fileBuffer = await file.arrayBuffer();
             const typedArray = new Uint8Array(fileBuffer);
             const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
 
@@ -98,7 +90,6 @@ const ToolPage: NextPage<ToolPageProps> = ({ tool }) => {
             if (tool.value === 'split-pdf') {
                 setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
             }
-            // Only switch to options AFTER the PDF is successfully loaded
             setStatus('options');
         } catch (err: any) {
             console.error("PDF Loading Error:", err);
