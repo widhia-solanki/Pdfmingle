@@ -1,5 +1,3 @@
-// src/lib/pdf/split.ts
-
 import { PDFDocument } from 'pdf-lib';
 import JSZip from 'jszip';
 import type { SplitRange } from '@/components/tools/SplitOptions';
