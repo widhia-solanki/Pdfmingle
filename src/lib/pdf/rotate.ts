@@ -1,31 +1,24 @@
 // src/lib/pdf/rotate.ts
 
-import { PDFDocument, degrees } from 'pdf-lib';
-
-export interface PageRotation {
-  [pageIndex: number]: number; // Maps page index to its new rotation angle (e.g., { 0: 90, 2: 180 })
-}
+import { PDFDocument, RotationTypes, degrees } from 'pdf-lib';
+import type { RotationDirection } from '@/components/tools/RotateOptions';
 
 export const rotatePDF = async (
   file: File, 
-  rotations: PageRotation
+  direction: RotationDirection
 ): Promise<Uint8Array> => {
   const pdfBytes = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(pdfBytes);
   const pages = pdfDoc.getPages();
 
-  // Iterate over the rotation instructions
-  for (const pageIndexStr in rotations) {
-    const pageIndex = parseInt(pageIndexStr, 10);
-    const angle = rotations[pageIndex];
+  // Determine the angle based on the selected direction
+  const angle = direction === 'right' ? 90 : -90;
 
-    // Ensure the page exists before trying to rotate it
-    if (pageIndex >= 0 && pageIndex < pages.length) {
-      const page = pages[pageIndex];
-      // Set the page's rotation to the specified absolute angle
-      page.setRotation(degrees(angle));
-    }
-  }
+  // Apply the rotation to every page in the document
+  pages.forEach(page => {
+    const currentRotation = page.getRotation().angle;
+    page.setRotation(degrees(currentRotation + angle));
+  });
 
   return await pdfDoc.save();
 };
