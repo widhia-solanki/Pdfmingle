@@ -47,11 +47,12 @@ const SplitPdfPage = () => {
     try {
       const pdfJS = await import('pdfjs-dist');
       // --- THIS IS THE CRITICAL FIX ---
-      pdfJS.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.js`;
+      // Use the official path provided by the library itself
+      pdfJS.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.mjs`;
       
       const fileBuffer = await selectedFile.arrayBuffer();
       const typedArray = new Uint8Array(fileBuffer);
-      const loadedPdfDoc = await pdfJS.getDocument(typedArray).promise;
+      const loadedPdfDoc = await pdfJS.getDocument({ data: typedArray }).promise;
       
       setPdfDoc(loadedPdfDoc);
       setTotalPages(loadedPdfDoc.numPages);
@@ -91,11 +92,6 @@ const SplitPdfPage = () => {
             <ToolUploader 
                 onFilesSelected={handleFileSelected} 
                 isMultiFile={false} 
-                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-                selectedFiles={file ? [file] : []}
-                error={error}
-                onProcess={() => {}}
-                actionButtonText="Split PDF"
             />
         );
       case 'loading_preview':
