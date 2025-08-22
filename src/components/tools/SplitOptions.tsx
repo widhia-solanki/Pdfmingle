@@ -1,5 +1,3 @@
-// src/components/tools/SplitOptions.tsx
-
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PlusCircle, X } from 'lucide-react';
@@ -26,12 +24,9 @@ export const SplitOptions = ({ totalPages, ranges, onRangesChange }: SplitOption
     if (!isNaN(numValue) && numValue > 0 && numValue <= totalPages) {
       newRanges[index][field] = numValue;
       onRangesChange(newRanges);
-    } else {
-        // Handle case where input is cleared
-        if(value === '') {
-            newRanges[index][field] = 1; // Or some default
-            onRangesChange(newRanges);
-        }
+    } else if (value === '') {
+        newRanges[index][field] = 1; // Reset to 1 if cleared
+        onRangesChange(newRanges);
     }
   };
 
@@ -50,23 +45,15 @@ export const SplitOptions = ({ totalPages, ranges, onRangesChange }: SplitOption
           <p className="font-medium">Range {index + 1}:</p>
           <div className="flex items-center gap-2">
             <Input
-              type="number"
-              min="1"
-              max={totalPages}
-              value={range.from}
+              type="number" min="1" max={totalPages} value={range.from}
               onChange={(e) => updateRange(index, 'from', e.target.value)}
-              className="w-20 text-center"
-              aria-label={`Range ${index + 1} from page`}
+              className="w-20 text-center" aria-label={`Range ${index + 1} from page`}
             />
             <span>to</span>
             <Input
-              type="number"
-              min="1"
-              max={totalPages}
-              value={range.to}
+              type="number" min="1" max={totalPages} value={range.to}
               onChange={(e) => updateRange(index, 'to', e.target.value)}
-              className="w-20 text-center"
-              aria-label={`Range ${index + 1} to page`}
+              className="w-20 text-center" aria-label={`Range ${index + 1} to page`}
             />
           </div>
           <Button variant="ghost" size="icon" onClick={() => removeRange(index)} className="h-8 w-8 text-red-500 hover:text-red-700">
