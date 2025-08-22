@@ -7,7 +7,7 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
-import { RotateOptions, RotationDirection } from '@/components/tools/RotateOptions';
+import { RotateOptions } from '@/components/tools/RotateOptions';
 import { PDFPreviewer } from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
@@ -21,7 +21,7 @@ const RotatePdfPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
-  const [rotationDirection, setRotationDirection] = useState<RotationDirection>('right');
+  const [totalRotation, setTotalRotation] = useState(0);
 
   const handleStartOver = useCallback(() => {
     setFile(null);
@@ -30,10 +30,15 @@ const RotatePdfPage = () => {
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl('');
     setPdfDoc(null);
+    setTotalRotation(0);
   }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
-    if (files.length === 0) return;
+    if (files.length === 0) {
+      handleStartOver();
+      return;
+    }
+    
     const selectedFile = files[0];
     setFile(selectedFile);
     setError(null);
@@ -45,10 +50,15 @@ const RotatePdfPage = () => {
       const fileBuffer = await selectedFile.arrayBuffer();
       const typedArray = new Uint8Array(fileBuffer);
       const loadedPdfDoc = await pdfJS.getDocument({ data: typedArray }).promise;
+      
       setPdfDoc(loadedPdfDoc);
       setStatus('options');
     } catch (err: any) {
-      setError("Could not read the PDF. It may be corrupt or password-protected.");
+      let errorMessage = "Could not read the PDF. It may be corrupt.";
+      if (err.name === 'PasswordException') {
+        errorMessage = "This PDF is password-protected and cannot be processed.";
+      }
+      setError(errorMessage);
       setStatus('error');
     }
   };
@@ -59,7 +69,8 @@ const RotatePdfPage = () => {
     setError(null);
 
     try {
-      const rotatedBytes = await rotatePDF(file, rotationDirection);
+      // Pass the final total rotation angle to the processing function
+      const rotatedBytes = await rotatePDF(file, totalRotation);
       const resultBlob = new Blob([rotatedBytes], { type: 'application/pdf' });
       const filename = `${file.name.replace(/\.pdf$/i, '')}_rotated.pdf`;
       const url = URL.createObjectURL(resultBlob);
@@ -71,21 +82,14 @@ const RotatePdfPage = () => {
     }
   };
 
+  const handleRotatePreview = () => {
+    setTotalRotation(prev => (prev + 90) % 360);
+  };
+
   const renderContent = () => {
     switch (status) {
       case 'idle':
-        return (
-          <ToolUploader 
-            onFilesSelected={handleFileSelected} 
-            isMultiFile={false}
-            // --- THIS IS THE FIX: Added all required props ---
-            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-            selectedFiles={file ? [file] : []}
-            error={error}
-            onProcess={handleProcess} // Pass the handler
-            actionButtonText="Rotate PDF" // Provide a label
-          />
-        );
+        return <ToolUploader onFilesSelected={handleFileSelected} isMultiFile={false} />;
       case 'loading_preview':
         return (
           <div className="flex flex-col items-center justify-center p-12 gap-4">
@@ -98,13 +102,15 @@ const RotatePdfPage = () => {
           <div className="w-full grid md:grid-cols-2 gap-8 items-start">
             <div className="md:sticky md:top-24">
               <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-              <PDFPreviewer pdfDoc={pdfDoc} />
+              <div className="overflow-hidden rounded-lg border" style={{ transition: 'transform 0.3s ease-in-out', transform: `rotate(${totalRotation}deg)` }}>
+                <PDFPreviewer pdfDoc={pdfDoc} />
+              </div>
             </div>
             <div>
-              <RotateOptions selectedDirection={rotationDirection} onRotateDirectionSelect={setRotationDirection} />
+              <RotateOptions onRotate={handleRotatePreview} />
               <div className="mt-6 flex flex-col items-center gap-4">
                 <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
-                  Rotate PDF
+                  Apply Changes & Download
                 </Button>
                 <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
               </div>
