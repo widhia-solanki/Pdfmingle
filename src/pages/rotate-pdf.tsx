@@ -82,7 +82,18 @@ const RotatePdfPage = () => {
   const renderContent = () => {
     switch (status) {
       case 'idle':
-        return ( <ToolUploader onFilesSelected={handleFileSelected} isMultiFile={false} /> );
+        return (
+          <ToolUploader 
+            onFilesSelected={handleFileSelected} 
+            isMultiFile={false} 
+            // --- THIS IS THE FIX: Added all required props ---
+            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+            selectedFiles={file ? [file] : []}
+            error={error}
+            onProcess={handleProcess} // Pass the handler
+            actionButtonText="Rotate PDF" // Provide a label
+          />
+        );
       case 'loading_preview':
         return (
           <div className="flex flex-col items-center justify-center p-12 gap-4">
