@@ -68,7 +68,7 @@ const MergePdfPage = () => {
           {status === 'arranging' && (
             <div>
               <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-              <p className="text-gray-600 mb-6">Drag and drop is not supported, use the arrow buttons to reorder your files.</p>
+              <p className="text-gray-600 mb-6">Use the arrow buttons to reorder your files before merging.</p>
               <FileArranger files={files} onFilesChange={setFiles} />
               <div className="mt-8 flex justify-center gap-4">
                 <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
