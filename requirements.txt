@@ -5,3 +5,4 @@ pdf2docx
 python-docx
 pdf2image
 Pillow
+docx2pdf
