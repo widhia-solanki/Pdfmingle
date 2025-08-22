@@ -1,4 +1,6 @@
-import { PDFDocument, PDFImage } from 'pdf-lib';
+// src/lib/pdf/compress.ts
+
+import { PDFDocument, PDFImage, PDFPage } from 'pdf-lib';
 import imageCompression from 'browser-image-compression';
 import type { CompressionLevel } from '@/components/tools/CompressOptions';
 
@@ -8,56 +10,63 @@ const compressionOptions = {
   high: { maxSizeMB: 0.5, maxWidthOrHeight: 720, useWebWorker: true },
 };
 
-const detectImageType = (bytes: Uint8Array): 'image/jpeg' | 'image/png' | null => {
-  if (bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF) {
-    return 'image/jpeg';
-  }
-  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47) {
-    return 'image/png';
-  }
-  return null;
-};
-
 export const compressPDF = async (file: File, level: CompressionLevel): Promise<Uint8Array> => {
   const pdfBytes = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(pdfBytes);
+  const pages = pdfDoc.getPages();
+  
+  // A map to track which original images we have already compressed
+  const processedImages = new Map<string, PDFImage>();
 
-  const imageRefs = pdfDoc.context.enumerateIndirectObjects()
-    .filter(([ref, obj]) => obj instanceof PDFImage)
-    .map(([ref]) => ref);
+  for (const page of pages) {
+    const resources = page.getResources();
+    const imageNames = resources.XObject ? Object.keys(resources.XObject) : [];
 
-  for (const ref of imageRefs) {
-    try {
-      const image = pdfDoc.context.lookup(ref);
-      if (!(image instanceof PDFImage)) continue;
+    for (const imageName of imageNames) {
+      const xobject = resources.XObject[imageName];
+      // Check if this resource is an image
+      if (pdfDoc.context.lookup(xobject) instanceof PDFImage) {
+        const imageRef = xobject.toString();
+        
+        // If we haven't already processed this image, compress it now
+        if (!processedImages.has(imageRef)) {
+          try {
+            const image = pdfDoc.context.lookup(xobject) as PDFImage;
 
-      if (image.width < 100 || image.height < 100) continue;
-      
-      const imageBytes: Uint8Array = (image as any).encodedBytes;
-      if (!imageBytes) continue;
-      
-      const mimeType = detectImageType(imageBytes);
-      if (!mimeType) {
-        console.warn(`Skipping an image with an unknown type (Ref: ${ref}).`);
-        continue;
+            // Skip very small images
+            if (image.width < 100 || image.height < 100) {
+              processedImages.set(imageRef, image); // Mark as processed
+              continue;
+            }
+
+            const imageBytes = await image.embed();
+            const mimeType = image.isJpg() ? 'image/jpeg' : 'image/png';
+            
+            const imageFile = new File([imageBytes], `image.${mimeType.split('/')[1]}`, { type: mimeType });
+            const compressedFile = await imageCompression(imageFile, compressionOptions[level]);
+            const compressedBytes = await compressedFile.arrayBuffer();
+
+            let newImage: PDFImage;
+            if (mimeType === 'image/jpeg') {
+              newImage = await pdfDoc.embedJpg(compressedBytes);
+            } else {
+              newImage = await pdfDoc.embedPng(compressedBytes);
+            }
+            
+            // Store the new, compressed image in our map
+            processedImages.set(imageRef, newImage);
+
+          } catch (error) {
+            console.warn(`Could not compress an image. Skipping.`, error);
+          }
+        }
+        
+        // --- THIS IS THE CRITICAL FIX ---
+        // Replace the image on the page with the (potentially compressed) version from our map
+        if (processedImages.has(imageRef)) {
+          page.getXObject(imageName).set(processedImages.get(imageRef)!.ref);
+        }
       }
-      
-      const imageFile = new File([imageBytes], `image.${mimeType.split('/')[1]}`, { type: mimeType });
-      
-      const compressedFile = await imageCompression(imageFile, compressionOptions[level]);
-      const compressedBytes = await compressedFile.arrayBuffer();
-      
-      let newImage: PDFImage;
-      if (mimeType === 'image/jpeg') {
-        newImage = await pdfDoc.embedJpg(compressedBytes);
-      } else {
-        newImage = await pdfDoc.embedPng(compressedBytes);
-      }
-      
-      pdfDoc.context.assign(ref, newImage.ref);
-      
-    } catch (error) {
-      console.warn(`Could not compress an image (Ref: ${ref}). Skipping.`, error);
     }
   }
 
