@@ -23,7 +23,6 @@ const SplitPdfPage = () => {
   const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
-  // --- NEW: State for the split mode ---
   const [splitMode, setSplitMode] = useState<SplitMode>('ranges');
 
   const handleStartOver = useCallback(() => {
@@ -33,11 +32,40 @@ const SplitPdfPage = () => {
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl('');
     setPdfDoc(null);
-    setSplitMode('ranges'); // Reset mode on start over
+    setSplitMode('ranges');
   }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
-    // ... (logic is the same as before)
+    if (files.length === 0) {
+      handleStartOver();
+      return;
+    }
+    
+    const selectedFile = files[0];
+    setFile(selectedFile);
+    setError(null);
+    setStatus('loading_preview');
+
+    try {
+      const pdfJS = await import('pdfjs-dist');
+      pdfJS.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.mjs`;
+      
+      const fileBuffer = await selectedFile.arrayBuffer();
+      const typedArray = new Uint8Array(fileBuffer);
+      const loadedPdfDoc = await pdfJS.getDocument({ data: typedArray }).promise;
+      
+      setPdfDoc(loadedPdfDoc);
+      setTotalPages(loadedPdfDoc.numPages);
+      setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
+      setStatus('options');
+    } catch (err: any) {
+      let errorMessage = "Could not read the PDF. It may be corrupt.";
+      if (err.name === 'PasswordException') {
+        errorMessage = "This PDF is password-protected and cannot be processed.";
+      }
+      setError(errorMessage);
+      setStatus('error');
+    }
   };
 
   const handleProcess = async () => {
@@ -46,7 +74,6 @@ const SplitPdfPage = () => {
     setError(null);
 
     try {
-      // --- UPDATED: Pass the splitMode to the processing function ---
       const resultBlob = await splitPDF(file, splitRanges, splitMode);
       const filename = `${file.name.replace(/\.pdf$/i, '')}_split.zip`;
       const url = URL.createObjectURL(resultBlob);
@@ -68,12 +95,17 @@ const SplitPdfPage = () => {
                 acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
                 selectedFiles={file ? [file] : []}
                 error={error}
-                onProcess={() => {}}
+                onProcess={handleProcess}
                 actionButtonText="Split PDF"
             />
         );
       case 'loading_preview':
-        // ... (same as before)
+        return (
+          <div className="flex flex-col items-center justify-center p-12 gap-4">
+            <Loader2 className="w-12 h-12 text-gray-500 animate-spin" />
+            <p className="text-lg font-semibold text-gray-700">Reading your PDF...</p>
+          </div>
+        );
       case 'options':
         return (
           <div className="w-full grid md:grid-cols-2 gap-8 items-start">
@@ -82,7 +114,6 @@ const SplitPdfPage = () => {
               <PDFPreviewer pdfDoc={pdfDoc} />
             </div>
             <div>
-              {/* --- UPDATED: Pass mode props to the options component --- */}
               <SplitOptions 
                 totalPages={totalPages} 
                 ranges={splitRanges} 
@@ -101,16 +132,26 @@ const SplitPdfPage = () => {
         );
       case 'processing': return <ToolProcessor />;
       case 'success': return <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename="split.zip" />;
-      case 'error': return ( /* ... same as before */ );
+      
+      // --- THIS IS THE FIX: The error display JSX is now correctly included ---
+      case 'error': return (
+        <div className="text-center p-8">
+            <p className="text-red-500 font-semibold mb-4">Error: {error}</p>
+            <Button onClick={handleStartOver} variant="outline">Try Again</Button>
+        </div>
+      );
     }
   };
 
   return (
     <>
-      <NextSeo /* ... */ />
+      <NextSeo
+        title="Split PDF Online – Extract Pages Free"
+        description="Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter."
+      />
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
-        <h1 /* ... */>Split PDF Online</h1>
-        <p /* ... */>Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter.</p>
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Split PDF Online</h1>
+        <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter.</p>
         <div className="mt-8 md:mt-12 w-full max-w-6xl px-4">
           {renderContent()}
         </div>
