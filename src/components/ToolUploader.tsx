@@ -65,7 +65,7 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
       )}
 
       {/* Show process button only if files are selected and it's a simple tool */}
-      {selectedFiles.length > 0 && !['merge-pdf', 'split-pdf', 'compress-pdf', 'organize-pdf', 'rotate-pdf'].includes(actionButtonText.toLowerCase().replace(' ', '-')) && (
+      {selectedFiles.length > 0 && !isMultiFile && (
           <Button size="lg" onClick={onProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold bg-red-500 hover:bg-red-600 mt-4">
             {actionButtonText}
           </Button>
