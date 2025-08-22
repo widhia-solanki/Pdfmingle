@@ -1,7 +1,7 @@
 // src/pages/split-pdf.tsx
 
 import { useState, useCallback } from 'react';
-import { NextSeo, FAQPageJsonLd } from 'next-seo';
+import { NextSeo } from 'next-seo';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 import { ToolUploader } from '@/components/ToolUploader';
@@ -85,7 +85,17 @@ const SplitPdfPage = () => {
   const renderContent = () => {
     switch (status) {
       case 'idle':
-        return <ToolUploader onFilesSelected={handleFileSelected} isMultiFile={false} />;
+        return (
+            <ToolUploader 
+                onFilesSelected={handleFileSelected} 
+                isMultiFile={false} 
+                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                selectedFiles={file ? [file] : []}
+                error={error}
+                onProcess={() => {}} // Not used in this specific flow
+                actionButtonText="Split PDF" // Not displayed, but required
+            />
+        );
       case 'loading_preview':
         return (
           <div className="flex flex-col items-center justify-center p-12 gap-4">
