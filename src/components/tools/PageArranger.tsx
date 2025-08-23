@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import * as pdfjsLib from 'pdfjs-dist';
-import { Loader2, Trash2, RotateCw } from 'lucide-react';
+import { Loader2, Trash2, RotateCw, ZoomIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PageObject } from '@/lib/pdf/organize';
 import { cn } from '@/lib/utils';
 
@@ -21,8 +22,14 @@ interface PageArrangerProps {
 export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPagesChange }) => {
   const [pageCanvases, setPageCanvases] = useState<Map<number, string>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
+  
+  // New state for the "view bigger" feature
+  const [viewingPage, setViewingPage] = useState<number | null>(null);
+  const [highResCanvas, setHighResCanvas] = useState<string>('');
+  const [isDialogLoading, setIsDialogLoading] = useState(false);
 
   useEffect(() => {
+    // This effect renders the low-resolution thumbnails for the grid
     const renderAllPages = async () => {
       setIsLoading(true);
       const canvasMap = new Map<number, string>();
@@ -33,7 +40,6 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
         const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
         const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
         
-        // Render all pages to generate thumbnails
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const viewport = page.getViewport({ scale: 0.3 });
@@ -57,6 +63,39 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
       renderAllPages();
     }
   }, [file]);
+
+  useEffect(() => {
+    // This effect renders a single high-resolution page when the dialog is opened
+    const renderHighResPage = async () => {
+      if (viewingPage === null || !file) return;
+
+      setIsDialogLoading(true);
+      const fileReader = new FileReader();
+
+      fileReader.onload = async (e) => {
+        if (!e.target?.result) return;
+        const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        
+        const page = await pdf.getPage(viewingPage + 1); // pdf.js is 1-based
+        const viewport = page.getViewport({ scale: 1.5 }); // Higher scale for clarity
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
+
+        if (context) {
+          await page.render({ canvasContext: context, viewport: viewport }).promise;
+          setHighResCanvas(canvas.toDataURL());
+        }
+        setIsDialogLoading(false);
+      };
+      fileReader.readAsArrayBuffer(file);
+    };
+
+    renderHighResPage();
+  }, [viewingPage, file]);
+
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
@@ -89,51 +128,71 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
   }
 
   return (
-    <DragDropContext onDragEnd={onDragEnd}>
-      <Droppable droppableId="pages" direction="horizontal">
-        {(provided) => (
-          <div
-            {...provided.droppableProps}
-            ref={provided.innerRef}
-            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-4 bg-gray-100 rounded-lg border min-h-[10rem]"
-          >
-            {pages.map((page, index) => (
-              <Draggable key={page.id} draggableId={page.id} index={index}>
-                {(provided, snapshot) => (
-                  <div
-                    ref={provided.innerRef}
-                    {...provided.draggableProps}
-                    {...provided.dragHandleProps}
-                    className={cn(
-                      "p-1.5 bg-white rounded-lg shadow-sm relative group",
-                      snapshot.isDragging && "shadow-xl scale-105"
-                    )}
-                  >
-                    <div className="absolute top-1 right-1 z-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <Button size="icon" variant="destructive" className="h-6 w-6" onClick={() => deletePage(index)}>
-                          <Trash2 className="h-4 w-4" />
-                       </Button>
-                       <Button size="icon" variant="outline" className="h-6 w-6 bg-white" onClick={() => rotatePage(index)}>
-                          <RotateCw className="h-4 w-4" />
-                       </Button>
+    <>
+      <DragDropContext onDragEnd={onDragEnd}>
+        <Droppable droppableId="pages" direction="horizontal">
+          {(provided) => (
+            <div
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+              className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-4 bg-gray-100 rounded-lg border min-h-[10rem]"
+            >
+              {pages.map((page, index) => (
+                <Draggable key={page.id} draggableId={page.id} index={index}>
+                  {(provided, snapshot) => (
+                    <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
+                      className={cn(
+                        "p-1.5 bg-white rounded-lg shadow-sm relative group",
+                        snapshot.isDragging && "shadow-xl scale-105"
+                      )}
+                    >
+                      <div className="absolute top-1 right-1 z-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                         <Button size="icon" variant="outline" className="h-6 w-6 bg-white" onClick={() => setViewingPage(page.originalIndex)}>
+                            <ZoomIn className="h-4 w-4" />
+                         </Button>
+                         <Button size="icon" variant="outline" className="h-6 w-6 bg-white" onClick={() => rotatePage(index)}>
+                            <RotateCw className="h-4 w-4" />
+                         </Button>
+                         <Button size="icon" variant="destructive" className="h-6 w-6" onClick={() => deletePage(index)}>
+                            <Trash2 className="h-4 w-4" />
+                         </Button>
+                      </div>
+                      <img
+                        src={pageCanvases.get(page.originalIndex)}
+                        alt={`Page ${page.originalIndex + 1}`}
+                        className="w-full h-auto rounded-md transition-transform"
+                        style={{ transform: `rotate(${page.rotation}deg)` }}
+                      />
+                      <div className="absolute bottom-1 left-1 bg-gray-800 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                          {index + 1}
+                      </div>
                     </div>
-                    <img
-                      src={pageCanvases.get(page.originalIndex)}
-                      alt={`Page ${page.originalIndex + 1}`}
-                      className="w-full h-auto rounded-md transition-transform"
-                      style={{ transform: `rotate(${page.rotation}deg)` }}
-                    />
-                    <div className="absolute bottom-1 left-1 bg-gray-800 text-white text-xs rounded-full px-2 py-0.5 font-bold">
-                        {index + 1}
-                    </div>
-                  </div>
-                )}
-              </Draggable>
-            ))}
-            {provided.placeholder}
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+
+      <Dialog open={viewingPage !== null} onOpenChange={() => setViewingPage(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Page {viewingPage !== null ? viewingPage + 1 : ''}</DialogTitle>
+          </DialogHeader>
+          <div className="flex-grow flex items-center justify-center overflow-auto">
+            {isDialogLoading ? (
+              <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+            ) : (
+              <img src={highResCanvas} alt="High-resolution page preview" className="max-w-full max-h-full object-contain" />
+            )}
           </div>
-        )}
-      </Droppable>
-    </DragDropContext>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
