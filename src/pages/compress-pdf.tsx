@@ -3,13 +3,11 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { tools } from '@/constants/tools';
-import { ToolUploader } from '@/components/ToolUploader'; // Corrected import
-import { ToolProcessor } from '@/components/ToolProcessor'; // Corrected import
+import { ToolUploader } from '@/components/ToolUploader';
+import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { compressPDF } from '@/lib/pdf/compress';
 import { NextPage } from 'next';
 
@@ -18,8 +16,9 @@ const CompressPDFPage: NextPage = () => {
   const [processedFile, setProcessedFile] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  // FIX 1: Changed initial state from 'recommended' to 'medium' to match the type
   const [compressionLevel, setCompressionLevel] =
-    useState<CompressionLevel>('recommended');
+    useState<CompressionLevel>('medium');
 
   const tool = tools['compress-pdf'];
 
@@ -74,7 +73,7 @@ const CompressPDFPage: NextPage = () => {
             <ToolUploader
               onFilesSelected={setFiles}
               accept={{ 'application/pdf': ['.pdf'] }}
-              disabled={files.length > 0} // Compress one file at a time
+              disabled={files.length > 0}
             />
 
             {error && <p className="text-red-500 text-center">{error}</p>}
@@ -91,9 +90,10 @@ const CompressPDFPage: NextPage = () => {
                     />
                   ))}
                 </div>
+                {/* FIX 2 & 3: Corrected prop names to 'level' and 'onLevelChange' */}
                 <CompressOptions
-                  compressionLevel={compressionLevel}
-                  onCompressionLevelChange={setCompressionLevel}
+                  level={compressionLevel}
+                  onLevelChange={setCompressionLevel}
                 />
                 <ToolProcessor
                   onProcess={handleProcess}
