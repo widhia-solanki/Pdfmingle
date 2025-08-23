@@ -9,12 +9,14 @@ import { ToolDownloader } from '@/components/ToolDownloader';
 import { rotatePdf } from '@/lib/pdf/rotate';
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
+import { RotateCw, Download } from 'lucide-react'; // Import icons
 
 type Status = 'idle' | 'arranging' | 'processing' | 'success' | 'error';
 
 const RotatePDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [rotations, setRotations] = useState<{ [key: number]: number }>({});
+  // Simplified rotation state for a single file
+  const [rotation, setRotation] = useState<number>(0);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [downloadUrl, setDownloadUrl] = useState<string>('');
@@ -22,6 +24,7 @@ const RotatePDFPage: NextPage = () => {
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
+    setRotation(0); // Reset rotation on new file
     if (selectedFiles.length > 0) {
         setStatus('arranging');
     } else {
@@ -29,25 +32,13 @@ const RotatePDFPage: NextPage = () => {
     }
   };
 
-  const handleRotate = (index: number) => {
-    setRotations((prev) => {
-      const currentRotation = prev[index] || 0;
-      const newRotation = (currentRotation + 90) % 360;
-      return { ...prev, [index]: newRotation };
-    });
+  const handleRotateClick = () => {
+    setRotation((prevRotation) => (prevRotation + 90) % 360);
   };
 
-  const handleFileRemove = (index: number) => {
-    const newFiles = files.filter((_, i) => i !== index);
-    setFiles(newFiles);
-    if (newFiles.length === 0) {
-        setStatus('idle');
-    }
-    setRotations((prev) => {
-      const newRotations = { ...prev };
-      delete newRotations[index];
-      return newRotations;
-    });
+  const handleFileRemove = () => {
+    setFiles([]);
+    setStatus('idle');
   };
 
   const handleProcess = async () => {
@@ -58,8 +49,11 @@ const RotatePDFPage: NextPage = () => {
     setStatus('processing');
     try {
       setError(null);
-      // NOTE: The rotatePdf function from your lib only rotates the first file
-      const processed = await rotatePdf(files[0], rotations);
+      // We need to apply the rotation to all pages, so we pass the single rotation value
+      const rotationsForAllPages: { [key: number]: number } = {};
+      // This assumes we need to know the page count to apply rotation to all pages.
+      // Let's adjust rotatePdf to handle a single angle for all pages.
+      const processed = await rotatePdf(files[0], rotation);
       const blob = new Blob([processed], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
@@ -75,7 +69,7 @@ const RotatePDFPage: NextPage = () => {
   const handleStartOver = useCallback(() => {
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setFiles([]);
-    setRotations({});
+    setRotation(0);
     setError(null);
     setStatus('idle');
     setDownloadUrl('');
@@ -100,7 +94,7 @@ const RotatePDFPage: NextPage = () => {
                     onFilesSelected={handleFilesSelected} 
                     acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
                     selectedFiles={files}
-                    isMultiFile={false} // Rotate tool works on one file at a time
+                    isMultiFile={false}
                     error={error}
                     onProcess={() => {}}
                     actionButtonText=""
@@ -108,29 +102,36 @@ const RotatePDFPage: NextPage = () => {
             </div>
         )}
 
-        {status === 'arranging' && (
-             <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-start">
-                <div className="md:sticky md:top-24">
-                  <h2 className="text-2xl font-bold mb-4 text-center md:text-left">File Preview</h2>
-                  {files.map((file, index) => (
-                    <PDFPreviewer
-                      key={index}
-                      file={file}
-                      index={index}
-                      onRemove={handleFileRemove}
-                      onRotate={handleRotate}
-                      rotationAngle={rotations[index] || 0}
-                    />
-                  ))}
+        {status === 'arranging' && files.length > 0 && (
+             <div className="w-full max-w-2xl mx-auto space-y-6 flex flex-col items-center">
+                <div className="p-4 border-2 border-dashed rounded-xl w-full bg-gray-50">
+                    <h2 className="text-2xl font-bold mb-4 text-center">File Preview</h2>
+                    <div className="flex justify-center">
+                        <PDFPreviewer
+                          file={files[0]}
+                          index={0}
+                          onRemove={handleFileRemove}
+                          rotationAngle={rotation}
+                        />
+                    </div>
                 </div>
-                <div className="flex flex-col items-center justify-center gap-4 mt-8 md:mt-20">
-                    <p className="text-gray-600 text-center">Click the rotate icon on the preview to set the rotation for each page.</p>
-                    <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 text-white">
-                        Rotate PDF
+                
+                <p className="text-lg font-medium text-gray-700">
+                    Current Rotation: <span className="font-bold text-blue-600">{rotation}°</span>
+                </p>
+
+                <div className="w-full flex flex-col sm:flex-row justify-center gap-4">
+                    <Button size="lg" onClick={handleRotateClick} className="w-full sm:w-auto" variant="outline">
+                        <RotateCw className="mr-2 h-5 w-5" />
+                        Rotate
                     </Button>
-                    <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
+                    <Button size="lg" onClick={handleProcess} className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white">
+                        <Download className="mr-2 h-5 w-5" />
+                        Apply & Download
+                    </Button>
                 </div>
-              </div>
+                <Button variant="link" onClick={handleStartOver}>Choose a different file</Button>
+            </div>
         )}
 
         {status === 'processing' && <ToolProcessor />}
