@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import Head from 'next/head';
 import { tools } from '@/constants/tools';
 import { ToolUploader } from '@/components/ToolUploader';
-import { ToolProcessor } from '@/components/tools/ToolProcessor';
+// FIX: Corrected the import path for ToolProcessor
+import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
