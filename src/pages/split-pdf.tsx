@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// FINAL, GUARANTEED FIX: The correct worker URL is 'pdf.worker.min.mjs'
+// Set up the worker once when the page loads
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 }
 
 type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
@@ -29,12 +29,13 @@ const SplitPdfPage = () => {
   const [processedFileName, setProcessedFileName] = useState('');
 
   const handleStartOver = useCallback(() => {
-    // FINAL FIX: Ensure file state is cleared on reset
     setFile(null);
     setStatus('idle');
     setError(null);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl('');
+    setTotalPages(0);
+    setSplitRanges([{ from: 1, to: 1 }]);
   }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
@@ -47,10 +48,10 @@ const SplitPdfPage = () => {
     setFile(selectedFile);
     setError(null);
 
+    // Use pdf.js to get the page count for the options UI
     try {
       const fileBuffer = await selectedFile.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
-      
       setTotalPages(pdf.numPages);
       setSplitRanges([{ from: 1, to: pdf.numPages }]);
       setStatus('options');
@@ -66,6 +67,7 @@ const SplitPdfPage = () => {
     setError(null);
 
     try {
+      // The core logic only needs the file, not the pdf.js doc
       const resultBlob = await splitPDF(file, splitRanges, splitMode);
       setProcessedFileName(`${file.name.replace(/\.pdf$/i, '')}_split.zip`);
       const url = URL.createObjectURL(resultBlob);
