@@ -1,8 +1,6 @@
-
 // src/pages/index.tsx
 
 import { useState } from 'react';
-// FINAL FIX: Import toolArray for filtering
 import { toolArray, categories, ToolCategory } from '@/constants/tools';
 import { Button } from '@/components/ui/button';
 import { ToolGrid } from '@/components/ToolGrid';
@@ -14,10 +12,10 @@ import { NextSeo, WebPageJsonLd } from 'next-seo';
 const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
 
-  // FINAL FIX: Use toolArray for filtering
   const filteredTools = activeCategory === 'All'
     ? toolArray
-    : toolArray.filter(tool => tool.category === active-category);
+    // FINAL FIX: Corrected the typo from 'active-category' to 'activeCategory'
+    : toolArray.filter(tool => tool.category === activeCategory);
 
   return (
     <>
