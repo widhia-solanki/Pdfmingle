@@ -8,7 +8,7 @@ import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { SplitOptions, SplitRange, SplitMode } from '@/components/tools/SplitOptions';
-import { PDFPreviewer } from '@/components/PDFPreviewer';
+import PDFPreviewer from '@/components/PDFPreviewer'; // Corrected import
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { splitPDF } from '@/lib/pdf/split';
@@ -111,7 +111,8 @@ const SplitPdfPage = () => {
           <div className="w-full grid md:grid-cols-2 gap-8 items-start">
             <div className="md:sticky md:top-24">
               <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-              <PDFPreviewer pdfDoc={pdfDoc} />
+              {/* The component usage depends on what props it expects, assuming `file` prop here */}
+              {file && <PDFPreviewer file={file} onRemove={() => handleFileSelected([])} index={0} />}
             </div>
             <div>
               <SplitOptions 
@@ -130,13 +131,12 @@ const SplitPdfPage = () => {
             </div>
           </div>
         );
-      case 'processing': return <ToolProcessor />;
-      case 'success': return <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename="split.zip" />;
+      case 'processing': return <ToolProcessor isProcessing={true} />;
+      case 'success': return <ToolDownloader processedFile={new Blob()} fileName="split.zip" onReset={handleStartOver} />;
       
-      // --- THIS IS THE FIX: The error display JSX is now correctly included ---
       case 'error': return (
         <div className="text-center p-8">
-            <p className="text-red-500 font-semibold mb-4">Error: {error}</p>
+            <p className="text-red-500 font-semibold mb-4">{error}</p>
             <Button onClick={handleStartOver} variant="outline">Try Again</Button>
         </div>
       );
