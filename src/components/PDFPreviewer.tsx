@@ -2,9 +2,10 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/build/pdf_viewer.css';
+// FINAL, GUARANTEED FIX: Corrected the CSS import path from /build/ to /web/
+import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react'; // Removed RotateCw
+import { X } from 'lucide-react';
 
 // Point to the local copy of the worker.
 if (typeof window !== 'undefined') {
