@@ -1,71 +1,92 @@
-import { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { PDFDocument } from 'pdf-lib';
+// src/components/tools/PageArranger.tsx
 
-interface PageThumbnail {
-  id: string;
-  dataUrl: string;
-  pageIndex: number;
+import React, { useState, useEffect } from 'react';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import * as pdfjsLib from 'pdfjs-dist';
+import { Loader2, Trash2, RotateCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { PageObject } from '@/lib/pdf/organize';
+import { cn } from '@/lib/utils';
+
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 interface PageArrangerProps {
-  files: File[];
-  onArrangementChange: (newOrder: number[]) => void;
+  file: File;
+  pages: PageObject[];
+  onPagesChange: (pages: PageObject[]) => void;
 }
 
-export const PageArranger = ({ files, onArrangementChange }: PageArrangerProps) => {
-  const [thumbnails, setThumbnails] = useState<PageThumbnail[]>([]);
+export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPagesChange }) => {
+  const [pageCanvases, setPageCanvases] = useState<Map<number, string>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const generateThumbnails = async () => {
+    const renderAllPages = async () => {
       setIsLoading(true);
-      const allThumbs: PageThumbnail[] = [];
-      
-      // Organize PDF only works with one file
-      const file = files[0];
-      if (!file) {
-          setIsLoading(false);
-          return;
-      }
-      
-      try {
-        const pdfBytes = await file.arrayBuffer();
-        const pdfDoc = await PDFDocument.load(pdfBytes);
-        const totalPages = pdfDoc.getPageCount();
+      const canvasMap = new Map<number, string>();
+      const fileReader = new FileReader();
 
-        for (let i = 0; i < totalPages; i++) {
-          allThumbs.push({
-            id: `page${i}`,
-            dataUrl: `Page ${i + 1}`,
-            pageIndex: i,
-          });
+      fileReader.onload = async (e) => {
+        if (!e.target?.result) return;
+        const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        
+        // Render all pages to generate thumbnails
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 0.3 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          if (context) {
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            canvasMap.set(i - 1, canvas.toDataURL());
+          }
         }
-      } catch (e) {
-        console.error("Failed to load PDF for page arrangement:", e);
-      }
-      
-      setThumbnails(allThumbs);
-      setIsLoading(false);
+        setPageCanvases(canvasMap);
+        setIsLoading(false);
+      };
+      fileReader.readAsArrayBuffer(file);
     };
 
-    generateThumbnails();
-  }, [files]);
+    if (file) {
+      renderAllPages();
+    }
+  }, [file]);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    
-    const items = Array.from(thumbnails);
+    const items = Array.from(pages);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
-
-    setThumbnails(items);
-    
-    const newOrder = items.map(item => item.pageIndex);
-    onArrangementChange(newOrder);
+    onPagesChange(items);
   };
-  
-  if (isLoading) return <p className="text-center my-8">Loading Pages...</p>;
+
+  const rotatePage = (index: number) => {
+    const newPages = [...pages];
+    const page = newPages[index];
+    page.rotation = (page.rotation + 90) % 360;
+    onPagesChange(newPages);
+  };
+
+  const deletePage = (index: number) => {
+    const newPages = [...pages];
+    newPages.splice(index, 1);
+    onPagesChange(newPages);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 gap-4 h-64">
+        <Loader2 className="w-12 h-12 text-blue-500 animate-spin" />
+        <p className="text-lg font-semibold text-gray-700">Loading all pages...</p>
+      </div>
+    );
+  }
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -74,18 +95,37 @@ export const PageArranger = ({ files, onArrangementChange }: PageArrangerProps) 
           <div
             {...provided.droppableProps}
             ref={provided.innerRef}
-            className="flex flex-wrap items-center justify-center gap-4 p-4 border rounded-lg bg-gray-100 min-h-[10rem]"
+            className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-4 bg-gray-100 rounded-lg border min-h-[10rem]"
           >
-            {thumbnails.map((thumb, index) => (
-              <Draggable key={thumb.id} draggableId={thumb.id} index={index}>
-                {(provided) => (
+            {pages.map((page, index) => (
+              <Draggable key={page.id} draggableId={page.id} index={index}>
+                {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
                     {...provided.draggableProps}
                     {...provided.dragHandleProps}
-                    className="w-24 h-32 border bg-white rounded shadow-md flex items-center justify-center text-center text-xs p-1"
+                    className={cn(
+                      "p-1.5 bg-white rounded-lg shadow-sm relative group",
+                      snapshot.isDragging && "shadow-xl scale-105"
+                    )}
                   >
-                    {thumb.dataUrl}
+                    <div className="absolute top-1 right-1 z-10 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <Button size="icon" variant="destructive" className="h-6 w-6" onClick={() => deletePage(index)}>
+                          <Trash2 className="h-4 w-4" />
+                       </Button>
+                       <Button size="icon" variant="outline" className="h-6 w-6 bg-white" onClick={() => rotatePage(index)}>
+                          <RotateCw className="h-4 w-4" />
+                       </Button>
+                    </div>
+                    <img
+                      src={pageCanvases.get(page.originalIndex)}
+                      alt={`Page ${page.originalIndex + 1}`}
+                      className="w-full h-auto rounded-md transition-transform"
+                      style={{ transform: `rotate(${page.rotation}deg)` }}
+                    />
+                    <div className="absolute bottom-1 left-1 bg-gray-800 text-white text-xs rounded-full px-2 py-0.5 font-bold">
+                        {index + 1}
+                    </div>
                   </div>
                 )}
               </Draggable>
