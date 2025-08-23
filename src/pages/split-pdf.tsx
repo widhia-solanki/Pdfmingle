@@ -8,7 +8,7 @@ import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { SplitOptions, SplitRange, SplitMode } from '@/components/tools/SplitOptions';
-import PDFPreviewer from '@/components/PDFPreviewer'; // Corrected import
+import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { splitPDF } from '@/lib/pdf/split';
@@ -24,6 +24,7 @@ const SplitPdfPage = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [splitMode, setSplitMode] = useState<SplitMode>('ranges');
+  const [downloadFilename, setDownloadFilename] = useState('split.zip');
 
   const handleStartOver = useCallback(() => {
     setFile(null);
@@ -75,12 +76,12 @@ const SplitPdfPage = () => {
 
     try {
       const resultBlob = await splitPDF(file, splitRanges, splitMode);
-      const filename = `${file.name.replace(/\.pdf$/i, '')}_split.zip`;
+      setDownloadFilename(`${file.name.replace(/\.pdf$/i, '')}_split.zip`);
       const url = URL.createObjectURL(resultBlob);
       setDownloadUrl(url);
       setStatus('success');
     } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError((err as Error).message || 'An unexpected error occurred.');
       setStatus('error');
     }
   };
@@ -90,13 +91,9 @@ const SplitPdfPage = () => {
       case 'idle':
         return (
             <ToolUploader 
-                onFilesSelected={handleFileSelected} 
-                isMultiFile={false} 
-                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-                selectedFiles={file ? [file] : []}
-                error={error}
-                onProcess={handleProcess}
-                actionButtonText="Split PDF"
+                onFilesSelected={handleFileSelected}
+                accept={{ 'application/pdf': ['.pdf'] }}
+                disabled={!!file}
             />
         );
       case 'loading_preview':
@@ -111,8 +108,7 @@ const SplitPdfPage = () => {
           <div className="w-full grid md:grid-cols-2 gap-8 items-start">
             <div className="md:sticky md:top-24">
               <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-              {/* The component usage depends on what props it expects, assuming `file` prop here */}
-              {file && <PDFPreviewer file={file} onRemove={() => handleFileSelected([])} index={0} />}
+              {file && <PDFPreviewer file={file} onRemove={handleStartOver} index={0} />}
             </div>
             <div>
               <SplitOptions 
@@ -123,7 +119,7 @@ const SplitPdfPage = () => {
                 onModeChange={setSplitMode}
               />
               <div className="mt-6 flex flex-col items-center gap-4">
-                <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
+                <Button size="lg" onClick={handleProcess} className="w-full" disabled={!pdfDoc}>
                   Split PDF
                 </Button>
                 <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
@@ -132,7 +128,9 @@ const SplitPdfPage = () => {
           </div>
         );
       case 'processing': return <ToolProcessor isProcessing={true} />;
-      case 'success': return <ToolDownloader processedFile={new Blob()} fileName="split.zip" onReset={handleStartOver} />;
+      case 'success': 
+        const blob = downloadUrl ? new Blob() : null; // Placeholder blob
+        return blob && <ToolDownloader processedFile={blob} onReset={handleStartOver} fileName={downloadFilename} directUrl={downloadUrl} />;
       
       case 'error': return (
         <div className="text-center p-8">
