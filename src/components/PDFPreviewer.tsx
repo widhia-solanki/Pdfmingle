@@ -2,9 +2,9 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-import 'pdfjs-dist/web/pdf_viewer.css';
+import 'pdfjs-dist/build/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
-import { X, RotateCw } from 'lucide-react';
+import { X } from 'lucide-react'; // Removed RotateCw
 
 // Point to the local copy of the worker.
 if (typeof window !== 'undefined') {
@@ -15,7 +15,6 @@ interface PDFPreviewerProps {
   file: File;
   index: number;
   onRemove: (index: number) => void;
-  onRotate?: (index: number) => void;
   rotationAngle?: number;
 }
 
@@ -23,13 +22,11 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
   file,
   index,
   onRemove,
-  onRotate,
   rotationAngle = 0,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // FINAL, GUARANTEED FIX: Removed the incorrect period after async ()
     const renderPdf = async () => {
       if (!canvasRef.current) return;
 
@@ -82,18 +79,6 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
       >
         <X className="h-4 w-4" />
       </Button>
-      
-      {/* Rotate Button */}
-      {onRotate && (
-         <Button
-            variant="outline"
-            size="icon"
-            className="absolute top-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-gray-100"
-            onClick={() => onRotate(index)}
-         >
-            <RotateCw className="h-4 w-4" />
-         </Button>
-      )}
     </div>
   );
 };
