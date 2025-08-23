@@ -29,7 +29,7 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // FINAL FIX: Removed the incorrect period after async ()
+    // FINAL, GUARANTEED FIX: Removed the incorrect period after async ()
     const renderPdf = async () => {
       if (!canvasRef.current) return;
 
