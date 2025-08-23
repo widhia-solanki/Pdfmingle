@@ -16,7 +16,6 @@ const CompressPDFPage: NextPage = () => {
   const [processedFile, setProcessedFile] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  // FIX 1: Changed initial state from 'recommended' to 'medium' to match the type
   const [compressionLevel, setCompressionLevel] =
     useState<CompressionLevel>('medium');
 
@@ -59,11 +58,13 @@ const CompressPDFPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{tool.title}</title>
+        {/* FIX: Use 'metaTitle' for the page title */}
+        <title>{tool.metaTitle}</title>
         <meta name="description" content={tool.description} />
       </Head>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-4">{tool.title}</h1>
+        {/* FIX: Use 'h1' for the main page heading */}
+        <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
           {tool.description}
         </p>
@@ -90,7 +91,6 @@ const CompressPDFPage: NextPage = () => {
                     />
                   ))}
                 </div>
-                {/* FIX 2 & 3: Corrected prop names to 'level' and 'onLevelChange' */}
                 <CompressOptions
                   level={compressionLevel}
                   onLevelChange={setCompressionLevel}
