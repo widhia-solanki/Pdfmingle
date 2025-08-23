@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import Head from 'next/head';
 import { tools } from '@/constants/tools';
-import ToolUploader from '@/components/ToolUploader';
-import ToolProcessor from '@/components/ToolProcessor';
+import { ToolUploader } from '@/components/ToolUploader'; // Corrected import
+import { ToolProcessor } from '@/components/ToolProcessor'; // Corrected import
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
-import PDFPreviewer from '@/components/PDFPreviewer'; // Corrected import
+import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { compressPDF } from '@/lib/pdf/compress';
@@ -39,7 +39,6 @@ const CompressPDFPage: NextPage = () => {
     setError(null);
 
     try {
-      // Compress tool typically handles one file at a time
       const pdfBytes = await compressPDF(files[0], compressionLevel);
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       setProcessedFile(blob);
