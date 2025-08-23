@@ -1,8 +1,10 @@
+// src/components/NewMobileMenu.tsx
+
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Menu, X, FileQuestion } from "lucide-react";
-import { tools, iconMap } from "@/constants/tools";
+import { toolArray, iconMap } from "@/constants/tools"; // FIX: Import toolArray instead of tools
 import Link from "next/link";
 
 const PDFMingleLogo = () => (
@@ -14,7 +16,6 @@ const PDFMingleLogo = () => (
       <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
     </svg>
     <div>
-      {/* --- THIS IS THE FIX --- */}
       <span className="text-blue-600">PDF</span>Mingle
     </div>
   </Link>
@@ -46,7 +47,8 @@ export const NewMobileMenu = () => {
         <nav className="flex-grow overflow-y-auto p-4">
           <h2 className="text-lg font-semibold mb-2 text-gray-800">All PDF Tools</h2>
           <div className="flex flex-col gap-1">
-            {tools.map((tool) => {
+            {/* FIX: Use toolArray for mapping */}
+            {toolArray.map((tool) => {
               const Icon = iconMap[tool.icon] || FileQuestion;
               return (
                 <Link
@@ -65,4 +67,6 @@ export const NewMobileMenu = () => {
       </SheetContent>
     </Sheet>
   );
-};
+};```
+
+Please commit this final change. We have now fixed the type definition in `tools.ts` and updated all the components that were using it incorrectly (`DesktopNav.tsx` and `NewMobileMenu.tsx`). The project should now build successfully.
