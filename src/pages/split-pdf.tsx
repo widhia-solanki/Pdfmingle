@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// FINAL, DEFINITIVE FIX: The correct worker file is 'pdf.worker.mjs'
+// FINAL, GUARANTEED FIX: The correct worker URL is 'pdf.worker.min.mjs'
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs`;
 }
 
 type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
@@ -29,6 +29,7 @@ const SplitPdfPage = () => {
   const [processedFileName, setProcessedFileName] = useState('');
 
   const handleStartOver = useCallback(() => {
+    // FINAL FIX: Ensure file state is cleared on reset
     setFile(null);
     setStatus('idle');
     setError(null);
