@@ -2,13 +2,15 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
+// FINAL, GUARANTEED FIX: Import the worker directly to be handled by the bundler.
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
 import { X, RotateCw } from 'lucide-react';
 
-// FINAL, GUARANTEED FIX: The correct worker URL is 'pdf.worker.min.mjs'
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs`;
+  // Use the imported worker
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 }
 
 interface PDFPreviewerProps {
