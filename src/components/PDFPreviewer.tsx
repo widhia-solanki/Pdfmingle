@@ -1,14 +1,14 @@
 // src/components/PDFPreviewer.tsx
 
 import React, { useEffect, useRef } from 'react';
-import * as pdfjsLib from 'pdfjs-dist'; // Corrected import path
+import * as pdfjsLib from 'pdfjs-dist';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
 import { X, RotateCw } from 'lucide-react';
 
-// Set worker path
+// FINAL, DEFINITIVE FIX: The correct worker file is 'pdf.worker.mjs'
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.mjs`;
 }
 
 interface PDFPreviewerProps {
