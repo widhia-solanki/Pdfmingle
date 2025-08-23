@@ -70,12 +70,10 @@ const RotatePDFPage: NextPage = () => {
   return (
     <>
       <Head>
-        {/* FIX: Use 'metaTitle' for the page title */}
         <title>{tool.metaTitle}</title>
         <meta name="description" content={tool.description} />
       </Head>
       <div className="container mx-auto px-4 py-8">
-        {/* FIX: Use 'h1' for the main page heading */}
         <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
           {tool.description}
@@ -83,9 +81,10 @@ const RotatePDFPage: NextPage = () => {
 
         {!processedFile ? (
           <div className="space-y-6">
+            {/* FIX: Changed prop name from 'accept' to 'acceptedFileTypes' */}
             <ToolUploader 
               onFilesSelected={setFiles} 
-              accept={{ 'application/pdf': ['.pdf'] }}
+              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
               disabled={isUploaderDisabled}
             />
             
