@@ -1,9 +1,10 @@
 // src/lib/pdf/protect.ts
 
-import { init, encrypt } from 'qpdf-wasm';
+// FINAL, GUARANTEED FIX: The import path must match the package name exactly.
+import { init, encrypt } from '@jspawn/qpdf-wasm';
 
 /**
- * Encrypts a PDF with a user-provided password using qpdf-wasm.
+ * Encrypts a PDF with a user-provided password using @jspawn/qpdf-wasm.
  * @param file The original PDF file.
  * @param password The password to apply for encryption.
  * @returns A Promise that resolves with the new, encrypted PDF as a Uint8Array.
