@@ -1,10 +1,9 @@
 // src/pages/compress-pdf.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Head from 'next/head';
 import { tools } from '@/constants/tools';
 import { ToolUploader } from '@/components/ToolUploader';
-// FIX: Corrected the import path for ToolProcessor
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
@@ -17,11 +16,12 @@ type Status = 'idle' | 'arranging' | 'processing' | 'success';
 
 const CompressPDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [processedFile, setProcessedFile] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [compressionLevel, setCompressionLevel] =
     useState<CompressionLevel>('medium');
+  const [downloadUrl, setDownloadUrl] = useState<string>('');
+  const [processedFileName, setProcessedFileName] = useState('');
 
   const tool = tools['compress-pdf'];
 
@@ -54,7 +54,9 @@ const CompressPDFPage: NextPage = () => {
     try {
       const pdfBytes = await compressPDF(files[0], compressionLevel);
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      setProcessedFile(blob);
+      const url = URL.createObjectURL(blob);
+      setDownloadUrl(url);
+      setProcessedFileName(`compressed_${files[0]?.name || 'document.pdf'}`);
       setStatus('success');
     } catch (err) {
       setError('An error occurred during compression. Please try again.');
@@ -63,12 +65,14 @@ const CompressPDFPage: NextPage = () => {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setFiles([]);
-    setProcessedFile(null);
     setError(null);
     setStatus('idle');
-  };
+    setDownloadUrl('');
+    setProcessedFileName('');
+  }, [downloadUrl]);
 
   return (
     <>
@@ -123,11 +127,11 @@ const CompressPDFPage: NextPage = () => {
 
         {status === 'processing' && <ToolProcessor />}
 
-        {status === 'success' && processedFile && (
+        {status === 'success' && (
           <ToolDownloader
-            processedFile={processedFile}
-            fileName={`compressed_${files[0]?.name || 'document.pdf'}`}
-            onReset={handleReset}
+            downloadUrl={downloadUrl}
+            filename={processedFileName}
+            onStartOver={handleReset}
           />
         )}
       </div>
