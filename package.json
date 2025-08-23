@@ -14,6 +14,7 @@
   "dependencies": {
     "@emailjs/browser": "^4.3.3",
     "@hookform/resolvers": "^3.10.0",
+    "@pdftools/qpdf": "^1.2.0",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-aspect-ratio": "^1.1.7",
@@ -59,7 +60,6 @@
     "next-themes": "^0.3.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.2.67",
-    "qpdf-js": "^1.2.0",
     "react": "^18",
     "react-beautiful-dnd": "^13.1.1",
     "react-cookie-consent": "^9.0.0",
