@@ -16,6 +16,7 @@ const MergePdfPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
+  const [processedFileName, setProcessedFileName] = useState('');
 
   const handleStartOver = useCallback(() => {
     setFiles([]);
@@ -43,6 +44,7 @@ const MergePdfPage = () => {
       const resultBlob = new Blob([mergedBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(resultBlob);
       setDownloadUrl(url);
+      setProcessedFileName('merged.pdf');
       setStatus('success');
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -80,7 +82,8 @@ const MergePdfPage = () => {
               <FileArranger files={files} onFilesChange={setFiles} />
               <div className="mt-8 flex justify-center gap-4">
                 <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                <Button size="lg" onClick={handleProcess}>Merge PDFs</Button>
+                {/* FIX: Added className to style the primary button */}
+                <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600 text-white">Merge PDFs</Button>
               </div>
             </div>
           )}
@@ -88,7 +91,7 @@ const MergePdfPage = () => {
           {status === 'processing' && <ToolProcessor />}
 
           {status === 'success' && (
-            <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename="merged.pdf" />
+            <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} />
           )}
 
           {status === 'error' && (
