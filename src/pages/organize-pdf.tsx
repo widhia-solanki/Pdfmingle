@@ -1,6 +1,6 @@
 // src/pages/organize-pdf.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -26,6 +26,7 @@ const OrganizePdfPage: NextPage = () => {
   const [processedFileName, setProcessedFileName] = useState('');
 
   const loadInitialPages = async (selectedFile: File) => {
+    setStatus('arranging'); // Show loading state immediately
     try {
       const fileBuffer = await selectedFile.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
@@ -35,7 +36,6 @@ const OrganizePdfPage: NextPage = () => {
         rotation: 0,
       }));
       setPages(initialPages);
-      setStatus('arranging');
     } catch (err) {
       setError("Could not read the PDF. It may be corrupt or password-protected.");
       setStatus('error');
@@ -91,7 +91,7 @@ const OrganizePdfPage: NextPage = () => {
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-center mb-4">Organize PDF Pages</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
-          Drag and drop to reorder pages. Use the buttons to rotate or delete pages.
+          Drag and drop to reorder pages. Use the buttons on each page to rotate or delete.
         </p>
         
         {status === 'idle' && (
