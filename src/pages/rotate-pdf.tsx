@@ -59,7 +59,9 @@ const RotatePdfPage = () => {
     setError(null);
 
     try {
-      const rotatedBytes = await rotatePDF(file, rotationDirection);
+      // --- THIS IS THE FIX: Convert the string direction to a number ---
+      const angle = rotationDirection === 'right' ? 90 : 270; // 270 is -90 degrees
+      const rotatedBytes = await rotatePDF(file, angle);
       const resultBlob = new Blob([rotatedBytes], { type: 'application/pdf' });
       const filename = `${file.name.replace(/\.pdf$/i, '')}_rotated.pdf`;
       const url = URL.createObjectURL(resultBlob);
@@ -78,12 +80,11 @@ const RotatePdfPage = () => {
           <ToolUploader 
             onFilesSelected={handleFileSelected} 
             isMultiFile={false}
-            // --- THIS IS THE FIX: Added all required props ---
             acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
             selectedFiles={file ? [file] : []}
             error={error}
-            onProcess={handleProcess} // Pass the handler
-            actionButtonText="Rotate PDF" // Provide a label
+            onProcess={handleProcess}
+            actionButtonText="Rotate PDF"
           />
         );
       case 'loading_preview':
