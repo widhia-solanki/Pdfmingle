@@ -1,8 +1,11 @@
+// src/pages/ToolPage.tsx
+
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { PDFProcessor } from "@/components/PDFProcessor";
 import { ResultsPage } from "@/components/ResultsPage";
-import { tools } from "@/constants/tools";
+// FIX: Import toolArray instead of tools for searching
+import { toolArray } from "@/constants/tools";
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from "@/lib/pdf-tools";
 import { useToast } from "@/hooks/use-toast";
 import NotFoundPage from "@/pages/404";
@@ -23,10 +26,10 @@ const ToolPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [status, setStatus] = useState<"idle" | "processing" | "success">("idle");
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
-  // 1. Add state for the processed file name
   const [processedFileName, setProcessedFileName] = useState<string>("download.pdf");
 
-  const currentTool = tools.find(t => t.value === toolId);
+  // FIX: Use toolArray.find() to search for the current tool
+  const currentTool = toolArray.find(t => t.value === toolId);
 
   useEffect(() => {
     if (files.length > 0 && status === 'idle') {
@@ -60,7 +63,6 @@ const ToolPage = () => {
     if (downloadUrl) {
       const a = document.createElement("a");
       a.href = downloadUrl;
-      // Use the state for the download name
       a.download = processedFileName;
       document.body.appendChild(a);
       a.click();
@@ -79,9 +81,7 @@ const ToolPage = () => {
       let outputName = toolId as string;
       let outputExtension = 'pdf';
 
-      // --- LOGIC FIX: Changed `!requiresBackend` to `requiresBackend` ---
       if (requiresBackend) {
-        // This block now correctly handles tools that need the backend
         const apiBaseUrl = "https://pdfmingle-backend.onrender.com";
         const formData = new FormData();
         files.forEach((file) => formData.append("files", file));
@@ -94,7 +94,6 @@ const ToolPage = () => {
           outputExtension = 'zip';
         }
       } else {
-        // This block now correctly handles browser-only tools
         switch (toolId) {
           case 'merge-pdf':
             blob = await mergePDFs(files);
@@ -128,7 +127,7 @@ const ToolPage = () => {
       const finalFileName = `${outputName}.${outputExtension}`;
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setProcessedFileName(finalFileName); // Set the full file name
+      setProcessedFileName(finalFileName);
       setStatus("success");
       toast({ title: "Success!", description: "Your files have been processed." });
     } catch (error: unknown) {
@@ -146,7 +145,6 @@ const ToolPage = () => {
 
       <div className="w-full max-w-2xl">
         {status === 'success' ? (
-          // 3. Pass the 'fileName' prop
           <ResultsPage
             downloadUrl={downloadUrl}
             onDownload={handleDownload}
