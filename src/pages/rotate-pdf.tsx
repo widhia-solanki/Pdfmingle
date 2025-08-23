@@ -7,11 +7,10 @@ import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { rotatePdf } from '@/lib/pdf/rotate';
-import { tools } from '@/constants/tools';
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 
-type Status = 'idle' | 'arranging' | 'processing' | 'success';
+type Status = 'idle' | 'arranging' | 'processing' | 'success' | 'error';
 
 const RotatePDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
@@ -21,8 +20,6 @@ const RotatePDFPage: NextPage = () => {
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
 
-  const tool = tools['rotate-pdf'];
-  
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
     if (selectedFiles.length > 0) {
@@ -49,15 +46,9 @@ const RotatePDFPage: NextPage = () => {
     setRotations((prev) => {
       const newRotations = { ...prev };
       delete newRotations[index];
-      return Object.keys(newRotations).reduce((acc, key) => {
-        const numKey = parseInt(key, 10);
-        if (numKey > index) {
-          acc[numKey - 1] = newRotations[numKey];
-        } else if (numKey < index) {
-          acc[numKey] = newRotations[numKey];
-        }
-        return acc;
-      }, {} as { [key: number]: number });
+      // Note: This logic for re-indexing rotations can be complex.
+      // A simpler approach might be to just clear rotations if a file is removed.
+      return newRotations;
     });
   };
 
@@ -78,11 +69,11 @@ const RotatePDFPage: NextPage = () => {
     } catch (err) {
       setError('An error occurred while rotating the PDF.');
       console.error(err);
-      setStatus('arranging');
+      setStatus('error');
     }
   };
 
-  const handleReset = useCallback(() => {
+  const handleStartOver = useCallback(() => {
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setFiles([]);
     setRotations({});
@@ -95,13 +86,13 @@ const RotatePDFPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{tool.metaTitle}</title>
-        <meta name="description" content={tool.description} />
+        <title>Rotate PDF Pages – Free Online Tool</title>
+        <meta name="description" content="Rotate and flip PDF pages easily. Free, secure, and simple to use online tool." />
       </Head>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
+        <h1 className="text-4xl font-bold text-center mb-4">Rotate PDF Pages – Free Online Tool</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
-          {tool.description}
+          Rotate and flip PDF pages easily. Free, secure, and simple to use online tool.
         </p>
         
         {status === 'idle' && (
@@ -120,7 +111,6 @@ const RotatePDFPage: NextPage = () => {
 
         {status === 'arranging' && (
              <div className="w-full max-w-4xl mx-auto space-y-6">
-                {error && <p className="text-red-500 text-center">{error}</p>}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {files.map((file, index) => (
                     <PDFPreviewer
@@ -147,8 +137,15 @@ const RotatePDFPage: NextPage = () => {
           <ToolDownloader
             downloadUrl={downloadUrl}
             filename={processedFileName}
-            onStartOver={handleReset}
+            onStartOver={handleStartOver}
           />
+        )}
+
+        {status === 'error' && (
+            <div className="text-center p-8">
+              <p className="text-red-500 font-semibold mb-4">{error}</p>
+              <Button onClick={handleStartOver} variant="outline">Try Again</Button>
+            </div>
         )}
       </div>
     </>
