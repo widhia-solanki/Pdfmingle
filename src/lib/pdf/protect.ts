@@ -1,9 +1,9 @@
 // src/lib/pdf/protect.ts
 
-import { getQpdf } from '@pdftools/qpdf';
+import qpdf from 'qpdf-wasm';
 
 /**
- * Encrypts a PDF with a user-provided password using @pdftools/qpdf.
+ * Encrypts a PDF with a user-provided password using qpdf-wasm.
  * @param file The original PDF file.
  * @param password The password to apply for encryption.
  * @returns A Promise that resolves with the new, encrypted PDF as a Uint8Array.
@@ -13,10 +13,15 @@ export const protectPdf = async (
   password: string
 ): Promise<Uint8Array> => {
   try {
-    const qpdf = await getQpdf();
+    // Initialize the WebAssembly module
+    const instance = await qpdf.init();
     const arrayBuffer = await file.arrayBuffer();
 
-    const protectedPdf = await qpdf.encrypt(arrayBuffer, {
+    // The encrypt function takes a Uint8Array as input
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // Use the qpdf-wasm library to encrypt the PDF data.
+    const protectedPdf = instance.encrypt(uint8Array, {
       password: password,
       keyLength: 256,
     });
