@@ -1,11 +1,10 @@
-
 {
   "name": "pdfmingle-next",
   "private": true,
   "version": "0.0.0",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "cpy ./node_modules/pdfjs-dist/build/pdf.worker.min.mjs ./public/",
+    "prebuild": "node ./copy-worker.js",
     "build": "npm-run-all prebuild next-build",
     "next-build": "next build",
     "postbuild": "next-sitemap",
