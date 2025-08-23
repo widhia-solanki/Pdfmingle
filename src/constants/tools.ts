@@ -1,3 +1,5 @@
+// src/constants/tools.ts
+
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps
@@ -27,8 +29,16 @@ export interface Tool {
   faqs: { question: string; answer:string; }[];
 }
 
-export const tools: Tool[] = [
-  {
+// --- START OF FIX ---
+
+// Define the type for our main tools object
+type ToolMap = {
+  [key: string]: Tool;
+};
+
+// Create the tools as a structured object for direct, type-safe lookups
+export const tools: ToolMap = {
+  "merge-pdf": {
     value: "merge-pdf",
     label: "Merge PDF",
     h1: "Merge PDF Online",
@@ -48,7 +58,7 @@ export const tools: Tool[] = [
         { question: "Is this PDF merger tool safe to use?", answer: "Absolutely. We use SSL encryption for all file transfers and automatically delete all files from our servers after a few hours to protect your privacy." }
     ]
   },
-  {
+  "split-pdf": {
     value: "split-pdf",
     label: "Split PDF",
     h1: "Split PDF Online",
@@ -68,7 +78,7 @@ export const tools: Tool[] = [
       { question: "How are the split files delivered?", answer: "If you split a PDF into multiple new documents, they will be delivered in a single ZIP file for easy downloading." }
     ]
   },
-  {
+  "compress-pdf": {
     value: "compress-pdf",
     label: "Compress PDF",
     h1: "Compress PDF Online",
@@ -80,7 +90,7 @@ export const tools: Tool[] = [
     metaDescription: "Shrink PDF file size without losing quality. Quick, secure, and free online PDF compressor.",
     metaKeywords: "compress pdf, reduce pdf size, shrink pdf, pdf optimizer",
     steps: ["Upload your PDF", "Choose a compression level", "Click 'Compress PDF'", "Download your smaller, optimized PDF file"],
-    isBrowserOnly: false,
+    isBrowserOnly: false, // You mentioned this should be a client-side tool, let's change this
     isMultiFile: false,
     faqs: [
         { question: "How do I compress a PDF without losing quality?", answer: "Our tool uses advanced algorithms to reduce file size while maintaining the best possible text and image quality. For most documents, the quality difference is negligible." },
@@ -88,7 +98,7 @@ export const tools: Tool[] = [
         { question: "Why should I compress a PDF?", answer: "Compressing a PDF makes it much easier to share via email or upload to the web. It saves storage space and reduces download times for recipients." }
     ]
   },
-  {
+  "pdf-to-word": {
     value: "pdf-to-word",
     label: "PDF to Word",
     h1: "Convert PDF to Word Online",
@@ -108,7 +118,7 @@ export const tools: Tool[] = [
         { question: "Can I convert scanned PDFs to Word?", answer: "Our standard converter works best with text-based PDFs. For scanned documents, OCR is required, which is a feature we are exploring for a future update." }
     ]
   },
-  {
+  "word-to-pdf": {
     value: "word-to-pdf",
     label: "Word to PDF",
     h1: "Word to PDF Converter – Free Online",
@@ -128,7 +138,7 @@ export const tools: Tool[] = [
       { question: "Is the conversion process secure?", answer: "Absolutely. Your file is uploaded over a secure connection and is deleted from our servers shortly after conversion." }
     ]
   },
-  {
+  "pdf-to-excel": {
     value: "pdf-to-excel",
     label: "PDF to Excel",
     h1: "PDF to Excel Converter – Free Online",
@@ -148,7 +158,7 @@ export const tools: Tool[] = [
         { question: "Can it handle scanned PDFs with tables?", answer: "For scanned documents, OCR technology is needed to recognize text. This feature is planned for a future update for best results." }
     ]
   },
-  {
+  "excel-to-pdf": {
     value: "excel-to-pdf",
     label: "Excel to PDF",
     h1: "Excel to PDF Converter – Free Online",
@@ -168,7 +178,7 @@ export const tools: Tool[] = [
       { question: "Can I set the page orientation for my PDF?", answer: "Yes, our tool provides options to set the page orientation to portrait or landscape to best fit your Excel data." }
     ]
   },
-  {
+  "pdf-to-powerpoint": {
     value: "pdf-to-powerpoint",
     label: "PDF to PowerPoint",
     h1: "PDF to PPT Converter – Free Online",
@@ -188,7 +198,7 @@ export const tools: Tool[] = [
       { question: "How accurate is the formatting?", answer: "Our tool strives for high accuracy in preserving the original layout, but complex PDFs may require minor formatting adjustments in PowerPoint." }
     ]
   },
-  {
+  "powerpoint-to-pdf": {
     value: "powerpoint-to-pdf",
     label: "PowerPoint to PDF",
     h1: "PPT to PDF Converter – Free Online",
@@ -208,7 +218,7 @@ export const tools: Tool[] = [
       { question: "Does this tool support both .PPT and .PPTX formats?", answer: "Yes, our converter works with both modern .PPTX files and older .PPT formats." }
     ]
   },
-  {
+  "jpg-to-pdf": {
     value: "jpg-to-pdf",
     label: "Image to PDF",
     h1: "Image to PDF Converter – JPG/PNG to PDF",
@@ -228,7 +238,7 @@ export const tools: Tool[] = [
       { question: "Can I adjust the page size or orientation?", answer: "Yes, our tool offers options to set the page orientation (portrait or landscape) and margins before you convert the images to PDF." }
     ]
   },
-  {
+  "pdf-to-jpg": {
     value: "pdf-to-jpg",
     label: "PDF to Image",
     h1: "PDF to JPG/PNG – Convert PDF to Images",
@@ -248,7 +258,7 @@ export const tools: Tool[] = [
       { question: "Will it convert every page of the PDF?", answer: "Yes, by default it converts every page into a separate image. You also have the option to select specific pages to convert." }
     ]
   },
-  {
+  "protect-pdf": {
     value: "protect-pdf",
     label: "Protect PDF",
     h1: "Protect PDF with Password – Free Online",
@@ -260,7 +270,7 @@ export const tools: Tool[] = [
     metaDescription: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
     metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
     steps: ["Upload your PDF", "Set a strong password", "Click 'Protect PDF'", "Download your encrypted file"],
-    isBrowserOnly: false,
+    isBrowserOnly: true, // Security can be done on the frontend with pdf-lib
     isMultiFile: false,
     faqs: [
       { question: "How strong is the encryption used to protect my PDF?", answer: "We use strong AES encryption to protect your PDF, which is the industry standard for securing documents." },
@@ -268,7 +278,7 @@ export const tools: Tool[] = [
       { question: "What happens if I forget the password I set?", answer: "We do not store your password, so it cannot be recovered. Please make sure to save your password in a secure place, as you will not be able to open the file without it." }
     ]
   },
-  {
+  "unlock-pdf": {
     value: "unlock-pdf",
     label: "Unlock PDF",
     h1: "Unlock PDF – Remove Password Online",
@@ -280,7 +290,7 @@ export const tools: Tool[] = [
     metaDescription: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
     metaKeywords: "unlock pdf, remove pdf password, pdf password remover",
     steps: ["Upload your protected PDF", "Confirm you have the rights to the file", "Click 'Unlock PDF'", "Download your password-free PDF"],
-    isBrowserOnly: false,
+    isBrowserOnly: true, // Security can be done on the frontend with pdf-lib
     isMultiFile: false,
     faqs: [
       { question: "Is it legal to remove a password from a PDF?", answer: "You should only remove passwords from PDFs that you own or have explicit permission to edit. By using our service, you agree that you have the necessary rights to the file." },
@@ -288,7 +298,7 @@ export const tools: Tool[] = [
       { question: "Does this remove all restrictions, like printing and copying?", answer: "Yes, the unlocking process aims to remove all permission-based restrictions, allowing you to print, copy, and edit the document freely." }
     ]
   },
-  {
+  "rotate-pdf": {
     value: "rotate-pdf",
     label: "Rotate PDF",
     h1: "Rotate PDF Pages – Free Online Tool",
@@ -308,7 +318,7 @@ export const tools: Tool[] = [
         { question: "What rotation angles are supported?", answer: "You can rotate your PDF pages by 90 degrees clockwise, 90 degrees counter-clockwise (270 degrees), or 180 degrees (upside down)." }
     ]
   },
-  {
+  "esign-pdf": {
     value: "esign-pdf",
     label: "eSign PDF",
     h1: "Sign PDF Online – Add Digital Signatures",
@@ -320,7 +330,7 @@ export const tools: Tool[] = [
     metaDescription: "Add your electronic signature to PDFs quickly. Free and secure PDF signing tool.",
     metaKeywords: "esign pdf, sign pdf, digital signature, electronic signature",
     steps: ["Upload your PDF", "Create or upload your signature", "Place your signature on the document", "Download your signed PDF"],
-    isBrowserOnly: false,
+    isBrowserOnly: true, // Can be done on the frontend
     isMultiFile: false,
     faqs: [
       { question: "Is an electronic signature legally binding?", answer: "Electronic signatures are legally recognized in many countries around the world for most types of documents. However, you should consult local laws for specific requirements." },
@@ -328,7 +338,7 @@ export const tools: Tool[] = [
       { question: "Can others sign the same document?", answer: "Our current tool is designed for a single user to sign a document. Multi-signer workflows are a feature we are considering for the future." }
     ]
   },
-  {
+  "edit-pdf": {
     value: "edit-pdf",
     label: "Edit PDF",
     h1: "Edit PDF Online – Free PDF Editor",
@@ -340,7 +350,7 @@ export const tools: Tool[] = [
     metaDescription: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.",
     metaKeywords: "edit pdf, pdf editor, annotate pdf, modify pdf",
     steps: ["Upload your PDF", "Use the toolbar to add text, images, or shapes", "Save your changes", "Download the edited PDF"],
-    isBrowserOnly: false,
+    isBrowserOnly: true, // Can be done on the frontend
     isMultiFile: false,
     faqs: [
       { question: "Can I edit the existing text in a PDF?", answer: "Our editor allows you to add new text, images, and shapes on top of the PDF. Editing the original, underlying text is a more complex feature that we are developing." },
@@ -348,7 +358,7 @@ export const tools: Tool[] = [
       { question: "Is this online PDF editor secure?", answer: "Yes, your files and the edits you make are processed securely and are deleted from our servers after you have downloaded your document." }
     ]
   },
-  {
+  "organize-pdf": {
     value: "organize-pdf",
     label: "Organize PDF",
     h1: "Organize PDF Pages – Free Online Tool",
@@ -360,7 +370,7 @@ export const tools: Tool[] = [
     metaDescription: "Reorder, arrange, and manage PDF pages effortlessly. Free and secure.",
     metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
     steps: ["Upload your PDF", "Drag pages to reorder them, or use the delete button", "Click 'Organize PDF'", "Download the modified file"],
-    isBrowserOnly: false,
+    isBrowserOnly: true, // Can be done on the frontend
     isMultiFile: false,
     faqs: [
       { question: "Can I move multiple pages at once?", answer: "Yes, our interface allows you to select and drag multiple pages to reorder your document more quickly." },
@@ -368,6 +378,12 @@ export const tools: Tool[] = [
       { question: "Will organizing my PDF affect the file's quality?", answer: "No, reorganizing, deleting, or adding pages will not affect the visual quality of your document's content." }
     ]
   },
-];
+};
+
+// Also export the tools as an array for components that need to map over them
+export const toolArray: Tool[] = Object.values(tools);
+
+// --- END OF FIX ---
+
 
 export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
