@@ -3,9 +3,9 @@
 import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
-import ToolUploader from '@/components/ToolUploader';
-import ToolProcessor from '@/components/ToolProcessor';
-import ToolDownloader from '@/components/ToolDownloader';
+import { ToolUploader } from '@/components/ToolUploader'; // Corrected import
+import { ToolProcessor } from '@/components/ToolProcessor'; // Corrected import
+import { ToolDownloader } from '@/components/ToolDownloader';
 import { rotatePdf } from '@/lib/pdf/rotate';
 import { tools } from '@/constants/tools';
 import PDFPreviewer from '@/components/PDFPreviewer';
@@ -28,11 +28,9 @@ const RotatePDFPage: NextPage = () => {
 
   const handleFileRemove = (index: number) => {
     setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
-    // Also remove rotation state for the removed file
     setRotations((prev) => {
       const newRotations = { ...prev };
       delete newRotations[index];
-      // Adjust keys for subsequent files
       return Object.keys(newRotations).reduce((acc, key) => {
         const numKey = parseInt(key, 10);
         if (numKey > index) {
@@ -50,7 +48,6 @@ const RotatePDFPage: NextPage = () => {
       setError('Please upload a PDF file to rotate.');
       return;
     }
-    // For rotate, we only process the first file
     try {
       setError(null);
       const processed = await rotatePdf(files[0], rotations);
@@ -68,7 +65,6 @@ const RotatePDFPage: NextPage = () => {
     setError(null);
   };
   
-  // For the Rotate tool, we only allow one file.
   const isUploaderDisabled = files.length > 0;
 
   return (
@@ -96,7 +92,6 @@ const RotatePDFPage: NextPage = () => {
             {files.length > 0 && (
               <div className="w-full max-w-4xl mx-auto">
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {/* Note: Rotate only uses one file, but this structure is ready for expansion */}
                   {files.map((file, index) => (
                     <PDFPreviewer
                       key={index}
@@ -111,7 +106,7 @@ const RotatePDFPage: NextPage = () => {
                 <ToolProcessor
                   onProcess={handleProcess}
                   buttonText="Rotate PDF"
-                  isProcessing={false} // Add loading state if needed
+                  isProcessing={false}
                   className="mt-6"
                 />
               </div>
