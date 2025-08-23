@@ -1,44 +1,100 @@
-import { useEffect, useRef } from 'react';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
+// src/components/PDFPreviewer.tsx
 
-interface PDFPreviewerProps {
-  pdfDoc: PDFDocumentProxy | null;
+import React, { useEffect, useRef } from 'react';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import 'pdfjs-dist/web/pdf_viewer.css';
+import { Button } from '@/components/ui/button';
+import { X, RotateCw } from 'lucide-react';
+
+// Set worker path
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 }
 
-export const PDFPreviewer = ({ pdfDoc }: PDFPreviewerProps) => {
+interface PDFPreviewerProps {
+  file: File;
+  index: number;
+  onRemove: (index: number) => void;
+  onRotate?: (index: number) => void; // Optional onRotate handler
+  rotationAngle?: number; // Optional rotation angle
+}
+
+const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
+  file,
+  index,
+  onRemove,
+  onRotate,
+  rotationAngle = 0,
+}) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     const renderPdf = async () => {
-      if (!pdfDoc || !canvasRef.current) return;
-      try {
-        const page = await pdfDoc.getPage(1);
-        const viewport = page.getViewport({ scale: 1.5 });
-        const canvas = canvasRef.current;
-        const context = canvas.getContext('2d');
+      if (!canvasRef.current) return;
+
+      const canvas = canvasRef.current;
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      const fileReader = new FileReader();
+      fileReader.onload = async (e) => {
+        if (!e.target?.result) return;
+
+        const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+        const page = await pdf.getPage(1); // For multi-page PDFs, we only show the first page as a preview.
+
+        const viewport = page.getViewport({ scale: 0.5 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-        if (context) {
-          page.render({ canvasContext: context, viewport: viewport });
-        }
-      } catch (error) {
-        console.error("Error rendering PDF preview:", error);
-      }
-    };
-    renderPdf();
-  }, [pdfDoc]);
 
-  if (!pdfDoc) {
-    return (
-      <div className="border rounded-lg p-2 bg-gray-100 flex items-center justify-center h-96">
-        <p className="text-gray-500">Loading Preview...</p>
-      </div>
-    );
-  }
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+        };
+        await page.render(renderContext).promise;
+      };
+      fileReader.readAsArrayBuffer(file);
+    };
+
+    renderPdf();
+  }, [file]);
 
   return (
-    <div className="border rounded-lg p-2 bg-gray-100 overflow-hidden">
-      <canvas ref={canvasRef} style={{ maxWidth: '100%', display: 'block' }} />
+    <div className="relative group border rounded-lg p-2 shadow-sm bg-gray-50 flex flex-col items-center">
+      <div
+        className="transition-transform duration-300 ease-in-out"
+        style={{ transform: `rotate(${rotationAngle}deg)` }}
+      >
+        <canvas ref={canvasRef} className="rounded-md border" />
+      </div>
+      <p className="mt-2 text-xs text-gray-600 truncate w-full text-center">
+        {file.name}
+      </p>
+
+      {/* Remove Button */}
+      <Button
+        variant="destructive"
+        size="icon"
+        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+        onClick={() => onRemove(index)}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+      
+      {/* Rotate Button - only shown if onRotate is provided */}
+      {onRotate && (
+         <Button
+            variant="outline"
+            size="icon"
+            className="absolute top-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-gray-100"
+            onClick={() => onRotate(index)}
+         >
+            <RotateCw className="h-4 w-4" />
+         </Button>
+      )}
     </div>
   );
 };
+
+export default PDFPreviewer;
