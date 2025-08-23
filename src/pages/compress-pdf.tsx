@@ -1,4 +1,3 @@
-
 // src/pages/compress-pdf.tsx
 
 import React, { useState } from 'react';
@@ -12,20 +11,29 @@ import PDFPreviewer from '@/components/PDFPreviewer';
 import { compressPDF } from '@/lib/pdf/compress';
 import { NextPage } from 'next';
 
+type Status = 'idle' | 'arranging' | 'processing' | 'success';
+
 const CompressPDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [processedFile, setProcessedFile] = useState<Blob | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [status, setStatus] = useState<Status>('idle');
   const [compressionLevel, setCompressionLevel] =
     useState<CompressionLevel>('medium');
 
   const tool = tools['compress-pdf'];
 
+  const handleFilesSelected = (selectedFiles: File[]) => {
+    setFiles(selectedFiles);
+    setStatus('arranging');
+  };
+
   const handleFileRemove = (indexToRemove: number) => {
-    setFiles((prevFiles) =>
-      prevFiles.filter((_, index) => index !== indexToRemove)
-    );
+    const newFiles = files.filter((_, index) => index !== indexToRemove);
+    setFiles(newFiles);
+    if (newFiles.length === 0) {
+      setStatus('idle');
+    }
   };
 
   const handleProcess = async () => {
@@ -34,18 +42,18 @@ const CompressPDFPage: NextPage = () => {
       return;
     }
 
-    setIsProcessing(true);
+    setStatus('processing');
     setError(null);
 
     try {
       const pdfBytes = await compressPDF(files[0], compressionLevel);
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       setProcessedFile(blob);
+      setStatus('success');
     } catch (err) {
       setError('An error occurred during compression. Please try again.');
       console.error(err);
-    } finally {
-      setIsProcessing(false);
+      setStatus('arranging'); // Go back to options on error
     }
   };
 
@@ -53,7 +61,7 @@ const CompressPDFPage: NextPage = () => {
     setFiles([]);
     setProcessedFile(null);
     setError(null);
-    setIsProcessing(false);
+    setStatus('idle');
   };
 
   return (
@@ -68,44 +76,52 @@ const CompressPDFPage: NextPage = () => {
           {tool.description}
         </p>
 
-        {!processedFile ? (
-          <div className="space-y-6 max-w-4xl mx-auto">
-            {/* FIX: Changed prop name from 'accept' to 'acceptedFileTypes' */}
+        {status === 'idle' && (
+           <div className="max-w-4xl mx-auto">
             <ToolUploader
-              onFilesSelected={setFiles}
-              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-              disabled={files.length > 0}
+                onFilesSelected={handleFilesSelected}
+                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                selectedFiles={files}
+                isMultiFile={false}
+                error={error}
+                onProcess={() => {}} // Not used in this state
+                actionButtonText="" // Not used in this state
             />
+           </div>
+        )}
 
-            {error && <p className="text-red-500 text-center">{error}</p>}
-
-            {files.length > 0 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {files.map((file, index) => (
-                    <PDFPreviewer
-                      key={index}
-                      file={file}
-                      index={index}
-                      onRemove={handleFileRemove}
-                    />
-                  ))}
-                </div>
-                <CompressOptions
-                  level={compressionLevel}
-                  onLevelChange={setCompressionLevel}
-                />
-                <ToolProcessor
-                  onProcess={handleProcess}
-                  buttonText={
-                    isProcessing ? 'Compressing...' : 'Compress PDF'
-                  }
-                  isProcessing={isProcessing}
-                />
-              </div>
-            )}
+        {status === 'arranging' && (
+          <div className="space-y-6 max-w-4xl mx-auto">
+             {error && <p className="text-red-500 text-center">{error}</p>}
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+               {files.map((file, index) => (
+                 <PDFPreviewer
+                   key={index}
+                   file={file}
+                   index={index}
+                   onRemove={handleFileRemove}
+                 />
+               ))}
+             </div>
+             <CompressOptions
+               level={compressionLevel}
+               onLevelChange={setCompressionLevel}
+             />
+             <ToolProcessor
+               onProcess={handleProcess}
+               buttonText="Compress PDF"
+               isProcessing={false}
+             />
           </div>
-        ) : (
+        )}
+
+        {status === 'processing' && (
+            <div className="flex flex-col items-center justify-center p-12 h-64 border-2 border-dashed rounded-lg">
+                <p className="text-lg font-semibold animate-pulse">Compressing your file...</p>
+             </div>
+        )}
+
+        {status === 'success' && processedFile && (
           <ToolDownloader
             processedFile={processedFile}
             fileName={`compressed_${files[0]?.name || 'document.pdf'}`}
