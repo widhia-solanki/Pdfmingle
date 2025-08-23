@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// FIX: Corrected the worker URL from pdf.worker.min.js to pdf.worker.js
+// FINAL FIX: Hardcode the correct version from package.json to ensure the worker is always found.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js`;
 }
 
 type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
