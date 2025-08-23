@@ -9,11 +9,11 @@ import { SplitOptions, SplitRange, SplitMode } from '@/components/tools/SplitOpt
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
-import * as pdfjsLib from 'pdfjs-dist'; // FIX: Import pdf.js at the top
+import * as pdfjsLib from 'pdfjs-dist';
 
-// FIX: Set up the worker once when the page loads
+// FIX: Corrected the worker URL from pdf.worker.min.js to pdf.worker.js
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
 }
 
 type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
@@ -47,7 +47,6 @@ const SplitPdfPage = () => {
     setError(null);
 
     try {
-      // FIX: Worker is already set up, so we can directly use the library
       const fileBuffer = await selectedFile.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
       
