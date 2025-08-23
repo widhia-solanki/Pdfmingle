@@ -1,13 +1,14 @@
+// src/components/ToolPageLayout.tsx
+
 import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-// 1. Import iconMap
-import { tools, Tool, iconMap } from '@/constants/tools';
+// FIX 1: Import toolArray instead of tools for list operations
+import { toolArray, Tool, iconMap } from '@/constants/tools';
 import { PDFProcessor } from '@/components/PDFProcessor';
 import { ResultsPage } from '@/components/ResultsPage';
 import { useToast } from '@/hooks/use-toast';
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from '@/lib/pdf-tools';
-// 2. Import a fallback icon
 import { FileQuestion } from 'lucide-react';
 
 
@@ -124,8 +125,6 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
     }
   };
 
-  // --- THIS IS THE FIX ---
-  // 3. Look up the component from the map and provide a fallback
   const Icon = iconMap[tool.icon] || FileQuestion;
 
   const schema = {
@@ -159,7 +158,6 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
 
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <div className={`mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-100`}>
-           {/* 4. Render the looked-up Icon component */}
            <Icon className={`h-10 w-10`} style={{color: tool.color}} />
         </div>
 
@@ -193,7 +191,8 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
         <section className="mt-16 text-center w-full px-4">
             <h3 className="text-xl font-bold mb-4 text-gray-800">Try our other tools:</h3>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
-                {tools.filter(t => t.value !== tool.value).slice(0, 4).map(otherTool => (
+                {/* FIX 2: Use toolArray to correctly filter and map over the list of tools */}
+                {toolArray.filter(t => t.value !== tool.value).slice(0, 4).map(otherTool => (
                     <Link key={otherTool.value} href={`/${otherTool.value}`} className="text-red-500 hover:underline font-medium">
                         {otherTool.label}
                     </Link>
