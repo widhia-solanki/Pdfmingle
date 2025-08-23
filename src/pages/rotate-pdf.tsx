@@ -46,8 +46,6 @@ const RotatePDFPage: NextPage = () => {
     setRotations((prev) => {
       const newRotations = { ...prev };
       delete newRotations[index];
-      // Note: This logic for re-indexing rotations can be complex.
-      // A simpler approach might be to just clear rotations if a file is removed.
       return newRotations;
     });
   };
@@ -60,6 +58,7 @@ const RotatePDFPage: NextPage = () => {
     setStatus('processing');
     try {
       setError(null);
+      // NOTE: The rotatePdf function from your lib only rotates the first file
       const processed = await rotatePdf(files[0], rotations);
       const blob = new Blob([processed], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -101,7 +100,7 @@ const RotatePDFPage: NextPage = () => {
                     onFilesSelected={handleFilesSelected} 
                     acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
                     selectedFiles={files}
-                    isMultiFile={false}
+                    isMultiFile={false} // Rotate tool works on one file at a time
                     error={error}
                     onProcess={() => {}}
                     actionButtonText=""
@@ -110,8 +109,9 @@ const RotatePDFPage: NextPage = () => {
         )}
 
         {status === 'arranging' && (
-             <div className="w-full max-w-4xl mx-auto space-y-6">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+             <div className="w-full max-w-4xl mx-auto grid md:grid-cols-2 gap-8 items-start">
+                <div className="md:sticky md:top-24">
+                  <h2 className="text-2xl font-bold mb-4 text-center md:text-left">File Preview</h2>
                   {files.map((file, index) => (
                     <PDFPreviewer
                       key={index}
@@ -123,10 +123,12 @@ const RotatePDFPage: NextPage = () => {
                     />
                   ))}
                 </div>
-                <div className="flex justify-center">
-                    <Button size="lg" onClick={handleProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold">
+                <div className="flex flex-col items-center justify-center gap-4 mt-8 md:mt-20">
+                    <p className="text-gray-600 text-center">Click the rotate icon on the preview to set the rotation for each page.</p>
+                    <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 text-white">
                         Rotate PDF
                     </Button>
+                    <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
                 </div>
               </div>
         )}
