@@ -6,54 +6,86 @@ import Head from 'next/head';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
+import { PageGrid } from '@/components/tools/PageGrid';
 import { rotatePdf } from '@/lib/pdf/rotate';
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
-import { RotateCw, Download } from 'lucide-react'; // Import icons
+import { RotateCw, CheckSquare, Square } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Status = 'idle' | 'arranging' | 'processing' | 'success' | 'error';
+type RotationMode = 'all' | 'specific';
 
 const RotatePDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
-  // Simplified rotation state for a single file
-  const [rotation, setRotation] = useState<number>(0);
-  const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
+  const [error, setError] = useState<string | null>(null);
+
+  const [rotationMode, setRotationMode] = useState<RotationMode>('all');
+  const [rotation, setRotation] = useState<number>(0); // For 'all' mode
+  const [pageRotations, setPageRotations] = useState<{ [key: number]: number }>({}); // For 'specific' mode
+  const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
+
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
-    setRotation(0); // Reset rotation on new file
     if (selectedFiles.length > 0) {
-        setStatus('arranging');
+      handleResetState(); // Clear all options when a new file is uploaded
+      setStatus('arranging');
     } else {
-        setStatus('idle');
+      setStatus('idle');
     }
   };
 
-  const handleRotateClick = () => {
-    setRotation((prevRotation) => (prevRotation + 90) % 360);
+  const handleResetState = () => {
+    setError(null);
+    setRotationMode('all');
+    setRotation(0);
+    setPageRotations({});
+    setSelectedPages(new Set());
   };
 
-  const handleFileRemove = () => {
+  const handleStartOver = useCallback(() => {
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setFiles([]);
     setStatus('idle');
+    handleResetState();
+    setDownloadUrl('');
+    setProcessedFileName('');
+  }, [downloadUrl]);
+  
+  const handleTogglePageSelection = (pageIndex: number) => {
+    const newSelection = new Set(selectedPages);
+    if (newSelection.has(pageIndex)) {
+      newSelection.delete(pageIndex);
+    } else {
+      newSelection.add(pageIndex);
+    }
+    setSelectedPages(newSelection);
+  };
+
+  const handleRotateSelected = (angle: 90 | -90) => {
+    const newRotations = { ...pageRotations };
+    selectedPages.forEach(index => {
+        const currentAngle = newRotations[index] || 0;
+        newRotations[index] = (currentAngle + angle + 360) % 360;
+    });
+    setPageRotations(newRotations);
+  };
+  
+  const handleSelectAll = (pageCount: number) => {
+      const allPages = new Set(Array.from({ length: pageCount }, (_, i) => i));
+      setSelectedPages(allPages);
   };
 
   const handleProcess = async () => {
-    if (files.length === 0) {
-      setError('Please upload a PDF file to rotate.');
-      return;
-    }
+    if (files.length === 0) return;
     setStatus('processing');
     try {
-      setError(null);
-      // We need to apply the rotation to all pages, so we pass the single rotation value
-      const rotationsForAllPages: { [key: number]: number } = {};
-      // This assumes we need to know the page count to apply rotation to all pages.
-      // Let's adjust rotatePdf to handle a single angle for all pages.
-      const processed = await rotatePdf(files[0], rotation);
+      const rotationData = rotationMode === 'all' ? rotation : pageRotations;
+      const processed = await rotatePdf(files[0], rotationData);
       const blob = new Blob([processed], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
@@ -65,16 +97,6 @@ const RotatePDFPage: NextPage = () => {
       setStatus('error');
     }
   };
-
-  const handleStartOver = useCallback(() => {
-    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    setFiles([]);
-    setRotation(0);
-    setError(null);
-    setStatus('idle');
-    setDownloadUrl('');
-    setProcessedFileName('');
-  }, [downloadUrl]);
 
   return (
     <>
@@ -103,34 +125,40 @@ const RotatePDFPage: NextPage = () => {
         )}
 
         {status === 'arranging' && files.length > 0 && (
-             <div className="w-full max-w-2xl mx-auto space-y-6 flex flex-col items-center">
-                <div className="p-4 border-2 border-dashed rounded-xl w-full bg-gray-50">
-                    <h2 className="text-2xl font-bold mb-4 text-center">File Preview</h2>
-                    <div className="flex justify-center">
-                        <PDFPreviewer
-                          file={files[0]}
-                          index={0}
-                          onRemove={handleFileRemove}
-                          rotationAngle={rotation}
-                        />
-                    </div>
+             <div className="w-full max-w-6xl mx-auto space-y-6 flex flex-col items-center">
+                {/* --- Mode Toggle --- */}
+                <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
+                    <Button onClick={() => setRotationMode('all')} variant={rotationMode === 'all' ? 'default' : 'ghost'} className={cn(rotationMode === 'all' && 'bg-blue-600 text-white')}>Rotate All Pages</Button>
+                    <Button onClick={() => setRotationMode('specific')} variant={rotationMode === 'specific' ? 'default' : 'ghost'} className={cn(rotationMode === 'specific' && 'bg-blue-600 text-white')}>Rotate Specific Pages</Button>
                 </div>
                 
-                <p className="text-lg font-medium text-gray-700">
-                    Current Rotation: <span className="font-bold text-blue-600">{rotation}°</span>
-                </p>
-
-                <div className="w-full flex flex-col sm:flex-row justify-center gap-4">
-                    <Button size="lg" onClick={handleRotateClick} className="w-full sm:w-auto" variant="outline">
-                        <RotateCw className="mr-2 h-5 w-5" />
-                        Rotate
-                    </Button>
-                    <Button size="lg" onClick={handleProcess} className="w-full sm:w-auto bg-red-500 hover:bg-red-600 text-white">
-                        <Download className="mr-2 h-5 w-5" />
-                        Apply & Download
-                    </Button>
+                {rotationMode === 'all' ? (
+                    <div className="w-full max-w-md mx-auto flex flex-col items-center gap-4 p-6 border rounded-xl bg-white shadow-sm">
+                        <PDFPreviewer file={files[0]} index={0} onRemove={handleStartOver} rotationAngle={rotation} />
+                        <p className="font-medium">Current Rotation: {rotation}°</p>
+                        <Button variant="outline" size="lg" onClick={() => setRotation(prev => (prev + 90) % 360)}>
+                            <RotateCw className="mr-2 h-5 w-5"/> Rotate 90°
+                        </Button>
+                    </div>
+                ) : (
+                    <div className="w-full p-6 border rounded-xl bg-white shadow-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+                            <div className="flex items-center gap-2">
+                                <Button onClick={() => handleRotateSelected(90)} variant="outline"><RotateCw className="mr-2 h-4 w-4"/>Rotate 90° CW</Button>
+                                <Button onClick={() => handleRotateSelected(-90)} variant="outline"><RotateCw className="mr-2 h-4 w-4 transform -scale-x-100"/>Rotate 90° CCW</Button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button onClick={() => setSelectedPages(new Set())} variant="ghost"><Square className="mr-2 h-4 w-4"/>Deselect All</Button>
+                            </div>
+                        </div>
+                        <PageGrid file={files[0]} selectedPages={selectedPages} onPageSelect={handleTogglePageSelection} pageRotations={pageRotations} />
+                    </div>
+                )}
+                
+                <div className="flex flex-col items-center gap-2">
+                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600 text-white px-12 py-6">Apply Changes & Download</Button>
+                    <Button variant="link" onClick={handleStartOver}>Choose a different file</Button>
                 </div>
-                <Button variant="link" onClick={handleStartOver}>Choose a different file</Button>
             </div>
         )}
 
