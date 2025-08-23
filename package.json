@@ -1,10 +1,13 @@
+
 {
   "name": "pdfmingle-next",
   "private": true,
   "version": "0.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "prebuild": "cpy ./node_modules/pdfjs-dist/build/pdf.worker.min.mjs ./public/",
+    "build": "npm-run-all prebuild next-build",
+    "next-build": "next build",
     "postbuild": "next-sitemap",
     "start": "next start",
     "lint": "next lint"
@@ -78,9 +81,10 @@
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.4.19",
+    "cpy-cli": "^5.0.0",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
-    "next-sitemap": "^4.2.3",
+    "npm-run-all": "^4.1.5",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
