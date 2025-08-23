@@ -1,143 +1,132 @@
 // src/pages/rotate-pdf.tsx
 
-import { useState, useCallback } from 'react';
-import { NextSeo } from 'next-seo';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
+import React, { useState } from 'react';
+import { NextPage } from 'next';
+import Head from 'next/head';
+import ToolUploader from '@/components/ToolUploader';
+import ToolProcessor from '@/components/ToolProcessor';
+import ToolDownloader from '@/components/ToolDownloader';
+import { rotatePdf } from '@/lib/pdf/rotate';
+import { tools } from '@/constants/tools';
+import PDFPreviewer from '@/components/PDFPreviewer';
 
-import { ToolUploader } from '@/components/ToolUploader';
-import { ToolProcessor } from '@/components/ToolProcessor';
-import { ToolDownloader } from '@/components/ToolDownloader';
-import { RotateOptions, RotationDirection } from '@/components/tools/RotateOptions';
-import { PDFPreviewer } from '@/components/PDFPreviewer';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { rotatePDF } from '@/lib/pdf/rotate';
-
-type RotateStatus = 'idle' | 'loading_preview' | 'options' | 'processing' | 'success' | 'error';
-
-const RotatePdfPage = () => {
-  const [status, setStatus] = useState<RotateStatus>('idle');
-  const [file, setFile] = useState<File | null>(null);
+const RotatePDFPage: NextPage = () => {
+  const [files, setFiles] = useState<File[]>([]);
+  const [processedFile, setProcessedFile] = useState<Blob | null>(null);
+  const [rotations, setRotations] = useState<{ [key: number]: number }>({});
   const [error, setError] = useState<string | null>(null);
-  const [downloadUrl, setDownloadUrl] = useState<string>('');
-  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
-  const [rotationDirection, setRotationDirection] = useState<RotationDirection>('right');
 
-  const handleStartOver = useCallback(() => {
-    setFile(null);
-    setStatus('idle');
-    setError(null);
-    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
-    setDownloadUrl('');
-    setPdfDoc(null);
-  }, [downloadUrl]);
+  const tool = tools['rotate-pdf'];
 
-  const handleFileSelected = async (files: File[]) => {
-    if (files.length === 0) return;
-    const selectedFile = files[0];
-    setFile(selectedFile);
-    setError(null);
-    setStatus('loading_preview');
+  const handleRotate = (index: number) => {
+    setRotations((prev) => {
+      const currentRotation = prev[index] || 0;
+      const newRotation = (currentRotation + 90) % 360;
+      return { ...prev, [index]: newRotation };
+    });
+  };
 
-    try {
-      const pdfJS = await import('pdfjs-dist');
-      pdfJS.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.mjs`;
-      const fileBuffer = await selectedFile.arrayBuffer();
-      const typedArray = new Uint8Array(fileBuffer);
-      const loadedPdfDoc = await pdfJS.getDocument({ data: typedArray }).promise;
-      setPdfDoc(loadedPdfDoc);
-      setStatus('options');
-    } catch (err: any) {
-      setError("Could not read the PDF. It may be corrupt or password-protected.");
-      setStatus('error');
-    }
+  const handleFileRemove = (index: number) => {
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    // Also remove rotation state for the removed file
+    setRotations((prev) => {
+      const newRotations = { ...prev };
+      delete newRotations[index];
+      // Adjust keys for subsequent files
+      return Object.keys(newRotations).reduce((acc, key) => {
+        const numKey = parseInt(key, 10);
+        if (numKey > index) {
+          acc[numKey - 1] = newRotations[numKey];
+        } else if (numKey < index) {
+          acc[numKey] = newRotations[numKey];
+        }
+        return acc;
+      }, {} as { [key: number]: number });
+    });
   };
 
   const handleProcess = async () => {
-    if (!file) return;
-    setStatus('processing');
-    setError(null);
-
+    if (files.length === 0) {
+      setError('Please upload a PDF file to rotate.');
+      return;
+    }
+    // For rotate, we only process the first file
     try {
-      // --- THIS IS THE FIX: Convert the string direction to a number ---
-      const angle = rotationDirection === 'right' ? 90 : 270; // 270 is -90 degrees
-      const rotatedBytes = await rotatePDF(file, angle);
-      const resultBlob = new Blob([rotatedBytes], { type: 'application/pdf' });
-      const filename = `${file.name.replace(/\.pdf$/i, '')}_rotated.pdf`;
-      const url = URL.createObjectURL(resultBlob);
-      setDownloadUrl(url);
-      setStatus('success');
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
-      setStatus('error');
+      setError(null);
+      const processed = await rotatePdf(files[0], rotations);
+      setProcessedFile(new Blob([processed], { type: 'application/pdf' }));
+    } catch (err) {
+      setError('An error occurred while rotating the PDF.');
+      console.error(err);
     }
   };
 
-  const renderContent = () => {
-    switch (status) {
-      case 'idle':
-        return (
-          <ToolUploader 
-            onFilesSelected={handleFileSelected} 
-            isMultiFile={false}
-            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-            selectedFiles={file ? [file] : []}
-            error={error}
-            onProcess={handleProcess}
-            actionButtonText="Rotate PDF"
-          />
-        );
-      case 'loading_preview':
-        return (
-          <div className="flex flex-col items-center justify-center p-12 gap-4">
-            <Loader2 className="w-12 h-12 text-gray-500 animate-spin" />
-            <p className="text-lg font-semibold text-gray-700">Reading your PDF...</p>
-          </div>
-        );
-      case 'options':
-        return (
-          <div className="w-full grid md:grid-cols-2 gap-8 items-start">
-            <div className="md:sticky md:top-24">
-              <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-              <PDFPreviewer pdfDoc={pdfDoc} />
-            </div>
-            <div>
-              <RotateOptions selectedDirection={rotationDirection} onRotateDirectionSelect={setRotationDirection} />
-              <div className="mt-6 flex flex-col items-center gap-4">
-                <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600" disabled={!pdfDoc}>
-                  Rotate PDF
-                </Button>
-                <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
-              </div>
-            </div>
-          </div>
-        );
-      case 'processing': return <ToolProcessor />;
-      case 'success': return <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={file?.name.replace(/\.pdf$/i, '_rotated.pdf') || 'rotated.pdf'} />;
-      case 'error': return (
-        <div className="text-center p-8">
-            <p className="text-red-500 font-semibold mb-4">Error: {error}</p>
-            <Button onClick={handleStartOver} variant="outline">Try Again</Button>
-        </div>
-      );
-    }
+  const handleReset = () => {
+    setFiles([]);
+    setProcessedFile(null);
+    setRotations({});
+    setError(null);
   };
+  
+  // For the Rotate tool, we only allow one file.
+  const isUploaderDisabled = files.length > 0;
 
   return (
     <>
-      <NextSeo
-        title="Rotate PDF Pages – Free Online Tool"
-        description="Rotate and flip PDF pages easily. Free, secure, and simple to use online tool."
-      />
-      <div className="flex flex-col items-center text-center pt-8 md:pt-12">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Rotate PDF</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Rotate all pages in your document exactly as you need.</p>
-        <div className="mt-8 md:mt-12 w-full max-w-6xl px-4">
-          {renderContent()}
-        </div>
+      <Head>
+        <title>{tool.title}</title>
+        <meta name="description" content={tool.description} />
+      </Head>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold text-center mb-4">{tool.title}</h1>
+        <p className="text-lg text-gray-600 text-center mb-8">
+          {tool.description}
+        </p>
+
+        {!processedFile ? (
+          <div className="space-y-6">
+            <ToolUploader 
+              onFilesSelected={setFiles} 
+              accept={{ 'application/pdf': ['.pdf'] }}
+              disabled={isUploaderDisabled}
+            />
+            
+            {error && <p className="text-red-500 text-center">{error}</p>}
+
+            {files.length > 0 && (
+              <div className="w-full max-w-4xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {/* Note: Rotate only uses one file, but this structure is ready for expansion */}
+                  {files.map((file, index) => (
+                    <PDFPreviewer
+                      key={index}
+                      file={file}
+                      index={index}
+                      onRemove={handleFileRemove}
+                      onRotate={handleRotate}
+                      rotationAngle={rotations[index] || 0}
+                    />
+                  ))}
+                </div>
+                <ToolProcessor
+                  onProcess={handleProcess}
+                  buttonText="Rotate PDF"
+                  isProcessing={false} // Add loading state if needed
+                  className="mt-6"
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          <ToolDownloader
+            processedFile={processedFile}
+            fileName={`rotated_${files[0]?.name || 'document.pdf'}`}
+            onReset={handleReset}
+          />
+        )}
       </div>
     </>
   );
 };
 
-export default RotatePdfPage;
+export default RotatePDFPage;
