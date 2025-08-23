@@ -59,6 +59,7 @@
     "next-themes": "^0.3.0",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.2.67",
+    "qpdf-js": "^1.2.0",
     "react": "^18",
     "react-beautiful-dnd": "^13.1.1",
     "react-cookie-consent": "^9.0.0",
