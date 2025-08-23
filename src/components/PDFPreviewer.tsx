@@ -1,7 +1,7 @@
 // src/components/PDFPreviewer.tsx
 
 import React, { useEffect, useRef } from 'react';
-import * as pdfjsLib from 'pdfjs-dist/build/pdf';
+import * as pdfjsLib from 'pdfjs-dist'; // Corrected import path
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
 import { X, RotateCw } from 'lucide-react';
@@ -15,8 +15,8 @@ interface PDFPreviewerProps {
   file: File;
   index: number;
   onRemove: (index: number) => void;
-  onRotate?: (index: number) => void; // Optional onRotate handler
-  rotationAngle?: number; // Optional rotation angle
+  onRotate?: (index: number) => void;
+  rotationAngle?: number;
 }
 
 const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
@@ -42,7 +42,7 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
 
         const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
         const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
-        const page = await pdf.getPage(1); // For multi-page PDFs, we only show the first page as a preview.
+        const page = await pdf.getPage(1);
 
         const viewport = page.getViewport({ scale: 0.5 });
         canvas.height = viewport.height;
@@ -82,7 +82,7 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
         <X className="h-4 w-4" />
       </Button>
       
-      {/* Rotate Button - only shown if onRotate is provided */}
+      {/* Rotate Button */}
       {onRotate && (
          <Button
             variant="outline"
