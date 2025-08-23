@@ -70,7 +70,8 @@ const SplitPdfPage = () => {
       const url = URL.createObjectURL(resultBlob);
       setDownloadUrl(url);
       setStatus('success');
-    } catch (err: any)      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: any) {
+      setError(err.message || 'An unexpected error occurred.');
       setStatus('error');
     }
   };
