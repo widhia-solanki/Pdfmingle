@@ -10,13 +10,21 @@ import { rotatePdf } from '@/lib/pdf/rotate';
 import { tools } from '@/constants/tools';
 import PDFPreviewer from '@/components/PDFPreviewer';
 
+type Status = 'idle' | 'arranging' | 'processing' | 'success';
+
 const RotatePDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [processedFile, setProcessedFile] = useState<Blob | null>(null);
   const [rotations, setRotations] = useState<{ [key: number]: number }>({});
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<Status>('idle');
 
   const tool = tools['rotate-pdf'];
+  
+  const handleFilesSelected = (selectedFiles: File[]) => {
+    setFiles(selectedFiles);
+    setStatus('arranging');
+  };
 
   const handleRotate = (index: number) => {
     setRotations((prev) => {
@@ -27,7 +35,11 @@ const RotatePDFPage: NextPage = () => {
   };
 
   const handleFileRemove = (index: number) => {
-    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+    const newFiles = files.filter((_, i) => i !== index);
+    setFiles(newFiles);
+    if (newFiles.length === 0) {
+        setStatus('idle');
+    }
     setRotations((prev) => {
       const newRotations = { ...prev };
       delete newRotations[index];
@@ -48,13 +60,16 @@ const RotatePDFPage: NextPage = () => {
       setError('Please upload a PDF file to rotate.');
       return;
     }
+    setStatus('processing');
     try {
       setError(null);
       const processed = await rotatePdf(files[0], rotations);
       setProcessedFile(new Blob([processed], { type: 'application/pdf' }));
+      setStatus('success');
     } catch (err) {
       setError('An error occurred while rotating the PDF.');
       console.error(err);
+      setStatus('arranging');
     }
   };
 
@@ -63,9 +78,8 @@ const RotatePDFPage: NextPage = () => {
     setProcessedFile(null);
     setRotations({});
     setError(null);
+    setStatus('idle');
   };
-  
-  const isUploaderDisabled = files.length > 0;
 
   return (
     <>
@@ -78,20 +92,24 @@ const RotatePDFPage: NextPage = () => {
         <p className="text-lg text-gray-600 text-center mb-8">
           {tool.description}
         </p>
+        
+        {status === 'idle' && (
+            <div className="max-w-4xl mx-auto">
+                <ToolUploader 
+                    onFilesSelected={handleFilesSelected} 
+                    acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                    selectedFiles={files}
+                    isMultiFile={false}
+                    error={error}
+                    onProcess={() => {}}
+                    actionButtonText=""
+                />
+            </div>
+        )}
 
-        {!processedFile ? (
-          <div className="space-y-6">
-            {/* FIX: Changed prop name from 'accept' to 'acceptedFileTypes' */}
-            <ToolUploader 
-              onFilesSelected={setFiles} 
-              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-              disabled={isUploaderDisabled}
-            />
-            
-            {error && <p className="text-red-500 text-center">{error}</p>}
-
-            {files.length > 0 && (
-              <div className="w-full max-w-4xl mx-auto">
+        {status === 'arranging' && (
+             <div className="w-full max-w-4xl mx-auto space-y-6">
+                {error && <p className="text-red-500 text-center">{error}</p>}
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                   {files.map((file, index) => (
                     <PDFPreviewer
@@ -108,12 +126,17 @@ const RotatePDFPage: NextPage = () => {
                   onProcess={handleProcess}
                   buttonText="Rotate PDF"
                   isProcessing={false}
-                  className="mt-6"
                 />
               </div>
-            )}
-          </div>
-        ) : (
+        )}
+
+        {status === 'processing' && (
+            <div className="flex flex-col items-center justify-center p-12 h-64 border-2 border-dashed rounded-lg">
+                <p className="text-lg font-semibold animate-pulse">Rotating your PDF...</p>
+             </div>
+        )}
+        
+        {status === 'success' && processedFile && (
           <ToolDownloader
             processedFile={processedFile}
             fileName={`rotated_${files[0]?.name || 'document.pdf'}`}
