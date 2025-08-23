@@ -2,29 +2,25 @@
 
 import { useState, useCallback } from 'react';
 import { NextSeo } from 'next-seo';
-import type { PDFDocumentProxy } from 'pdfjs-dist';
-
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { SplitOptions, SplitRange, SplitMode } from '@/components/tools/SplitOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { splitPDF } from '@/lib/pdf/split';
 
-type SplitStatus = 'idle' | 'loading_preview' | 'options' | 'processing' | 'success' | 'error';
+type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
 const SplitPdfPage = () => {
   const [status, setStatus] = useState<SplitStatus>('idle');
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [downloadUrl, setDownloadUrl] = useState<string>('');
-  const [pdfDoc, setPdfDoc] = useState<PDFDocumentProxy | null>(null);
   const [totalPages, setTotalPages] = useState(0);
   const [splitRanges, setSplitRanges] = useState<SplitRange[]>([{ from: 1, to: 1 }]);
   const [splitMode, setSplitMode] = useState<SplitMode>('ranges');
-  const [downloadFilename, setDownloadFilename] = useState('split.zip');
+  const [processedFileName, setProcessedFileName] = useState('');
 
   const handleStartOver = useCallback(() => {
     setFile(null);
@@ -32,8 +28,6 @@ const SplitPdfPage = () => {
     setError(null);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl('');
-    setPdfDoc(null);
-    setSplitMode('ranges');
   }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
@@ -45,26 +39,18 @@ const SplitPdfPage = () => {
     const selectedFile = files[0];
     setFile(selectedFile);
     setError(null);
-    setStatus('loading_preview');
 
     try {
-      const pdfJS = await import('pdfjs-dist');
-      pdfJS.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfJS.version}/pdf.worker.mjs`;
-      
+      const pdfjsLib = await import('pdfjs-dist');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
       const fileBuffer = await selectedFile.arrayBuffer();
-      const typedArray = new Uint8Array(fileBuffer);
-      const loadedPdfDoc = await pdfJS.getDocument({ data: typedArray }).promise;
+      const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
       
-      setPdfDoc(loadedPdfDoc);
-      setTotalPages(loadedPdfDoc.numPages);
-      setSplitRanges([{ from: 1, to: loadedPdfDoc.numPages }]);
+      setTotalPages(pdf.numPages);
+      setSplitRanges([{ from: 1, to: pdf.numPages }]);
       setStatus('options');
     } catch (err: any) {
-      let errorMessage = "Could not read the PDF. It may be corrupt.";
-      if (err.name === 'PasswordException') {
-        errorMessage = "This PDF is password-protected and cannot be processed.";
-      }
-      setError(errorMessage);
+      setError("Could not read the PDF. It may be corrupt or password-protected.");
       setStatus('error');
     }
   };
@@ -76,68 +62,13 @@ const SplitPdfPage = () => {
 
     try {
       const resultBlob = await splitPDF(file, splitRanges, splitMode);
-      setDownloadFilename(`${file.name.replace(/\.pdf$/i, '')}_split.zip`);
+      setProcessedFileName(`${file.name.replace(/\.pdf$/i, '')}_split.zip`);
       const url = URL.createObjectURL(resultBlob);
       setDownloadUrl(url);
       setStatus('success');
     } catch (err: any) {
-      setError((err as Error).message || 'An unexpected error occurred.');
+      setError(err.message || 'An unexpected error occurred.');
       setStatus('error');
-    }
-  };
-
-  const renderContent = () => {
-    switch (status) {
-      case 'idle':
-        return (
-            <ToolUploader 
-                onFilesSelected={handleFileSelected}
-                accept={{ 'application/pdf': ['.pdf'] }}
-                disabled={!!file}
-            />
-        );
-      case 'loading_preview':
-        return (
-          <div className="flex flex-col items-center justify-center p-12 gap-4">
-            <Loader2 className="w-12 h-12 text-gray-500 animate-spin" />
-            <p className="text-lg font-semibold text-gray-700">Reading your PDF...</p>
-          </div>
-        );
-      case 'options':
-        return (
-          <div className="w-full grid md:grid-cols-2 gap-8 items-start">
-            <div className="md:sticky md:top-24">
-              <h2 className="text-2xl font-bold mb-4">File Preview</h2>
-              {file && <PDFPreviewer file={file} onRemove={handleStartOver} index={0} />}
-            </div>
-            <div>
-              <SplitOptions 
-                totalPages={totalPages} 
-                ranges={splitRanges} 
-                onRangesChange={setSplitRanges} 
-                mode={splitMode}
-                onModeChange={setSplitMode}
-              />
-              <div className="mt-6 flex flex-col items-center gap-4">
-                <Button size="lg" onClick={handleProcess} className="w-full" disabled={!pdfDoc}>
-                  Split PDF
-                </Button>
-                <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
-              </div>
-            </div>
-          </div>
-        );
-      case 'processing': return <ToolProcessor isProcessing={true} />;
-      case 'success': 
-        const blob = downloadUrl ? new Blob() : null; // Placeholder blob
-        return blob && <ToolDownloader processedFile={blob} onReset={handleStartOver} fileName={downloadFilename} directUrl={downloadUrl} />;
-      
-      case 'error': return (
-        <div className="text-center p-8">
-            <p className="text-red-500 font-semibold mb-4">{error}</p>
-            <Button onClick={handleStartOver} variant="outline">Try Again</Button>
-        </div>
-      );
     }
   };
 
@@ -150,8 +81,49 @@ const SplitPdfPage = () => {
       <div className="flex flex-col items-center text-center pt-8 md:pt-12">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Split PDF Online</h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter.</p>
-        <div className="mt-8 md:mt-12 w-full max-w-6xl px-4">
-          {renderContent()}
+        <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
+            {status === 'idle' && (
+                <ToolUploader 
+                    onFilesSelected={handleFileSelected}
+                    acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                    selectedFiles={file ? [file] : []}
+                    isMultiFile={false}
+                    error={error}
+                    onProcess={() => {}}
+                    actionButtonText=""
+                />
+            )}
+            {status === 'options' && file && (
+                <div className="w-full grid md:grid-cols-2 gap-8 items-start">
+                    <div className="md:sticky md:top-24">
+                        <h2 className="text-2xl font-bold mb-4">File Preview</h2>
+                        <PDFPreviewer file={file} onRemove={handleStartOver} index={0} />
+                    </div>
+                    <div>
+                        <SplitOptions 
+                            totalPages={totalPages} 
+                            ranges={splitRanges} 
+                            onRangesChange={setSplitRanges} 
+                            mode={splitMode}
+                            onModeChange={setSplitMode}
+                        />
+                        <div className="mt-6 flex flex-col items-center gap-4">
+                            <Button size="lg" onClick={handleProcess} className="w-full">Split PDF</Button>
+                            <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {status === 'processing' && <ToolProcessor />}
+            {status === 'success' && (
+                <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} />
+            )}
+            {status === 'error' && (
+                <div className="text-center p-8">
+                    <p className="text-red-500 font-semibold mb-4">{error}</p>
+                    <Button onClick={handleStartOver} variant="outline">Try Again</Button>
+                </div>
+            )}
         </div>
       </div>
     </>
