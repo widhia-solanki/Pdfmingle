@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Set up the worker once when the page loads
+// FINAL, GUARANTEED FIX: Point to the local copy of the worker.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
@@ -48,10 +48,10 @@ const SplitPdfPage = () => {
     setFile(selectedFile);
     setError(null);
 
-    // Use pdf.js to get the page count for the options UI
     try {
       const fileBuffer = await selectedFile.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
+      
       setTotalPages(pdf.numPages);
       setSplitRanges([{ from: 1, to: pdf.numPages }]);
       setStatus('options');
@@ -67,7 +67,6 @@ const SplitPdfPage = () => {
     setError(null);
 
     try {
-      // The core logic only needs the file, not the pdf.js doc
       const resultBlob = await splitPDF(file, splitRanges, splitMode);
       setProcessedFileName(`${file.name.replace(/\.pdf$/i, '')}_split.zip`);
       const url = URL.createObjectURL(resultBlob);
@@ -115,7 +114,8 @@ const SplitPdfPage = () => {
                             onModeChange={setSplitMode}
                         />
                         <div className="mt-6 flex flex-col items-center gap-4">
-                            <Button size="lg" onClick={handleProcess} className="w-full">Split PDF</Button>
+                            {/* FINAL FIX: Added styling to the button */}
+                            <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 text-white">Split PDF</Button>
                             <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
                         </div>
                     </div>
