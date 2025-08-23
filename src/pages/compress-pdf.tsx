@@ -4,12 +4,13 @@ import React, { useState } from 'react';
 import Head from 'next/head';
 import { tools } from '@/constants/tools';
 import { ToolUploader } from '@/components/ToolUploader';
-import { ToolProcessor } from '@/components/ToolProcessor';
+import { ToolProcessor } from '@/components/tools/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { compressPDF } from '@/lib/pdf/compress';
 import { NextPage } from 'next';
+import { Button } from '@/components/ui/button';
 
 type Status = 'idle' | 'arranging' | 'processing' | 'success';
 
@@ -25,7 +26,11 @@ const CompressPDFPage: NextPage = () => {
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
-    setStatus('arranging');
+    if (selectedFiles.length > 0) {
+      setStatus('arranging');
+    } else {
+      setStatus('idle');
+    }
   };
 
   const handleFileRemove = (indexToRemove: number) => {
@@ -53,7 +58,7 @@ const CompressPDFPage: NextPage = () => {
     } catch (err) {
       setError('An error occurred during compression. Please try again.');
       console.error(err);
-      setStatus('arranging'); // Go back to options on error
+      setStatus('arranging'); 
     }
   };
 
@@ -84,8 +89,8 @@ const CompressPDFPage: NextPage = () => {
                 selectedFiles={files}
                 isMultiFile={false}
                 error={error}
-                onProcess={() => {}} // Not used in this state
-                actionButtonText="" // Not used in this state
+                onProcess={() => {}}
+                actionButtonText=""
             />
            </div>
         )}
@@ -107,19 +112,15 @@ const CompressPDFPage: NextPage = () => {
                level={compressionLevel}
                onLevelChange={setCompressionLevel}
              />
-             <ToolProcessor
-               onProcess={handleProcess}
-               buttonText="Compress PDF"
-               isProcessing={false}
-             />
+             <div className="flex justify-center">
+                <Button size="lg" onClick={handleProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold">
+                    Compress PDF
+                </Button>
+             </div>
           </div>
         )}
 
-        {status === 'processing' && (
-            <div className="flex flex-col items-center justify-center p-12 h-64 border-2 border-dashed rounded-lg">
-                <p className="text-lg font-semibold animate-pulse">Compressing your file...</p>
-             </div>
-        )}
+        {status === 'processing' && <ToolProcessor />}
 
         {status === 'success' && processedFile && (
           <ToolDownloader
