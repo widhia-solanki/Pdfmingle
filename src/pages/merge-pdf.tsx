@@ -68,19 +68,19 @@ const MergePdfPage = () => {
                 acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
                 selectedFiles={files}
                 error={error}
-                onProcess={() => {}} // Not used in idle state for this tool
-                actionButtonText="" // Not used in idle state for this tool
+                onProcess={() => {}}
+                actionButtonText=""
             />
           )}
 
           {status === 'arranging' && (
             <div>
               <h2 className="text-2xl font-bold mb-4">Arrange Your Files</h2>
-              <p className="text-gray-600 mb-6">Use the arrow buttons to reorder your files before merging.</p>
+              <p className="text-gray-600 mb-6">Drag and drop to reorder your files before merging.</p>
               <FileArranger files={files} onFilesChange={setFiles} />
               <div className="mt-8 flex justify-center gap-4">
                 <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">Merge PDFs</Button>
+                <Button size="lg" onClick={handleProcess}>Merge PDFs</Button>
               </div>
             </div>
           )}
@@ -93,7 +93,7 @@ const MergePdfPage = () => {
 
           {status === 'error' && (
             <div className="text-center p-8">
-              <p className="text-red-500 font-semibold mb-4">Error: {error}</p>
+              <p className="text-red-500 font-semibold mb-4">{error}</p>
               <Button onClick={handleStartOver} variant="outline">Try Again</Button>
             </div>
           )}
