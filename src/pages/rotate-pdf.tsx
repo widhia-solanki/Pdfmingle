@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
-import { ToolUploader } from '@/components/ToolUploader'; // Corrected import
-import { ToolProcessor } from '@/components/ToolProcessor'; // Corrected import
+import { ToolUploader } from '@/components/ToolUploader';
+import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { rotatePdf } from '@/lib/pdf/rotate';
 import { tools } from '@/constants/tools';
@@ -70,11 +70,13 @@ const RotatePDFPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{tool.title}</title>
+        {/* FIX: Use 'metaTitle' for the page title */}
+        <title>{tool.metaTitle}</title>
         <meta name="description" content={tool.description} />
       </Head>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-4">{tool.title}</h1>
+        {/* FIX: Use 'h1' for the main page heading */}
+        <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
           {tool.description}
         </p>
