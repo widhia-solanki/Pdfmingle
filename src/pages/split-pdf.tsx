@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// FINAL FIX: Hardcode the correct version from package.json to ensure the worker is always found.
+// FINAL, DEFINITIVE FIX: The correct worker file is 'pdf.worker.mjs'
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.mjs`;
 }
 
 type SplitStatus = 'idle' | 'options' | 'processing' | 'success' | 'error';
@@ -70,8 +70,7 @@ const SplitPdfPage = () => {
       const url = URL.createObjectURL(resultBlob);
       setDownloadUrl(url);
       setStatus('success');
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: any)      setError(err.message || 'An unexpected error occurred.');
       setStatus('error');
     }
   };
