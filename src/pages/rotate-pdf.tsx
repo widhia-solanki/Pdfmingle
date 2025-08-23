@@ -1,10 +1,9 @@
 // src/pages/rotate-pdf.tsx
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { ToolUploader } from '@/components/ToolUploader';
-// FIX: Corrected the import path for ToolProcessor
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { rotatePdf } from '@/lib/pdf/rotate';
@@ -16,10 +15,11 @@ type Status = 'idle' | 'arranging' | 'processing' | 'success';
 
 const RotatePDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
-  const [processedFile, setProcessedFile] = useState<Blob | null>(null);
   const [rotations, setRotations] = useState<{ [key: number]: number }>({});
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
+  const [downloadUrl, setDownloadUrl] = useState<string>('');
+  const [processedFileName, setProcessedFileName] = useState('');
 
   const tool = tools['rotate-pdf'];
   
@@ -70,7 +70,10 @@ const RotatePDFPage: NextPage = () => {
     try {
       setError(null);
       const processed = await rotatePdf(files[0], rotations);
-      setProcessedFile(new Blob([processed], { type: 'application/pdf' }));
+      const blob = new Blob([processed], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      setDownloadUrl(url);
+      setProcessedFileName(`rotated_${files[0]?.name || 'document.pdf'}`);
       setStatus('success');
     } catch (err) {
       setError('An error occurred while rotating the PDF.');
@@ -79,13 +82,15 @@ const RotatePDFPage: NextPage = () => {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
+    if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setFiles([]);
-    setProcessedFile(null);
     setRotations({});
     setError(null);
     setStatus('idle');
-  };
+    setDownloadUrl('');
+    setProcessedFileName('');
+  }, [downloadUrl]);
 
   return (
     <>
@@ -138,11 +143,11 @@ const RotatePDFPage: NextPage = () => {
 
         {status === 'processing' && <ToolProcessor />}
         
-        {status === 'success' && processedFile && (
+        {status === 'success' && (
           <ToolDownloader
-            processedFile={processedFile}
-            fileName={`rotated_${files[0]?.name || 'document.pdf'}`}
-            onReset={handleReset}
+            downloadUrl={downloadUrl}
+            filename={processedFileName}
+            onStartOver={handleReset}
           />
         )}
       </div>
