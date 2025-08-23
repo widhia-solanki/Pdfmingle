@@ -75,7 +75,6 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@types/jspawn__qpdf-wasm": "^0.0.2",
     "@types/node": "^20",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/react": "^18",
