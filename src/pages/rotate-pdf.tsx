@@ -4,11 +4,12 @@ import React, { useState } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import { ToolUploader } from '@/components/ToolUploader';
-import { ToolProcessor } from '@/components/ToolProcessor';
+import { ToolProcessor } from '@/components/tools/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { rotatePdf } from '@/lib/pdf/rotate';
 import { tools } from '@/constants/tools';
 import PDFPreviewer from '@/components/PDFPreviewer';
+import { Button } from '@/components/ui/button';
 
 type Status = 'idle' | 'arranging' | 'processing' | 'success';
 
@@ -23,7 +24,11 @@ const RotatePDFPage: NextPage = () => {
   
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
-    setStatus('arranging');
+    if (selectedFiles.length > 0) {
+        setStatus('arranging');
+    } else {
+        setStatus('idle');
+    }
   };
 
   const handleRotate = (index: number) => {
@@ -122,19 +127,15 @@ const RotatePDFPage: NextPage = () => {
                     />
                   ))}
                 </div>
-                <ToolProcessor
-                  onProcess={handleProcess}
-                  buttonText="Rotate PDF"
-                  isProcessing={false}
-                />
+                <div className="flex justify-center">
+                    <Button size="lg" onClick={handleProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold">
+                        Rotate PDF
+                    </Button>
+                </div>
               </div>
         )}
 
-        {status === 'processing' && (
-            <div className="flex flex-col items-center justify-center p-12 h-64 border-2 border-dashed rounded-lg">
-                <p className="text-lg font-semibold animate-pulse">Rotating your PDF...</p>
-             </div>
-        )}
+        {status === 'processing' && <ToolProcessor />}
         
         {status === 'success' && processedFile && (
           <ToolDownloader
