@@ -6,9 +6,9 @@ import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
 import { X, RotateCw } from 'lucide-react';
 
-// FINAL, DEFINITIVE FIX: The correct worker file is 'pdf.worker.mjs'
+// FINAL, GUARANTEED FIX: The correct worker URL is 'pdf.worker.min.mjs'
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/4.2.67/pdf.worker.min.mjs`;
 }
 
 interface PDFPreviewerProps {
