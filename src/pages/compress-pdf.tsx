@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react';
 import Head from 'next/head';
-import { tools } from '@/constants/tools';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -12,18 +11,15 @@ import { compressPDF } from '@/lib/pdf/compress';
 import { NextPage } from 'next';
 import { Button } from '@/components/ui/button';
 
-type Status = 'idle' | 'arranging' | 'processing' | 'success';
+type Status = 'idle' | 'arranging' | 'processing' | 'success' | 'error';
 
 const CompressPDFPage: NextPage = () => {
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
-  const [compressionLevel, setCompressionLevel] =
-    useState<CompressionLevel>('medium');
+  const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
-
-  const tool = tools['compress-pdf'];
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
@@ -61,11 +57,11 @@ const CompressPDFPage: NextPage = () => {
     } catch (err) {
       setError('An error occurred during compression. Please try again.');
       console.error(err);
-      setStatus('arranging'); 
+      setStatus('error');
     }
   };
 
-  const handleReset = useCallback(() => {
+  const handleStartOver = useCallback(() => {
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setFiles([]);
     setError(null);
@@ -77,13 +73,13 @@ const CompressPDFPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>{tool.metaTitle}</title>
-        <meta name="description" content={tool.description} />
+        <title>Compress PDF Online – Reduce File Size</title>
+        <meta name="description" content="Shrink PDF file size without losing quality. Quick, secure, and free online PDF compressor." />
       </Head>
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
+        <h1 className="text-4xl font-bold text-center mb-4">Compress PDF Online</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
-          {tool.description}
+          Shrink PDF file size without losing quality. Quick, secure, and free online PDF compressor.
         </p>
 
         {status === 'idle' && (
@@ -102,7 +98,6 @@ const CompressPDFPage: NextPage = () => {
 
         {status === 'arranging' && (
           <div className="space-y-6 max-w-4xl mx-auto">
-             {error && <p className="text-red-500 text-center">{error}</p>}
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                {files.map((file, index) => (
                  <PDFPreviewer
@@ -131,8 +126,15 @@ const CompressPDFPage: NextPage = () => {
           <ToolDownloader
             downloadUrl={downloadUrl}
             filename={processedFileName}
-            onStartOver={handleReset}
+            onStartOver={handleStartOver}
           />
+        )}
+        
+        {status === 'error' && (
+            <div className="text-center p-8">
+              <p className="text-red-500 font-semibold mb-4">{error}</p>
+              <Button onClick={handleStartOver} variant="outline">Try Again</Button>
+            </div>
         )}
       </div>
     </>
