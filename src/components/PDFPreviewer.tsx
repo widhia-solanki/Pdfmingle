@@ -2,15 +2,13 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-// FINAL, GUARANTEED FIX: Import the worker directly to be handled by the bundler.
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
 import { X, RotateCw } from 'lucide-react';
 
+// FINAL, GUARANTEED FIX: Point to the local copy of the worker.
 if (typeof window !== 'undefined') {
-  // Use the imported worker
-  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 interface PDFPreviewerProps {
@@ -31,7 +29,7 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const renderPdf = async () => {
+    const renderPdf = async ().
       if (!canvasRef.current) return;
 
       const canvas = canvasRef.current;
