@@ -1,6 +1,6 @@
 // src/lib/pdf/protect.ts
 
-import { PdfDocument } from '@syncfusion/ej2-pdf-export';
+import { PdfDocument, PdfSecurityAlgorithm } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Encrypts a PDF with a user-provided password using @syncfusion/ej2-pdf-export.
@@ -16,10 +16,13 @@ export const protectPdf = async (
     const reader = new FileReader();
     reader.onload = async (e: any) => {
       try {
-        // The correct method is to pass the password as the second argument
-        // to the PdfDocument constructor. This applies AES 256-bit encryption by default.
-        const pdfdocument = new PdfDocument(e.target.result, password);
+        // Load the existing PDF document from the file data
+        const pdfdocument = new PdfDocument(e.target.result);
         
+        // The correct method is to set the userPassword on the security object
+        pdfdocument.security.userPassword = password;
+        pdfdocument.security.algorithm = PdfSecurityAlgorithm.AES25-bit;
+
         // Save the document to apply the encryption.
         const blob = await pdfdocument.save();
         
