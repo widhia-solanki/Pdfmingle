@@ -1,0 +1,19 @@
+# render.yaml
+
+services:
+  - type: web
+    name: pdfmingle-backend
+    env: python
+    region: ohio # You can change this to your preferred region
+    plan: free
+    rootDir: ./backend
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.6 # Specify a stable Python version
+      - key: PATH
+        value: /usr/bin:/opt/render/project/src/.local/bin:/opt/render/project/src/backend/poppler/bin:$PATH
+    build:
+      - command: "apt-get update && apt-get install -y poppler-utils"
