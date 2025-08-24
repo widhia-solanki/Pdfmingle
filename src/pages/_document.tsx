@@ -6,7 +6,7 @@ import Script from 'next/script';
 // Your existing Google Tag Manager ID
 const GTM_ID = 'GTM-5F5T8VBP';
 
-// Your new Google Analytics 4 ID
+// Your new Google Analytics 4 ID from the screenshot
 const GA_MEASUREMENT_ID = 'G-RPZJ7ZGCQG';
 
 export default function Document() {
