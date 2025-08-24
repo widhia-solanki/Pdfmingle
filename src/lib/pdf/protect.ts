@@ -1,6 +1,7 @@
 // src/lib/pdf/protect.ts
 
-import { PdfDocument, PdfSecurityAlgorithm } from '@syncfusion/ej2-pdf-export';
+// FINAL, GUARANTEED FIX: Use a namespace import to correctly access the enum.
+import * as pdf from '@syncfusion/ej2-pdf-export';
 
 /**
  * Encrypts a PDF with a user-provided password using @syncfusion/ej2-pdf-export.
@@ -17,11 +18,12 @@ export const protectPdf = async (
     reader.onload = async (e: any) => {
       try {
         // Load the existing PDF document from the file data
-        const pdfdocument = new PdfDocument(e.target.result);
+        const pdfdocument = new pdf.PdfDocument(e.target.result);
         
         // Set the security options for the document
         pdfdocument.security.userPassword = password;
-        pdfdocument.security.algorithm = PdfSecurityAlgorithm.AES256Bit;
+        // Access the enum correctly through the imported module
+        pdfdocument.security.algorithm = pdf.PdfSecurityAlgorithm.AES256Bit;
 
         // Save the document. It will be encrypted with the provided password.
         const blob = await pdfdocument.save();
