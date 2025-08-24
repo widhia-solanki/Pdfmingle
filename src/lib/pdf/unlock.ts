@@ -15,11 +15,9 @@ export const unlockPdf = async (
   const arrayBuffer = await file.arrayBuffer();
 
   try {
-    // Attempt to load the document using the provided password.
-    // This is the key step that is supported by pdf-lib v1.17.1.
-    const pdfDoc = await PDFDocument.load(arrayBuffer, {
-      password: password,
-    });
+    // The correct method for this version of pdf-lib is to pass the password
+    // as the second argument to the load function.
+    const pdfDoc = await PDFDocument.load(arrayBuffer, { password });
 
     // If the document loads successfully, it is now decrypted in memory.
     // Saving it without any options will create a new, unlocked version.
