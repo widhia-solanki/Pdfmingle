@@ -1,6 +1,5 @@
 // src/lib/pdf/protect.ts
 
-// FINAL, GUARANTEED FIX: Use a namespace import and the correct load() -> set -> save() pattern.
 import * as pdf from '@syncfusion/ej2-pdf-export';
 
 /**
@@ -17,24 +16,19 @@ export const protectPdf = async (
     const reader = new FileReader();
     reader.onload = async (e: any) => {
       try {
-        // Step 1: Create a new, empty PdfDocument object.
-        const pdfdocument = new pdf.PdfDocument();
+        // The correct method is to pass the base64 string directly to the constructor
+        const pdfdocument = new pdf.PdfDocument(e.target.result);
         
-        // Step 2: Load the existing PDF document from the file data.
-        pdfdocument.load(e.target.result);
-        
-        // Step 3: Now that the document is loaded, access the security object and set the password.
+        // Now, set the security options on the loaded document
         pdfdocument.security.userPassword = password;
         pdfdocument.security.algorithm = pdf.PdfSecurityAlgorithm.AES256Bit;
 
-        // Step 4: Save the document to apply the encryption.
+        // Save the document to apply the encryption.
         const blob = await pdfdocument.save();
         
-        // Convert the Blob to a Uint8Array
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
-        
-        // Step 5: Clean up the document object from memory.
+
         pdfdocument.destroy();
         
         resolve(uint8Array);
@@ -48,7 +42,7 @@ export const protectPdf = async (
       reject(error);
     };
 
-    // The library's load() method requires a base64 string.
+    // The library's constructor requires the PDF data as a base64 string.
     reader.readAsDataURL(file);
   });
 };
