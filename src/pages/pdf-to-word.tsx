@@ -47,7 +47,6 @@ const PdfToWordPage = () => {
     formData.append('files', file);
 
     try {
-      // This is the key part: It uses the environment variable you set in Vercel.
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${apiBaseUrl}/pdf-to-word`, {
         method: 'POST',
@@ -124,7 +123,7 @@ const PdfToWordPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        keywords={tool.metaKeywords}
+        // --- THIS IS THE FIX: The 'keywords' prop has been removed ---
         canonical={`https://pdfmingle.net/${tool.value}`}
         openGraph={{
           title: tool.metaTitle,
