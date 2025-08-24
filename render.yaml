@@ -14,6 +14,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.6 # Specify a stable Python version
       - key: PATH
-        value: /usr/bin:/opt/render/project/src/.local/bin:/opt/render/project/src/backend/poppler/bin:$PATH
+        value: /usr/bin:/opt/render/project/src/.local/bin:/opt/render/project/src/backend/poppler/bin:$PATH # Keep this if poppler is needed, otherwise remove the poppler part
     build:
-      - command: "apt-get update && apt-get install -y poppler-utils"
+      # --- THIS IS THE FIX: Added more essential system packages ---
+      - command: "apt-get update && apt-get install -y poppler-utils ghostscript libglib2.0-0 libsm6 libxext6 libxrender1 mupdf-tools"
