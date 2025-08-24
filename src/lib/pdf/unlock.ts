@@ -15,9 +15,10 @@ export const unlockPdf = async (
   const arrayBuffer = await file.arrayBuffer();
 
   try {
-    // The correct method for this version of pdf-lib is to pass the password
-    // as the second argument to the load function.
-    const pdfDoc = await PDFDocument.load(arrayBuffer, { password });
+    // This is the correct, modern method which will work with the upgraded library.
+    const pdfDoc = await PDFDocument.load(arrayBuffer, {
+      password: password,
+    });
 
     // If the document loads successfully, it is now decrypted in memory.
     // Saving it without any options will create a new, unlocked version.
@@ -26,7 +27,7 @@ export const unlockPdf = async (
     return pdfBytes;
   } catch (error: any) {
     // pdf-lib throws a specific error for wrong passwords. We can catch it.
-    if (error.name === 'InvalidPasswordError') {
+    if (error.message.includes('password')) {
       throw new Error('The password you entered is incorrect. Please try again.');
     } else {
       // Handle other potential errors, like a corrupted file.
@@ -34,4 +35,4 @@ export const unlockPdf = async (
       throw new Error('Could not process this PDF. It may be corrupted.');
     }
   }
-};
+}
