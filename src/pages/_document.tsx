@@ -6,7 +6,7 @@ import Script from 'next/script';
 // Your existing Google Tag Manager ID
 const GTM_ID = 'GTM-5F5T8VBP';
 
-// Your new Google Analytics 4 ID from the screenshot
+// Your new Google Analytics 4 ID
 const GA_MEASUREMENT_ID = 'G-RPZJ7ZGCQG';
 
 export default function Document() {
@@ -15,7 +15,7 @@ export default function Document() {
       <Head>
         {/* --- SCRIPT SECTION --- */}
 
-        {/* 1. Your existing Google Tag Manager Script (unchanged) */}
+        {/* 1. Your existing Google Tag Manager Script */}
         <Script
           id="gtm-script"
           strategy="afterInteractive"
@@ -31,7 +31,7 @@ export default function Document() {
         />
         {/* End Google Tag Manager */}
 
-        {/* 2. The new Google Analytics 4 Tag (added) */}
+        {/* 2. The new Google Analytics 4 Tag */}
         <Script
           strategy="afterInteractive"
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
@@ -52,7 +52,7 @@ export default function Document() {
 
       </Head>
       <body>
-        {/* Your existing Google Tag Manager (noscript) - Body (unchanged) */}
+        {/* Your existing Google Tag Manager (noscript) - Body */}
         <noscript
           dangerouslySetInnerHTML={{
             __html: `
@@ -67,12 +67,4 @@ export default function Document() {
       </body>
     </Html>
   );
-}```
-
-### What I Did:
-
-*   I kept your original GTM script (`GTM-5F5T8VBP`) exactly as it was.
-*   I added the new GA4 script (`G-RPZJ7ZGCQG`) right after it inside the `<Head>` component.
-*   Both scripts use the recommended `strategy="afterInteractive"` to ensure they don't slow down your site.
-
-Commit this updated file. Now, both Google Tag Manager and Google Analytics will be active on your site.
+}
