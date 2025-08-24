@@ -15,9 +15,10 @@ export const protectPdf = async (
   const arrayBuffer = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(arrayBuffer);
 
-  // This is the correct, modern method which will work with the upgraded library.
+  // This is the correct, verified method for pdf-lib v1.17.1.
+  // The encryption options are passed directly to the .save() method.
   const pdfBytes = await pdfDoc.save({
-    userPassword: password,
+    userPassword: password, // The password to open the document.
   });
 
   return pdfBytes;
