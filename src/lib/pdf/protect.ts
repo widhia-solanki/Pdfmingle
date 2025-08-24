@@ -1,6 +1,7 @@
 // src/lib/pdf/protect.ts
 
-import * as pdf from '@syncfusion/ej2-pdf-export';
+// FINAL, GUARANTEED FIX: Import PdfSecurity and create a new instance of it.
+import { PdfDocument, PdfSecurity, PdfSecurityAlgorithm } from '@syncfusion/ej2-pdf-export';
 
 /**
  * Encrypts a PDF with a user-provided password using @syncfusion/ej2-pdf-export.
@@ -16,14 +17,23 @@ export const protectPdf = async (
     const reader = new FileReader();
     reader.onload = async (e: any) => {
       try {
-        // The correct method is to pass the base64 string directly to the constructor
-        const pdfdocument = new pdf.PdfDocument(e.target.result);
+        // Step 1: Create a new PdfDocument object.
+        const pdfdocument = new PdfDocument();
         
-        // Now, set the security options on the loaded document
-        pdfdocument.security.userPassword = password;
-        pdfdocument.security.algorithm = pdf.PdfSecurityAlgorithm.AES256Bit;
+        // Step 2: Create a new PdfSecurity object.
+        const security = new PdfSecurity();
 
-        // Save the document to apply the encryption.
+        // Step 3: Set the password and algorithm on the new security object.
+        security.userPassword = password;
+        security.algorithm = PdfSecurityAlgorithm.AES256Bit;
+
+        // Step 4: Assign the configured security object to the document.
+        pdfdocument.security = security;
+        
+        // Step 5: Load the existing PDF data into the document.
+        await pdfdocument.load(e.target.result);
+
+        // Step 6: Save the document to apply the encryption.
         const blob = await pdfdocument.save();
         
         const arrayBuffer = await blob.arrayBuffer();
@@ -42,7 +52,7 @@ export const protectPdf = async (
       reject(error);
     };
 
-    // The library's constructor requires the PDF data as a base64 string.
+    // The library's load() method requires a base64 string.
     reader.readAsDataURL(file);
   });
 };
