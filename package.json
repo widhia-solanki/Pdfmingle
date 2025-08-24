@@ -75,7 +75,6 @@
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/pdf-lib": "^1.17.0",
     "@types/pdfjs-dist": "^2.10.378",
     "@types/react": "^18",
     "@types/react-beautiful-dnd": "^13.1.8",
