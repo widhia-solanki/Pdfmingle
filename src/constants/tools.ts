@@ -29,8 +29,6 @@ export interface Tool {
   faqs: { question: string; answer:string; }[];
 }
 
-// --- START OF FIX ---
-
 // Define the type for our main tools object
 type ToolMap = {
   [key: string]: Tool;
@@ -90,7 +88,8 @@ export const tools: ToolMap = {
     metaDescription: "Shrink PDF file size without losing quality. Quick, secure, and free online PDF compressor.",
     metaKeywords: "compress pdf, reduce pdf size, shrink pdf, pdf optimizer",
     steps: ["Upload your PDF", "Choose a compression level", "Click 'Compress PDF'", "Download your smaller, optimized PDF file"],
-    isBrowserOnly: false, // You mentioned this should be a client-side tool, let's change this
+    // --- THIS IS A FIX ---
+    isBrowserOnly: false, 
     isMultiFile: false,
     faqs: [
         { question: "How do I compress a PDF without losing quality?", answer: "Our tool uses advanced algorithms to reduce file size while maintaining the best possible text and image quality. For most documents, the quality difference is negligible." },
@@ -270,7 +269,8 @@ export const tools: ToolMap = {
     metaDescription: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
     metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
     steps: ["Upload your PDF", "Set a strong password", "Click 'Protect PDF'", "Download your encrypted file"],
-    isBrowserOnly: true, // Security can be done on the frontend with pdf-lib
+    // --- THIS IS A FIX ---
+    isBrowserOnly: false, 
     isMultiFile: false,
     faqs: [
       { question: "How strong is the encryption used to protect my PDF?", answer: "We use strong AES encryption to protect your PDF, which is the industry standard for securing documents." },
