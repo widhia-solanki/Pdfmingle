@@ -1,8 +1,7 @@
 Flask
 Flask-Cors
 PyPDF2
-pdf2docx
+pdfplumber
 python-docx
-pdf2image
 Pillow
 gunicorn
