@@ -217,7 +217,7 @@ export const tools: ToolMap = {
     ]
   },
   // --- THIS IS THE FIX ---
-  // Replaced the old 'jpg-to-pdf' with the new, corrected 'image-to-pdf'
+  // The key and the 'value' property are now 'image-to-pdf'
   "image-to-pdf": {
     value: "image-to-pdf",
     label: "Image to PDF",
@@ -230,7 +230,7 @@ export const tools: ToolMap = {
     metaDescription: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
     metaKeywords: "image to pdf, jpg to pdf, png to pdf",
     steps: ["Upload your JPG, PNG, or other image files", "Drag to reorder them if needed", "Click 'Convert to PDF'", "Download your new PDF document"],
-    isBrowserOnly: false, // Now uses the backend
+    isBrowserOnly: false,
     isMultiFile: true,
     faqs: [
       { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you arrange them." },
