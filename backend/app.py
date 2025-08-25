@@ -21,7 +21,7 @@ CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://pdfmi
 def index():
     return jsonify({"message": "PDFMingle Backend is running!"})
 
-# --- PDF TO WORD ---
+# --- ALL PREVIOUS, WORKING ENDPOINTS ---
 @app.route('/pdf-to-word', methods=['POST'])
 def handle_pdf_to_word():
     if 'files' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -48,7 +48,6 @@ def handle_pdf_to_word():
     finally:
         if os.path.exists(temp_pdf_path): os.remove(temp_pdf_path)
 
-# --- COMPRESS PDF ---
 @app.route('/compress-pdf', methods=['POST'])
 def handle_compress_pdf():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -80,7 +79,6 @@ def handle_compress_pdf():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_path): os.remove(output_path)
 
-# --- PROTECT PDF ---
 @app.route('/protect-pdf', methods=['POST'])
 def handle_protect_pdf():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -106,7 +104,6 @@ def handle_protect_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to protect the PDF."}), 500
 
-# --- UNLOCK PDF ---
 @app.route('/unlock-pdf', methods=['POST'])
 def handle_unlock_pdf():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -134,7 +131,6 @@ def handle_unlock_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to unlock the PDF."}), 500
 
-# --- IMAGE TO PDF ---
 @app.route('/image-to-pdf', methods=['POST'])
 def handle_images_to_pdf():
     if 'files' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -160,7 +156,6 @@ def handle_images_to_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to convert images."}), 500
 
-# --- PDF TO IMAGE ---
 @app.route('/pdf-to-image', methods=['POST'])
 def handle_pdf_to_image():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -206,28 +201,29 @@ def handle_word_to_pdf():
     if not file.filename.lower().endswith(('.doc', '.docx')):
         return jsonify({"error": "Invalid file type. Please upload a Word document."}), 400
 
-    temp_dir = '/tmp'
-    input_path = os.path.join(temp_dir, str(uuid.uuid4()) + os.path.splitext(file.filename)[1])
-    # The output path MUST be a directory for docx2pdf
-    output_dir = os.path.join(temp_dir, str(uuid.uuid4()))
-    os.makedirs(output_dir, exist_ok=True)
+    # --- THIS IS THE FIX ---
+    # Create a unique directory for this specific conversion job.
+    temp_dir = os.path.join('/tmp', str(uuid.uuid4()))
+    os.makedirs(temp_dir, exist_ok=True)
+
+    input_path = os.path.join(temp_dir, file.filename)
+    # The output from the library will have the same base name but a .pdf extension.
+    output_filename = os.path.splitext(file.filename)[0] + ".pdf"
+    output_path = os.path.join(temp_dir, output_filename)
     
     try:
         file.save(input_path)
 
-        # Convert the docx file, the output PDF will be in the output_dir
-        convert(input_path, output_dir)
-        
-        # Construct the expected output path
-        output_pdf_path = os.path.join(output_dir, os.path.splitext(os.path.basename(input_path))[0] + ".pdf")
+        # Tell the converter to use the temporary directory as its output folder.
+        convert(input_path, temp_dir)
 
-        if not os.path.exists(output_pdf_path):
+        if not os.path.exists(output_path):
              raise Exception("Conversion failed, output PDF not found.")
 
         return send_file(
-            output_pdf_path,
+            output_path,
             as_attachment=True,
-            download_name=f"{file.filename.rsplit('.', 1)[0]}.pdf",
+            download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
             mimetype='application/pdf'
         )
     except Exception as e:
@@ -235,9 +231,9 @@ def handle_word_to_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to convert the document."}), 500
     finally:
-        # Clean up temporary files and directories
-        if os.path.exists(input_path): os.remove(input_path)
-        if os.path.exists(output_dir): shutil.rmtree(output_dir)
+        # Clean up the entire temporary directory for this job.
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
