@@ -1,4 +1,4 @@
-// src/pages/compress-pdf.tsx
+// src/pages/protect-pdf.tsx
 
 import React, { useState, useCallback } from 'react';
 import { NextPage } from 'next';
@@ -6,7 +6,7 @@ import { NextSeo } from 'next-seo';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
-import { CompressOptions, CompressionLevel } from '@/components/tools/CompressOptions';
+import { ProtectOptions } from '@/components/tools/ProtectOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -14,23 +14,19 @@ import { useToast } from '@/hooks/use-toast';
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
-const CompressPDFPage: NextPage = () => {
-  const tool = tools['compress-pdf'];
+const ProtectPDFPage: NextPage = () => {
+  const tool = tools['protect-pdf'];
   const { toast } = useToast();
 
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<Status>('idle');
-  const [compressionLevel, setCompressionLevel] = useState<CompressionLevel>('medium');
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
-  const [originalSize, setOriginalSize] = useState(0);
-  const [compressedSize, setCompressedSize] = useState(0);
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     setFiles(selectedFiles);
     if (selectedFiles.length > 0) {
-      setOriginalSize(selectedFiles[0].size);
       setStatus('options');
     } else {
       setStatus('idle');
@@ -45,7 +41,7 @@ const CompressPDFPage: NextPage = () => {
     }
   };
 
-  const handleProcess = async () => {
+  const handleProcess = async (password: string) => {
     if (files.length === 0) {
       setError('Please upload a PDF file.');
       return;
@@ -56,11 +52,11 @@ const CompressPDFPage: NextPage = () => {
 
     const formData = new FormData();
     formData.append('file', files[0]);
-    formData.append('level', compressionLevel);
+    formData.append('password', password);
 
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
-      const response = await fetch(`${apiBaseUrl}/compress-pdf`, {
+      const response = await fetch(`${apiBaseUrl}/protect-pdf`, {
         method: 'POST',
         body: formData,
       });
@@ -71,16 +67,15 @@ const CompressPDFPage: NextPage = () => {
       }
 
       const blob = await response.blob();
-      setCompressedSize(blob.size);
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
-      setProcessedFileName(`compressed_${files[0]?.name || 'document.pdf'}`);
+      setProcessedFileName(`protected_${files[0]?.name || 'document.pdf'}`);
       setStatus('success');
-      toast({ title: 'Success!', description: 'Your PDF has been compressed.' });
+      toast({ title: 'Success!', description: 'Your PDF has been protected.' });
 
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(`Compression failed: ${message}`);
+      setError(`Protection failed: ${message}`);
       setStatus('error');
       toast({ title: 'Error', description: message, variant: 'destructive' });
     }
@@ -93,11 +88,7 @@ const CompressPDFPage: NextPage = () => {
     setStatus('idle');
     setDownloadUrl('');
     setProcessedFileName('');
-    setOriginalSize(0);
-    setCompressedSize(0);
   }, [downloadUrl]);
-  
-  const sizeToMB = (size: number) => (size / 1024 / 1024).toFixed(2);
 
   return (
     <>
@@ -138,36 +129,18 @@ const CompressPDFPage: NextPage = () => {
                  />
                ))}
              </div>
-             <CompressOptions
-               level={compressionLevel}
-               onLevelChange={setCompressionLevel}
-             />
-             <div className="flex justify-center">
-                <Button size="lg" onClick={handleProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold bg-red-500 hover:bg-red-600 text-white">
-                    Compress PDF
-                </Button>
-             </div>
+             <ProtectOptions onPasswordSet={handleProcess} />
           </div>
         )}
 
         {status === 'processing' && <ToolProcessor />}
 
         {status === 'success' && (
-          <div className="text-center">
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg max-w-md mx-auto">
-                <h3 className="text-xl font-semibold text-green-800">Compression Complete!</h3>
-                <p className="text-gray-600">Original Size: <strong>{sizeToMB(originalSize)} MB</strong></p>
-                <p className="text-gray-600">New Size: <strong>{sizeToMB(compressedSize)} MB</strong></p>
-                <p className="font-bold text-green-600">
-                    Reduced by {originalSize > 0 ? ((1 - compressedSize / originalSize) * 100).toFixed(0) : 0}%
-                </p>
-            </div>
-            <ToolDownloader
-              downloadUrl={downloadUrl}
-              filename={processedFileName}
-              onStartOver={handleStartOver}
-            />
-          </div>
+          <ToolDownloader
+            downloadUrl={downloadUrl}
+            filename={processedFileName}
+            onStartOver={handleStartOver}
+          />
         )}
         
         {status === 'error' && (
@@ -181,4 +154,4 @@ const CompressPDFPage: NextPage = () => {
   );
 };
 
-export default CompressPDFPage;
+export default ProtectPDFPage;
