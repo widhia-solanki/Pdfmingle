@@ -2,6 +2,7 @@ from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 from pdf2docx import Converter
 from PyPDF2 import PdfReader, PdfWriter
+from PIL import Image
 import io
 import os
 import uuid
@@ -102,51 +103,87 @@ def handle_protect_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to protect the PDF."}), 500
 
-# --- NEW UNLOCK PDF ENDPOINT ---
+# --- EXISTING UNLOCK-PDF ENDPOINT ---
 @app.route('/unlock-pdf', methods=['POST'])
 def handle_unlock_pdf():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
-    
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
-
-    if not file or not file.filename:
-        return jsonify({"error": "No selected file"}), 400
-    if not file.filename.lower().endswith('.pdf'):
-        return jsonify({"error": "Invalid file type"}), 400
-    if not password:
-        return jsonify({"error": "Password is required"}), 400
-
+    if not file or not file.filename: return jsonify({"error": "No selected file"}), 400
+    if not file.filename.lower().endswith('.pdf'): return jsonify({"error": "Invalid file type"}), 400
+    if not password: return jsonify({"error": "Password is required"}), 400
     try:
         pdf_stream = io.BytesIO(file.read())
         reader = PdfReader(pdf_stream)
-
-        # Attempt to decrypt the PDF with the provided password
         if reader.is_encrypted:
             if not reader.decrypt(password):
-                # If decryption fails, it means the password was wrong.
-                return jsonify({"error": "Incorrect password."}), 403 # 403 Forbidden is a good status code here
-
-        # If we reach here, the PDF is either not encrypted or was successfully decrypted.
+                return jsonify({"error": "Incorrect password."}), 403
         writer = PdfWriter()
         for page in reader.pages:
             writer.add_page(page)
-
         unlocked_stream = io.BytesIO()
         writer.write(unlocked_stream)
         unlocked_stream.seek(0)
+        return send_file(
+            unlocked_stream, as_attachment=True,
+            download_name=f"unlocked_{file.filename}", mimetype='application/pdf'
+        )
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": "Failed to unlock the PDF."}), 500
+
+# --- RENAMED IMAGES TO PDF ENDPOINT ---
+@app.route('/image-to-pdf', methods=['POST'])
+def handle_images_to_pdf():
+    if 'files' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    files = request.files.getlist('files')
+    
+    if not files:
+        return jsonify({"error": "No files selected"}), 400
+
+    try:
+        image_list = []
+        for file in files:
+            if file.mimetype not in ['image/jpeg', 'image/png']:
+                continue
+            
+            img = Image.open(file.stream).convert("RGB")
+            image_list.append(img)
+        
+        if not image_list:
+            return jsonify({"error": "No valid JPG or PNG images found."}), 400
+
+        pdf_stream = io.BytesIO()
+        
+        image_list[0].save(
+            pdf_stream, 
+            "PDF" ,
+            resolution=100.0, 
+            save_all=True, 
+            append_images=image_list[1:]
+        )
+        pdf_stream.seek(0)
 
         return send_file(
-            unlocked_stream,
+            pdf_stream,
             as_attachment=True,
-            download_name=f"unlocked_{file.filename}",
+            download_name="converted.pdf",
             mimetype='application/pdf'
         )
     except Exception as e:
-        print(f"Error unlocking file: {e}")
+        print(f"Error converting images to PDF: {e}")
         traceback.print_exc()
-        return jsonify({"error": "Failed to unlock the PDF. The file may be corrupt."}), 500
+        return jsonify({"error": "Failed to convert images."}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)```
+
+---
+
+### Final Step: Update Configuration
+
+Now for the most important part. We need to update our central `tools.ts` file to use the new `image-to-pdf` key and update all the text to be consistent.
+
+👉 Please provide me with the code from your `src/constants/tools.ts` file. I will replace the old `jpg-to-pdf` entry with the new, correct `image-to-pdf` configuration.
