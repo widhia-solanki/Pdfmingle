@@ -4,7 +4,8 @@ from pdf2docx import Converter
 from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
 from pdf2image import convert_from_path
-# No longer importing from docx2pdf
+import docx # Import python-docx
+import fitz # Import PyMuPDF (also known as fitz)
 import io
 import os
 import uuid
@@ -22,6 +23,7 @@ def index():
     return jsonify({"message": "PDFMingle Backend is running!"})
 
 # --- ALL PREVIOUS, WORKING ENDPOINTS ---
+# ... (pdf-to-word, compress-pdf, protect-pdf, etc. - leaving them as is)
 @app.route('/pdf-to-word', methods=['POST'])
 def handle_pdf_to_word():
     if 'files' not in request.files: return jsonify({"error": "No file part"}), 400
@@ -189,8 +191,7 @@ def handle_pdf_to_image():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_dir): shutil.rmtree(output_dir)
 
-
-# --- REWRITTEN WORD TO PDF ENDPOINT ---
+# --- LIGHTWEIGHT WORD TO PDF ENDPOINT ---
 @app.route('/word-to-pdf', methods=['POST'])
 def handle_word_to_pdf():
     if 'file' not in request.files:
@@ -202,51 +203,36 @@ def handle_word_to_pdf():
     if not file.filename.lower().endswith(('.doc', '.docx')):
         return jsonify({"error": "Invalid file type. Please upload a Word document."}), 400
 
-    # Create a unique directory for this specific conversion job.
-    job_dir = os.path.join('/tmp', str(uuid.uuid4()))
-    os.makedirs(job_dir, exist_ok=True)
-    input_path = os.path.join(job_dir, file.filename)
-    
     try:
-        file.save(input_path)
-
-        # This is the direct command to call LibreOffice
-        command = [
-            'libreoffice',
-            '--headless',           # Run without a GUI
-            '--convert-to', 'pdf',   # Specify the output format
-            '--outdir', job_dir,     # Set the output directory
-            input_path              # The input file
-        ]
+        # Read the docx file in memory
+        doc = docx.Document(io.BytesIO(file.read()))
         
-        # Run the command and raise an error if it fails
-        subprocess.run(command, check=True, timeout=30) # Add a 30-second timeout for safety
+        # Create a new PDF document in memory
+        pdf_doc = fitz.open() 
         
-        output_filename = os.path.splitext(os.path.basename(input_path))[0] + ".pdf"
-        output_path = os.path.join(job_dir, output_filename)
+        # Process each paragraph
+        for para in doc.paragraphs:
+            # This is a simple text conversion. More complex logic can be added here
+            # for font sizes, bold, italics, etc. in the future.
+            # For now, we focus on making it work reliably.
+            page = pdf_doc.new_page()
+            page.insert_text((72, 72), para.text) # Insert text at a 1-inch margin
 
-        if not os.path.exists(output_path):
-             raise Exception("Conversion failed: output PDF not found.")
-
+        # Save the PDF to a memory buffer
+        pdf_bytes = pdf_doc.write()
+        pdf_stream = io.BytesIO(pdf_bytes)
+        pdf_stream.seek(0)
+        
         return send_file(
-            output_path,
+            pdf_stream,
             as_attachment=True,
             download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
             mimetype='application/pdf'
         )
-    except subprocess.TimeoutExpired:
-        return jsonify({"error": "Conversion timed out. The file might be too large or complex."}), 500
-    except subprocess.CalledProcessError as e:
-        print(f"LibreOffice Error converting Word to PDF: {e}")
-        return jsonify({"error": "The document could not be converted."}), 500
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        print(f"Error converting Word to PDF with PyMuPDF: {e}")
         traceback.print_exc()
-        return jsonify({"error": "An unexpected server error occurred."}), 500
-    finally:
-        # Clean up the entire temporary job directory
-        if os.path.exists(job_dir):
-            shutil.rmtree(job_dir)
+        return jsonify({"error": "Failed to convert the document."}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
