@@ -1,6 +1,6 @@
 // src/lib/pdf/protect.ts
 
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, PermissionFlag } from 'pdf-lib';
 
 /**
  * Encrypts a PDF document with a user-provided password.
@@ -13,17 +13,27 @@ export const protectPDF = async (
   password: string
 ): Promise<Uint8Array> => {
   const arrayBuffer = await file.arrayBuffer();
-  const pdfDoc = await PDFDocument.load(arrayBuffer);
-
-  // pdf-lib's save method has a built-in encrypt option.
-  // We use the same password for both the owner and the user for simplicity.
-  const pdfBytes = await pdfDoc.save({
-    encrypt: {
-      ownerPassword: password,
-      userPassword: password,
-      // We can specify permissions here in the future if we want
-    },
+  const pdfDoc = await PDFDocument.load(arrayBuffer, { 
+    // Important: ignore the original document's permissions when loading
+    updateMetadata: false 
   });
+
+  // --- THIS IS THE FIX ---
+  // The `encrypt` method is now called on the document *before* saving.
+  // It takes the password and an optional list of permissions.
+  pdfDoc.encrypt(password, {
+    // We can define what the user can do once they enter the password.
+    // Let's allow everything for now.
+    permissions: [
+      PermissionFlag.Print,
+      PermissionFlag.CopyContents,
+      PermissionFlag.Modify,
+      PermissionFlag.Annotate,
+    ],
+  });
+
+  // Now, we just call save() with no arguments.
+  const pdfBytes = await pdfDoc.save();
 
   return pdfBytes;
 };
