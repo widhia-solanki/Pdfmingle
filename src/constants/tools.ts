@@ -216,8 +216,10 @@ export const tools: ToolMap = {
       { question: "Does this tool support both .PPT and .PPTX formats?", answer: "Yes, our converter works with both modern .PPTX files and older .PPT formats." }
     ]
   },
-  "jpg-to-pdf": {
-    value: "jpg-to-pdf",
+  // --- THIS IS THE FIX ---
+  // Replaced the old 'jpg-to-pdf' with the new, corrected 'image-to-pdf'
+  "image-to-pdf": {
+    value: "image-to-pdf",
     label: "Image to PDF",
     h1: "Image to PDF Converter – JPG/PNG to PDF",
     description: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
@@ -227,13 +229,13 @@ export const tools: ToolMap = {
     metaTitle: "Image to PDF Converter – JPG/PNG to PDF",
     metaDescription: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
     metaKeywords: "image to pdf, jpg to pdf, png to pdf",
-    steps: ["Upload your JPG or other image files", "Adjust orientation and margins if needed", "Click 'Convert to PDF'", "Download your PDF document"],
-    isBrowserOnly: true,
+    steps: ["Upload your JPG, PNG, or other image files", "Drag to reorder them if needed", "Click 'Convert to PDF'", "Download your new PDF document"],
+    isBrowserOnly: false, // Now uses the backend
     isMultiFile: true,
     faqs: [
-      { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you uploaded them." },
-      { question: "What other image formats do you support?", answer: "Besides JPG, our converter also supports PNG, GIF, BMP, and TIFF image formats." },
-      { question: "Can I adjust the page size or orientation?", answer: "Yes, our tool offers options to set the page orientation (portrait or landscape) and margins before you convert the images to PDF." }
+      { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you arrange them." },
+      { question: "What image formats do you support?", answer: "Our converter supports the most common web image formats, including JPG and PNG." },
+      { question: "Is the conversion process secure?", answer: "Yes. Your images are uploaded over an encrypted connection and are permanently deleted from our servers after a short time." }
     ]
   },
   "pdf-to-jpg": {
@@ -288,7 +290,6 @@ export const tools: ToolMap = {
     metaDescription: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
     metaKeywords: "unlock pdf, remove pdf password, pdf password remover",
     steps: ["Upload your protected PDF", "Enter the password", "Click 'Unlock PDF'", "Download your password-free PDF"],
-    // --- THIS IS THE FIX ---
     isBrowserOnly: false,
     isMultiFile: false,
     faqs: [
@@ -329,7 +330,7 @@ export const tools: ToolMap = {
     metaDescription: "Add your electronic signature to PDFs quickly. Free and secure PDF signing tool.",
     metaKeywords: "esign pdf, sign pdf, digital signature, electronic signature",
     steps: ["Upload your PDF", "Create or upload your signature", "Place your signature on the document", "Download your signed PDF"],
-    isBrowserOnly: true, // Can be done on the frontend
+    isBrowserOnly: true,
     isMultiFile: false,
     faqs: [
       { question: "Is an electronic signature legally binding?", answer: "Electronic signatures are legally recognized in many countries around the world for most types of documents. However, you should consult local laws for specific requirements." },
@@ -349,7 +350,7 @@ export const tools: ToolMap = {
     metaDescription: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.",
     metaKeywords: "edit pdf, pdf editor, annotate pdf, modify pdf",
     steps: ["Upload your PDF", "Use the toolbar to add text, images, or shapes", "Save your changes", "Download the edited PDF"],
-    isBrowserOnly: true, // Can be done on the frontend
+    isBrowserOnly: true,
     isMultiFile: false,
     faqs: [
       { question: "Can I edit the existing text in a PDF?", answer: "Our editor allows you to add new text, images, and shapes on top of the PDF. Editing the original, underlying text is a more complex feature that we are developing." },
@@ -369,7 +370,7 @@ export const tools: ToolMap = {
     metaDescription: "Reorder, arrange, and manage PDF pages effortlessly. Free and secure.",
     metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
     steps: ["Upload your PDF", "Drag pages to reorder them, or use the delete button", "Click 'Organize PDF'", "Download the modified file"],
-    isBrowserOnly: true, // Can be done on the frontend
+    isBrowserOnly: true,
     isMultiFile: false,
     faqs: [
       { question: "Can I move multiple pages at once?", answer: "Yes, our interface allows you to select and drag multiple pages to reorder your document more quickly." },
@@ -381,8 +382,5 @@ export const tools: ToolMap = {
 
 // Also export the tools as an array for components that need to map over them
 export const toolArray: Tool[] = Object.values(tools);
-
-// --- END OF FIX ---
-
 
 export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
