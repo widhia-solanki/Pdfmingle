@@ -32,7 +32,7 @@ def handle_pdf_to_word():
         return jsonify({"error": "Invalid file type, please upload a PDF"}), 400
 
     try:
-        # Read the uploaded file into an in-memory bytes buffer
+        # Read the uploaded file directly into an in-memory bytes buffer
         pdf_stream = io.BytesIO(file.read())
         
         # Create a new Word document in memory
