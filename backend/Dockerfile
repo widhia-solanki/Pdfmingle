@@ -4,16 +4,8 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# --- THE DEFINITIVE FIX ---
-# Install a comprehensive set of system dependencies required by PyMuPDF and other graphics libraries.
-# This includes build tools, PDF tools, and common shared libraries for fonts, images, and rendering.
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    mupdf-tools \
-    libtcl8.6 \
-    libtk8.6 \
-    libgl1 \
-    && rm -rf /var/lib/apt/lists/*
+# Install build-essential, which is good practice for many Python libraries with C extensions
+RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container first
 COPY requirements.txt .
