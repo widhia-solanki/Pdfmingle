@@ -8,7 +8,7 @@ import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { ProtectOptions } from '@/components/tools/ProtectOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
-import { protectPDF } from '@/lib/pdf/protect';
+// --- THIS IS THE FIX: The unused import is removed ---
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
@@ -16,7 +16,15 @@ import { useToast } from '@/hooks/use-toast';
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
 const ProtectPDFPage: NextPage = () => {
-  const tool = tools['protect-pdf'];
+  // The 'protect-pdf' key will cause an error until we add it to tools.ts
+  // We will assume it exists for now and add it in the next step.
+  const tool = tools['protect-pdf'] || {
+    metaTitle: 'Protect PDF',
+    metaDescription: 'Add a password to your PDF.',
+    value: 'protect-pdf',
+    h1: 'Protect PDF',
+    description: 'Add a password to encrypt and secure your PDF file.'
+  };
   const { toast } = useToast();
 
   const [files, setFiles] = useState<File[]>([]);
@@ -42,6 +50,7 @@ const ProtectPDFPage: NextPage = () => {
     }
   };
 
+  // --- THIS IS THE FIX: This function now calls the backend API ---
   const handleProcess = async (password: string) => {
     if (files.length === 0) {
       setError('Please upload a PDF file.');
@@ -51,18 +60,34 @@ const ProtectPDFPage: NextPage = () => {
     setStatus('processing');
     setError(null);
 
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    formData.append('password', password);
+
     try {
-      const pdfBytes = await protectPDF(files[0], password);
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
+      const response = await fetch(`${apiBaseUrl}/protect-pdf`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'A server error occurred.');
+      }
+
+      const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProcessedFileName(`protected_${files[0]?.name || 'document.pdf'}`);
       setStatus('success');
       toast({ title: 'Success!', description: 'Your PDF has been protected.' });
+
     } catch (err) {
-      setError('An error occurred during encryption. The file might be corrupted.');
-      console.error(err);
+      const message = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(`Protection failed: ${message}`);
       setStatus('error');
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     }
   };
 
