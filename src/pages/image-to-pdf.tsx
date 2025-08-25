@@ -45,14 +45,20 @@ const ImageToPdfPage: NextPage = () => {
 
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
-      // The endpoint name will be updated in the tools.ts file
-      const response = await fetch(`${apiBaseUrl}/${tool.value}`, {
+      
+      // --- THIS IS THE FIX ---
+      // The endpoint in our python app is '/image-to-pdf'.
+      // We were calling the old endpoint name from the 'tool.value' which was 'jpg-to-pdf'.
+      // This ensures we call the correct, existing backend route.
+      const response = await fetch(`${apiBaseUrl}/image-to-pdf`, {
         method: 'POST',
         body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        // This is where the original error was happening. 
+        // response.json() fails because the server sent back an HTML error page.
+        const errorData = await response.json(); 
         throw new Error(errorData.error || 'A server error occurred.');
       }
 
@@ -64,7 +70,12 @@ const ImageToPdfPage: NextPage = () => {
       toast({ title: 'Success!', description: 'Your images have been converted to a PDF.' });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(message);
+      // This is the user-friendly error you saw in the screenshot
+      if (message.includes('valid JSON')) {
+          setError('Could not connect to the conversion service. Please try again later.');
+      } else {
+          setError(message);
+      }
       setStatus('error');
       toast({ title: 'Error', description: message, variant: 'destructive' });
     }
