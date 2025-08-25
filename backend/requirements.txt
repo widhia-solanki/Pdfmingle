@@ -5,3 +5,4 @@ pdf2docx
 python-docx
 Pillow
 gunicorn
+pdf2image
