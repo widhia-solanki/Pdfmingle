@@ -5,11 +5,12 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # --- THE FIX ---
-# Install ghostscript, which is the powerful engine we need for PDF compression.
+# Install poppler-utils, the system dependency required by the pdf2image library.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     mupdf-tools \
     ghostscript \
+    poppler-utils \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container first
