@@ -46,7 +46,7 @@ const PdfToWordPage: NextPage = () => {
     formData.append('files', file);
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend-new.onrender.com';
       const response = await fetch(`${apiBaseUrl}/pdf-to-word`, {
         method: 'POST',
         body: formData,
