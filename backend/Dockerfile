@@ -4,12 +4,15 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# --- THE FIX ---
-# Install the essential build tools AND the mupdf tools.
-# build-essential provides the compilers and libraries that PyMuPDF (a dependency of pdf2docx) needs to run.
+# --- THE DEFINITIVE FIX ---
+# Install a comprehensive set of system dependencies required by PyMuPDF and other graphics libraries.
+# This includes build tools, PDF tools, and common shared libraries for fonts, images, and rendering.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     mupdf-tools \
+    libtcl8.6 \
+    libtk8.6 \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container first
