@@ -4,8 +4,13 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# Install build-essential, which is good practice for many Python libraries with C extensions
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential && rm -rf /var/lib/apt/lists/*
+# --- THE FIX ---
+# Install ghostscript, which is the powerful engine we need for PDF compression.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    mupdf-tools \
+    ghostscript \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy the requirements file into the container first
 COPY requirements.txt .
