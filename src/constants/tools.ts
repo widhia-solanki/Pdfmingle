@@ -216,8 +216,6 @@ export const tools: ToolMap = {
       { question: "Does this tool support both .PPT and .PPTX formats?", answer: "Yes, our converter works with both modern .PPTX files and older .PPT formats." }
     ]
   },
-  // --- THIS IS THE FIX ---
-  // The key and the 'value' property are now 'image-to-pdf'
   "image-to-pdf": {
     value: "image-to-pdf",
     label: "Image to PDF",
@@ -238,24 +236,26 @@ export const tools: ToolMap = {
       { question: "Is the conversion process secure?", answer: "Yes. Your images are uploaded over an encrypted connection and are permanently deleted from our servers after a short time." }
     ]
   },
-  "pdf-to-jpg": {
-    value: "pdf-to-jpg",
+  // --- THIS IS THE FIX ---
+  // Renamed from 'pdf-to-jpg' to 'pdf-to-image' for consistency
+  "pdf-to-image": {
+    value: "pdf-to-image",
     label: "PDF to Image",
     h1: "PDF to JPG/PNG – Convert PDF to Images",
     description: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
     category: "Convert",
     icon: 'FileImage',
     color: "#BD10E0",
-    metaTitle: "PDF to JPG/PNG – Convert PDF to Images",
+    metaTitle: "PDF to Image – Convert PDF to JPG",
     metaDescription: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
     metaKeywords: "pdf to jpg, pdf to image, convert pdf to png",
-    steps: ["Upload your PDF", "Choose image format (JPG or PNG)", "Click 'Convert'", "Download your images in a ZIP file"],
+    steps: ["Upload your PDF", "Click 'Convert to Images'", "Download your images in a ZIP file"],
     isBrowserOnly: false,
     isMultiFile: false,
     faqs: [
-      { question: "What is the difference between converting to JPG and PNG?", answer: "JPG is great for photos and offers smaller file sizes, while PNG is ideal for graphics with sharp lines or transparency." },
-      { question: "Can I choose the image quality?", answer: "Yes, our tool provides different quality settings, allowing you to balance file size and image resolution for your needs." },
-      { question: "Will it convert every page of the PDF?", answer: "Yes, by default it converts every page into a separate image. You also have the option to select specific pages to convert." }
+      { question: "What format will the images be in?", answer: "Our tool converts each page of your PDF into a high-quality JPG image." },
+      { question: "How will I receive the images?", answer: "All the converted images will be packaged together in a single ZIP file for a convenient download." },
+      { question: "Will it convert every page of the PDF?", answer: "Yes, the tool is designed to convert every page of your uploaded PDF into a separate image." }
     ]
   },
   "protect-pdf": {
