@@ -1,18 +1,17 @@
-// src/pages/pdf-to-word.tsx
-
 import { useState, useCallback } from 'react';
+import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
-import { toolArray } from '@/constants/tools';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { tools } from '@/constants/tools';
 
 type Status = 'idle' | 'processing' | 'success' | 'error';
 
-const PdfToWordPage = () => {
-  const tool = toolArray.find(t => t.value === 'pdf-to-word')!;
+const PdfToWordPage: NextPage = () => {
+  const tool = tools['pdf-to-word'];
   const { toast } = useToast();
 
   const [file, setFile] = useState<File | null>(null);
@@ -47,7 +46,7 @@ const PdfToWordPage = () => {
     formData.append('files', file);
 
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL;
+      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
       const response = await fetch(`${apiBaseUrl}/pdf-to-word`, {
         method: 'POST',
         body: formData,
@@ -55,6 +54,10 @@ const PdfToWordPage = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
+        // --- THIS IS THE CRITICAL FIX ---
+        // We log the detailed traceback from the backend to the console.
+        console.error("Backend Error Details:", errorData.details);
+        console.error("Backend Traceback:", errorData.traceback);
         throw new Error(errorData.error || 'A server error occurred.');
       }
 
@@ -103,17 +106,15 @@ const PdfToWordPage = () => {
       case 'idle':
       default:
         return (
-          <>
-            <ToolUploader
-              onFilesSelected={handleFileSelected}
-              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-              selectedFiles={file ? [file] : []}
-              isMultiFile={false}
-              error={error}
-              onProcess={handleProcess}
-              actionButtonText="Convert to Word"
-            />
-          </>
+          <ToolUploader
+            onFilesSelected={handleFileSelected}
+            acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+            selectedFiles={file ? [file] : []}
+            isMultiFile={false}
+            error={error}
+            onProcess={handleProcess}
+            actionButtonText="Convert to Word"
+          />
         );
     }
   };
@@ -123,7 +124,6 @@ const PdfToWordPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        // --- THIS IS THE FIX: The 'keywords' prop has been removed ---
         canonical={`https://pdfmingle.net/${tool.value}`}
         openGraph={{
           title: tool.metaTitle,
