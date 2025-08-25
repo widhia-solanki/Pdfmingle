@@ -4,22 +4,25 @@ FROM python:3.11-slim
 # Set the working directory inside the container
 WORKDIR /app
 
-# --- THE FIX: Install system dependencies required by the PDF libraries ---
-# This command updates the package list and installs 'mupdf-tools',
-# which provides the underlying C libraries that pdf2docx needs to function.
-RUN apt-get update && apt-get install -y --no-install-recommends mupdf-tools && rm -rf /var/lib/apt/lists/*
+# --- THE FIX ---
+# Install the essential build tools AND the mupdf tools.
+# build-essential provides the compilers and libraries that PyMuPDF (a dependency of pdf2docx) needs to run.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    mupdf-tools \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy the requirements file into the container first, to leverage Docker's layer caching
+# Copy the requirements file into the container first
 COPY requirements.txt .
 
-# Install the Python packages specified in requirements.txt
+# Install the Python packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of your backend application code into the container
+# Copy the rest of your backend application code
 COPY . .
 
-# Make port 10000 available to the world outside this container
+# Expose the port
 EXPOSE 10000
 
-# The command to run your application using Gunicorn (production-ready server)
+# The command to run your application
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "app:app"]
