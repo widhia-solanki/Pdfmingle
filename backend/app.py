@@ -132,7 +132,7 @@ def handle_unlock_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to unlock the PDF."}), 500
 
-# --- RENAMED IMAGES TO PDF ENDPOINT ---
+# --- THIS IS THE FIX: Renamed the route to match the frontend ---
 @app.route('/image-to-pdf', methods=['POST'])
 def handle_images_to_pdf():
     if 'files' not in request.files:
@@ -178,12 +178,4 @@ def handle_images_to_pdf():
         return jsonify({"error": "Failed to convert images."}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)```
-
----
-
-### Final Step: Update Configuration
-
-Now for the most important part. We need to update our central `tools.ts` file to use the new `image-to-pdf` key and update all the text to be consistent.
-
-👉 Please provide me with the code from your `src/constants/tools.ts` file. I will replace the old `jpg-to-pdf` entry with the new, correct `image-to-pdf` configuration.
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
