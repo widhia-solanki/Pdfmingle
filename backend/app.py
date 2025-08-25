@@ -1,21 +1,25 @@
 from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
-from pdf2docx import Converter
 import io
-import os
-import uuid
 import traceback
+import pdfplumber
+from docx import Document
 
 app = Flask(__name__)
 
+# This CORS configuration is correct.
 CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://pdfmingle.net", "https://www.pdfmingle.net"]}})
 
 @app.route('/')
 def index():
+    """A simple health check endpoint."""
     return jsonify({"message": "PDFMingle Backend is running!"})
 
 @app.route('/pdf-to-word', methods=['POST'])
 def handle_pdf_to_word():
+    """
+    Handles PDF to DOCX conversion using the lightweight pdfplumber library.
+    """
     if 'files' not in request.files:
         return jsonify({"error": "No file part"}), 400
     
@@ -27,48 +31,45 @@ def handle_pdf_to_word():
     if not file.filename.lower().endswith('.pdf'):
         return jsonify({"error": "Invalid file type, please upload a PDF"}), 400
 
-    # Let's go back to the most robust method: saving the file to a temporary location first.
-    # This is often more compatible with external libraries than in-memory streams.
-    temp_dir = '/tmp'
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir, exist_ok=True)
-    
-    temp_pdf_path = os.path.join(temp_dir, str(uuid.uuid4()) + '.pdf')
-    
     try:
-        file.save(temp_pdf_path)
-        docx_io = io.BytesIO()
-
-        cv = Converter(temp_pdf_path)
-        cv.convert(docx_io)
-        cv.close()
+        # Read the uploaded file into an in-memory bytes buffer
+        pdf_stream = io.BytesIO(file.read())
         
-        docx_io.seek(0)
+        # Create a new Word document in memory
+        document = Document()
+        
+        # Use pdfplumber to open the in-memory PDF
+        with pdfplumber.open(pdf_stream) as pdf:
+            # Loop through each page, extract text, and add it to the Word doc
+            for page in pdf.pages:
+                text = page.extract_text()
+                if text:
+                    document.add_paragraph(text)
+                # Add a page break after each page except the last one
+                if page.page_number < len(pdf.pages):
+                    document.add_page_break()
+
+        # Save the Word document to an in-memory stream
+        docx_stream = io.BytesIO()
+        document.save(docx_stream)
+        docx_stream.seek(0)
         
         original_filename = file.filename.rsplit('.', 1)[0]
 
         return send_file(
-            docx_io,
+            docx_stream,
             as_attachment=True,
             download_name=f"{original_filename}.docx",
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
     except Exception as e:
-        # --- THIS IS THE CRITICAL FIX ---
-        # We capture the full, detailed traceback of the crash.
-        error_details = traceback.format_exc()
-        print(f"CRITICAL ERROR converting file: {e}")
-        print(f"TRACEBACK: {error_details}")
+        # Log the error for debugging
+        print(f"Error converting file with pdfplumber: {e}")
+        traceback.print_exc()
         
-        # We now send these details back to the frontend for debugging.
         return jsonify({
-            "error": "Failed to convert the file. The document might be complex, corrupted, or password-protected.",
-            "details": str(e),
-            "traceback": error_details 
+            "error": "Failed to convert the file. The document might be complex, corrupted, or password-protected."
         }), 500
-    finally:
-        if os.path.exists(temp_pdf_path):
-            os.remove(temp_pdf_path)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
