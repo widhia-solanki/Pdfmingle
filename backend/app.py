@@ -65,6 +65,4 @@ def handle_pdf_to_word():
             os.remove(temp_pdf_path)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)```
-
-After you commit these two file changes, Render will rebuild the backend. Please try converting that same PDF of the homepage again. This time, you should see the text and layout preserved in the Word document.
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
