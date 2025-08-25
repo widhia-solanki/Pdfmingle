@@ -4,7 +4,7 @@ from pdf2docx import Converter
 from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
 from pdf2image import convert_from_path
-from docx2pdf import convert
+# No longer importing from docx2pdf
 import io
 import os
 import uuid
@@ -189,7 +189,8 @@ def handle_pdf_to_image():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_dir): shutil.rmtree(output_dir)
 
-# --- WORD TO PDF ---
+
+# --- REWRITTEN WORD TO PDF ENDPOINT ---
 @app.route('/word-to-pdf', methods=['POST'])
 def handle_word_to_pdf():
     if 'file' not in request.files:
@@ -201,24 +202,31 @@ def handle_word_to_pdf():
     if not file.filename.lower().endswith(('.doc', '.docx')):
         return jsonify({"error": "Invalid file type. Please upload a Word document."}), 400
 
-    # --- THIS IS THE FIX ---
     # Create a unique directory for this specific conversion job.
-    temp_dir = os.path.join('/tmp', str(uuid.uuid4()))
-    os.makedirs(temp_dir, exist_ok=True)
-
-    input_path = os.path.join(temp_dir, file.filename)
-    # The output from the library will have the same base name but a .pdf extension.
-    output_filename = os.path.splitext(file.filename)[0] + ".pdf"
-    output_path = os.path.join(temp_dir, output_filename)
+    job_dir = os.path.join('/tmp', str(uuid.uuid4()))
+    os.makedirs(job_dir, exist_ok=True)
+    input_path = os.path.join(job_dir, file.filename)
     
     try:
         file.save(input_path)
 
-        # Tell the converter to use the temporary directory as its output folder.
-        convert(input_path, temp_dir)
+        # This is the direct command to call LibreOffice
+        command = [
+            'libreoffice',
+            '--headless',           # Run without a GUI
+            '--convert-to', 'pdf',   # Specify the output format
+            '--outdir', job_dir,     # Set the output directory
+            input_path              # The input file
+        ]
+        
+        # Run the command and raise an error if it fails
+        subprocess.run(command, check=True, timeout=30) # Add a 30-second timeout for safety
+        
+        output_filename = os.path.splitext(os.path.basename(input_path))[0] + ".pdf"
+        output_path = os.path.join(job_dir, output_filename)
 
         if not os.path.exists(output_path):
-             raise Exception("Conversion failed, output PDF not found.")
+             raise Exception("Conversion failed: output PDF not found.")
 
         return send_file(
             output_path,
@@ -226,14 +234,19 @@ def handle_word_to_pdf():
             download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
             mimetype='application/pdf'
         )
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "Conversion timed out. The file might be too large or complex."}), 500
+    except subprocess.CalledProcessError as e:
+        print(f"LibreOffice Error converting Word to PDF: {e}")
+        return jsonify({"error": "The document could not be converted."}), 500
     except Exception as e:
-        print(f"Error converting Word to PDF: {e}")
+        print(f"An unexpected error occurred: {e}")
         traceback.print_exc()
-        return jsonify({"error": "Failed to convert the document."}), 500
+        return jsonify({"error": "An unexpected server error occurred."}), 500
     finally:
-        # Clean up the entire temporary directory for this job.
-        if os.path.exists(temp_dir):
-            shutil.rmtree(temp_dir)
+        # Clean up the entire temporary job directory
+        if os.path.exists(job_dir):
+            shutil.rmtree(job_dir)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
