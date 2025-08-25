@@ -4,6 +4,8 @@ from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 from pdf2docx import Converter
 import io
+import os
+import uuid
 import traceback
 
 app = Flask(__name__)
@@ -27,20 +29,27 @@ def handle_pdf_to_word():
     if not file.filename.lower().endswith('.pdf'):
         return jsonify({"error": "Invalid file type, please upload a PDF"}), 400
 
+    # --- THIS IS THE NEW, MORE ROBUST LOGIC ---
+    # We will save the file to a temporary location first
+    temp_dir = '/tmp' # Render provides a temporary directory at /tmp
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+    
+    unique_filename = str(uuid.uuid4()) + '.pdf'
+    temp_pdf_path = os.path.join(temp_dir, unique_filename)
+    
     try:
-        # --- THIS IS THE FIX ---
-        # 1. Read the entire file stream into an in-memory buffer.
-        pdf_bytes = io.BytesIO(file.read())
-        
-        # 2. Create a separate in-memory buffer for the output.
+        # Save the uploaded file to the temporary path
+        file.save(temp_pdf_path)
+
+        # Create an in-memory buffer for the output DOCX
         docx_io = io.BytesIO()
 
-        # 3. Pass the memory buffer to the Converter.
-        cv = Converter(pdf_bytes)
+        # Process the file from its temporary path
+        cv = Converter(temp_pdf_path)
         cv.convert(docx_io)
         cv.close()
         
-        # 4. Rewind the output buffer to the beginning before sending.
         docx_io.seek(0)
 
         return send_file(
@@ -50,7 +59,7 @@ def handle_pdf_to_word():
             mimetype='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
     except Exception as e:
-        # We can leave the detailed error logging for now
+        # The detailed error logging is still here to help us
         error_details = traceback.format_exc()
         print(f"Error converting file: {e}")
         print(f"Traceback: {error_details}")
@@ -59,6 +68,12 @@ def handle_pdf_to_word():
             "details": str(e),
             "traceback": error_details 
         }), 500
+    finally:
+        # --- IMPORTANT ---
+        # This 'finally' block ensures the temporary file is deleted
+        # even if the conversion fails.
+        if os.path.exists(temp_pdf_path):
+            os.remove(temp_pdf_path)
 
 
 if __name__ == '__main__':
