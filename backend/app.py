@@ -16,9 +16,9 @@ CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://pdfmi
 def index():
     return jsonify({"message": "PDFMingle Backend is running!"})
 
+# --- EXISTING PDF-TO-WORD ENDPOINT ---
 @app.route('/pdf-to-word', methods=['POST'])
 def handle_pdf_to_word():
-    # (Existing, working pdf-to-word code)
     if 'files' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files.get('files')
     if not file or not file.filename: return jsonify({"error": "No selected file"}), 400
@@ -43,9 +43,9 @@ def handle_pdf_to_word():
     finally:
         if os.path.exists(temp_pdf_path): os.remove(temp_pdf_path)
 
+# --- EXISTING COMPRESS-PDF ENDPOINT ---
 @app.route('/compress-pdf', methods=['POST'])
 def handle_compress_pdf():
-    # (Existing, working compress-pdf code)
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     level = request.form.get('level', 'medium')
@@ -75,9 +75,36 @@ def handle_compress_pdf():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_path): os.remove(output_path)
 
-# --- NEW PROTECT PDF ENDPOINT ---
+# --- EXISTING PROTECT-PDF ENDPOINT ---
 @app.route('/protect-pdf', methods=['POST'])
 def handle_protect_pdf():
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
+    file = request.files['file']
+    password = request.form.get('password')
+    if not file or not file.filename: return jsonify({"error": "No selected file"}), 400
+    if not file.filename.lower().endswith('.pdf'): return jsonify({"error": "Invalid file type"}), 400
+    if not password: return jsonify({"error": "Password is required"}), 400
+    try:
+        pdf_stream = io.BytesIO(file.read())
+        reader = PdfReader(pdf_stream)
+        writer = PdfWriter()
+        for page in reader.pages:
+            writer.add_page(page)
+        writer.encrypt(password)
+        encrypted_stream = io.BytesIO()
+        writer.write(encrypted_stream)
+        encrypted_stream.seek(0)
+        return send_file(
+            encrypted_stream, as_attachment=True,
+            download_name=f"protected_{file.filename}", mimetype='application/pdf'
+        )
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": "Failed to protect the PDF."}), 500
+
+# --- NEW UNLOCK PDF ENDPOINT ---
+@app.route('/unlock-pdf', methods=['POST'])
+def handle_unlock_pdf():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
     
@@ -92,35 +119,34 @@ def handle_protect_pdf():
         return jsonify({"error": "Password is required"}), 400
 
     try:
-        # Read the uploaded file into an in-memory stream
         pdf_stream = io.BytesIO(file.read())
-        
-        # Use PyPDF2 to handle the encryption
         reader = PdfReader(pdf_stream)
-        writer = PdfWriter()
 
-        # Copy all pages from the original file to the new file
+        # Attempt to decrypt the PDF with the provided password
+        if reader.is_encrypted:
+            if not reader.decrypt(password):
+                # If decryption fails, it means the password was wrong.
+                return jsonify({"error": "Incorrect password."}), 403 # 403 Forbidden is a good status code here
+
+        # If we reach here, the PDF is either not encrypted or was successfully decrypted.
+        writer = PdfWriter()
         for page in reader.pages:
             writer.add_page(page)
 
-        # Encrypt the new file with the provided password
-        writer.encrypt(password)
-
-        # Save the encrypted PDF to an in-memory stream
-        encrypted_stream = io.BytesIO()
-        writer.write(encrypted_stream)
-        encrypted_stream.seek(0)
+        unlocked_stream = io.BytesIO()
+        writer.write(unlocked_stream)
+        unlocked_stream.seek(0)
 
         return send_file(
-            encrypted_stream,
+            unlocked_stream,
             as_attachment=True,
-            download_name=f"protected_{file.filename}",
+            download_name=f"unlocked_{file.filename}",
             mimetype='application/pdf'
         )
     except Exception as e:
-        print(f"Error protecting file: {e}")
+        print(f"Error unlocking file: {e}")
         traceback.print_exc()
-        return jsonify({"error": "Failed to protect the PDF. It may be corrupted."}), 500
+        return jsonify({"error": "Failed to unlock the PDF. The file may be corrupt."}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
