@@ -88,7 +88,6 @@ export const tools: ToolMap = {
     metaDescription: "Shrink PDF file size without losing quality. Quick, secure, and free online PDF compressor.",
     metaKeywords: "compress pdf, reduce pdf size, shrink pdf, pdf optimizer",
     steps: ["Upload your PDF", "Choose a compression level", "Click 'Compress PDF'", "Download your smaller, optimized PDF file"],
-    // --- THIS IS A FIX ---
     isBrowserOnly: false, 
     isMultiFile: false,
     faqs: [
@@ -269,7 +268,6 @@ export const tools: ToolMap = {
     metaDescription: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
     metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
     steps: ["Upload your PDF", "Set a strong password", "Click 'Protect PDF'", "Download your encrypted file"],
-    // --- THIS IS A FIX ---
     isBrowserOnly: false, 
     isMultiFile: false,
     faqs: [
@@ -289,12 +287,13 @@ export const tools: ToolMap = {
     metaTitle: "Unlock PDF – Remove Password Online",
     metaDescription: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
     metaKeywords: "unlock pdf, remove pdf password, pdf password remover",
-    steps: ["Upload your protected PDF", "Confirm you have the rights to the file", "Click 'Unlock PDF'", "Download your password-free PDF"],
-    isBrowserOnly: true, // Security can be done on the frontend with pdf-lib
+    steps: ["Upload your protected PDF", "Enter the password", "Click 'Unlock PDF'", "Download your password-free PDF"],
+    // --- THIS IS THE FIX ---
+    isBrowserOnly: false,
     isMultiFile: false,
     faqs: [
       { question: "Is it legal to remove a password from a PDF?", answer: "You should only remove passwords from PDFs that you own or have explicit permission to edit. By using our service, you agree that you have the necessary rights to the file." },
-      { question: "What if I don't know the password?", answer: "Our tool can remove owner passwords that restrict editing or printing. However, if the PDF requires a user password to open, you will need to provide it to unlock the file." },
+      { question: "What if I don't know the password?", answer: "Our tool requires the correct password to open and unlock the file. We cannot bypass or recover lost passwords." },
       { question: "Does this remove all restrictions, like printing and copying?", answer: "Yes, the unlocking process aims to remove all permission-based restrictions, allowing you to print, copy, and edit the document freely." }
     ]
   },
