@@ -112,7 +112,10 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
             
             <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} onClick={handleCanvasClick}/>
             
-            {/* Drawing Layer */}
+            {/* --- THIS IS THE FIX --- */}
+            {/* We create separate layers for different object types. */}
+            
+            {/* Layer 1: Drawing (SVG) Layer */}
             <div
                 className={cn("absolute top-0 left-0 w-full h-full", mode === 'draw' ? "cursor-crosshair z-20" : "pointer-events-none z-10")}
                 onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}
@@ -125,9 +128,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
                 </svg>
             </div>
 
-            {/* Draggable Text and Image Layer */}
+            {/* Layer 2: Draggable Text and Image Layer */}
             <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
-                {!isLoading && objects.filter(obj => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
+                {!isLoading && objects.filter((obj): obj is TextObject | ImageObject => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
                     <Rnd
                         key={obj.id} bounds="parent"
                         size={{ width: obj.width, height: obj.height }}
@@ -138,7 +141,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
                             updateObject(obj.id, { width: parseInt(ref.style.width), height: parseInt(ref.style.height), ...position });
                         }}
                         className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
-                        style={{ pointerEvents: 'auto' }} // Make Rnd components interactive
+                        style={{ pointerEvents: 'auto' }}
                     >
                         {obj.type === 'text' ? (
                             <div style={{ fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font, whiteSpace: 'pre-wrap', lineHeight: 1.2, height: '100%' }}>{obj.text}</div>
