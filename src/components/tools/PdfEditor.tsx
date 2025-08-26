@@ -5,7 +5,8 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
 import { cn } from '@/lib/utils';
-import { EditMode } from './AdvancedEditorToolbar'; // Corrected import
+// --- THIS IS THE FIX ---
+import { ToolMode } from './AdvancedEditorToolbar'; // Changed EditMode to ToolMode
 import { Rnd } from 'react-rnd';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
@@ -19,9 +20,9 @@ interface PdfEditorProps {
   pageIndex: number;
   objects: EditableObject[];
   onObjectsChange: (objects: EditableObject[]) => void;
-  mode: EditMode;
+  mode: ToolMode; // Changed EditMode to ToolMode
   onObjectSelect: (object: EditableObject | null) => void;
-  zoom: number; // NEW: Accept zoom level as a prop
+  zoom: number;
 }
 
 export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onObjectSelect, zoom }: PdfEditorProps) => {
@@ -42,8 +43,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
         const fileBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         const page = await pdf.getPage(pageIndex + 1);
-        // --- ZOOM FIX ---
-        const viewport = page.getViewport({ scale: zoom }); // Use the zoom prop
+        const viewport = page.getViewport({ scale: zoom });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         await page.render({ canvasContext: context, viewport: viewport }).promise;
@@ -55,9 +55,8 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       }
     };
     renderPage();
-  }, [file, pageIndex, zoom]); // Re-render when zoom changes
+  }, [file, pageIndex, zoom]);
 
-  // ... (All other handler functions remain the same)
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'draw') return;
     const rect = e.currentTarget.getBoundingClientRect();
@@ -65,7 +64,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     const newDrawing: DrawObject = {
       type: 'drawing', id: `draw-${Date.now()}`, pageIndex,
       points: [{ x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }],
-      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8,
+      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8 * zoom, // Scale stroke with zoom
     };
     setCurrentDrawing(newDrawing);
   };
@@ -93,9 +92,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     const y = event.clientY - rect.top;
     const newText: TextObject = {
       type: 'text', id: `text-${Date.now()}`, x, y,
-      text: "New Text", size: 24 * zoom, font: 'Helvetica', // Scale font size with zoom
+      text: "New Text", size: 24 * zoom, font: 'Helvetica',
       color: { r: 0, g: 0, b: 0 }, pageIndex,
-      width: 200 * zoom, height: 50 * zoom, // Scale default size with zoom
+      width: 200 * zoom, height: 50 * zoom,
     };
     onObjectsChange([...objects, newText]);
     onObjectSelect(newText);
@@ -113,10 +112,13 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
   return (
     <div className="relative w-fit h-fit shadow-2xl bg-white">
       {isLoading && (<div className="absolute inset-0 flex items-center justify-center bg-white/50 z-30"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>)}
+      
       <canvas ref={canvasRef} className={cn(isLoading && "opacity-0")} onClick={handleCanvasClick}/>
       
-      <div className={cn("absolute top-0 left-0 w-full h-full", mode === 'draw' ? "cursor-crosshair z-20" : "pointer-events-none z-10")}
-          onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}>
+      <div
+          className={cn("absolute top-0 left-0 w-full h-full", mode === 'draw' ? "cursor-crosshair z-20" : "pointer-events-none z-10")}
+          onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}
+      >
           <svg width="100%" height="100%">
               {objects.filter((obj): obj is DrawObject => obj.type === 'drawing' && obj.pageIndex === pageIndex).map(obj => (
                   <path key={obj.id} d={getSvgPathFromStroke(getStroke(obj.points, { size: obj.strokeWidth, thinning: 0.5 }))} fill={`rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`} />
