@@ -1,9 +1,10 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
-import * as pdfjsLib from 'pdfjs-dist';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -15,11 +16,10 @@ import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react'; // Import the loader
+import { Loader2 } from 'lucide-react';
 
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-}
+// --- THIS IS THE FIX ---
+GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 type Status = 'idle' | 'editing' | 'processing' | 'success' | 'error';
 
@@ -49,12 +49,12 @@ const EditPdfPage: NextPage = () => {
       const selectedFile = selectedFiles[0];
       handleStartOver(false);
       setFile(selectedFile);
-      setStatus('editing'); // Go to editing status to show a loading state
+      setStatus('editing');
 
       try {
         const fileBuffer = await selectedFile.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
-        setPageCount(pdf.numPages); // This will trigger the editor to render
+        const pdf = await getDocument({ data: fileBuffer }).promise;
+        setPageCount(pdf.numPages);
       } catch (e) {
         setError("Could not read PDF. It may be corrupt or password-protected.");
         setStatus('error');
@@ -62,18 +62,17 @@ const EditPdfPage: NextPage = () => {
     }
   };
   
+  // ... (All other handler functions remain the same)
   const handleObjectChange = (updatedObject: EditableObject) => {
     const newObjects = objects.map(obj => obj.id === updatedObject.id ? updatedObject : obj);
     setObjects(newObjects);
     setSelectedObject(updatedObject);
   };
-  
   const handleObjectDelete = () => {
       if (!selectedObject) return;
       setObjects(objects.filter(obj => obj.id !== selectedObject.id));
       setSelectedObject(null);
   };
-
   const handleImageAdd = async (imageFile: File) => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
@@ -83,7 +82,6 @@ const EditPdfPage: NextPage = () => {
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
   };
-
   const handleProcess = async () => {
     if (!file) return;
     setStatus('processing');
@@ -100,7 +98,6 @@ const EditPdfPage: NextPage = () => {
       setStatus('error');
     }
   };
-  
   const handleStartOver = useCallback((resetFile = true) => {
     if(resetFile) setFile(null);
     setStatus('idle');
@@ -126,9 +123,6 @@ const EditPdfPage: NextPage = () => {
           </div>
         )}
         {status === 'editing' && file && (
-          // --- THIS IS THE FIX ---
-          // We now check if pageCount is ready before rendering the editor.
-          // While it's loading, we show a clean loading screen.
           pageCount > 0 ? (
             <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
               <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
@@ -137,16 +131,7 @@ const EditPdfPage: NextPage = () => {
                   <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
                 <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
-                  <PdfEditor 
-                      key={`${file.name}-${currentPage}`}
-                      file={file}
-                      pageIndex={currentPage}
-                      objects={objects}
-                      onObjectsChange={setObjects}
-                      mode={toolMode}
-                      onObjectSelect={setSelectedObject}
-                      zoom={zoom}
-                  />
+                  <PdfEditor key={`${file.name}-${currentPage}`} file={file} pageIndex={currentPage} objects={objects} onObjectsChange={setObjects} mode={toolMode} onObjectSelect={setSelectedObject} zoom={zoom} />
                 </div>
                 <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
                   <div className="space-y-4">
