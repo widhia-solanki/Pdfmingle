@@ -1,10 +1,11 @@
 // src/lib/pdf/edit.ts
 
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, svgPathToAcroform, AcroForm } from 'pdf-lib';
+// --- THIS IS THE FIX ---
+// Removed 'svgPathToAcroform' and 'AcroForm' as they are not used.
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
-// --- ADDED DRAW OBJECT TYPE ---
 export interface DrawObject {
   type: 'drawing';
   id: string;
@@ -41,16 +42,14 @@ export interface ImageObject {
 
 export type EditableObject = TextObject | ImageObject | DrawObject;
 
-// ... (getFont function remains the same)
 const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => {
-    switch (fontName) {
-        case 'Helvetica': return await doc.embedFont(StandardFonts.Helvetica);
-        case 'TimesRoman': return await doc.embedFont(StandardFonts.TimesRoman);
-        case 'Courier': return await doc.embedFont(StandardFonts.Courier);
-        default: return await doc.embedFont(StandardFonts.Helvetica);
-    }
+  switch (fontName) {
+    case 'Helvetica': return await doc.embedFont(StandardFonts.Helvetica);
+    case 'TimesRoman': return await doc.embedFont(StandardFonts.TimesRoman);
+    case 'Courier': return await doc.embedFont(StandardFonts.Courier);
+    default: return await doc.embedFont(StandardFonts.Helvetica);
+  }
 };
-
 
 export const applyEditsToPdf = async (
   file: File,
@@ -64,7 +63,7 @@ export const applyEditsToPdf = async (
     if (obj.pageIndex >= pages.length) continue;
     
     const page = pages[obj.pageIndex];
-    const { height: pageHeight, width: pageWidth } = page.getSize();
+    const { height: pageHeight } = page.getSize();
     
     const scale = 1.5;
 
@@ -73,11 +72,12 @@ export const applyEditsToPdf = async (
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
         x: x / scale,
-        y: pageHeight - (y / scale) - (size / scale),
+        y: pageHeight - (y / scale) - (size), // Adjusted y-calculation for text
         font: pdfFont,
-        size: size / scale,
+        size: size,
         color: rgb(color.r / 255, color.g / 255, color.b / 255),
         maxWidth: width / scale,
+        lineHeight: (size * 1.2),
       });
     } else if (obj.type === 'image') {
       const { x, y, imageBytes, width, height } = obj;
@@ -91,11 +91,10 @@ export const applyEditsToPdf = async (
           height: height / scale 
       });
     } else if (obj.type === 'drawing') {
-        // --- NEW DRAWING LOGIC ---
         const { points, color, strokeWidth } = obj;
         const scaledPoints = points.map(p => ({ ...p, x: p.x / scale, y: p.y / scale }));
         const stroke = getStroke(scaledPoints, {
-            size: strokeWidth,
+            size: strokeWidth / scale,
             thinning: 0.5,
             smoothing: 0.5,
             streamline: 0.5,
@@ -103,18 +102,11 @@ export const applyEditsToPdf = async (
         const pathData = getSvgPathFromStroke(stroke);
         
         page.drawSvg(pathData, {
-            x: 0,
-            y: pageHeight, // SVG origin is top-left, but we must flip the y-axis
             color: rgb(color.r / 255, color.g / 255, color.b / 255),
-            scale: 1,
-            // Invert the y-axis for the entire SVG path
+            // The y-coordinate needs to be flipped for SVG rendering in pdf-lib
+            y: pageHeight,
             transform: {
-                ySkew: 0,
-                xSkew: 0,
-                yScale: -1, // This flips the drawing vertically
-                xScale: 1,
-                y: pageHeight, // Move it back into view
-                x: 0
+                yScale: -1,
             }
         });
     }
