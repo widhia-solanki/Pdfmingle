@@ -10,8 +10,10 @@ import { Rnd } from 'react-rnd';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
 
+// --- THIS IS THE FIX ---
+// We now load the worker from a reliable CDN.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 }
 
 interface PdfEditorProps {
@@ -73,7 +75,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       if (mode !== 'draw' || !currentDrawing || e.buttons !== 1) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const pressure = e.pressure || 0.5;
-      setCurrentDrawing(prev => ({ ...prev!, points: [...prev!.points, { x: e.clientX - rect.top, y: e.clientY - rect.top, pressure }] }));
+      setCurrentDrawing(prev => ({ ...prev!, points: [...prev!.points, { x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }] }));
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -116,15 +118,10 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       
       <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} onClick={handleCanvasClick}/>
       
-      {/* --- THIS IS THE FIX: A SINGLE, UNIFIED INTERACTIVE OVERLAY --- */}
       <div
-          className={cn(
-            "absolute top-0 left-0 w-full h-full z-10", 
-            mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none"
-          )}
+          className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none")}
           onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}
       >
-        {/* SVG for drawing lives here */}
         <svg width="100%" height="100%" className="absolute top-0 left-0 pointer-events-none">
             {objects.filter((obj): obj is DrawObject => obj.type === 'drawing' && obj.pageIndex === pageIndex).map(obj => (
                 <path key={obj.id} d={getSvgPathFromStroke(getStroke(obj.points, { size: obj.strokeWidth, thinning: 0.5 }))} fill={`rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`} />
@@ -132,7 +129,6 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
             {currentDrawing && <path d={getSvgPathFromStroke(getStroke(currentDrawing.points, { size: currentDrawing.strokeWidth, thinning: 0.5 }))} fill={`rgb(${currentDrawing.color.r}, ${currentDrawing.color.g}, ${currentDrawing.color.b})`} />}
         </svg>
 
-        {/* Draggable Text and Image objects also live here */}
         {!isLoading && objects.filter((obj): obj is TextObject | ImageObject => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
             <Rnd
                 key={obj.id} bounds="parent"
@@ -144,7 +140,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
                     updateObject(obj.id, { width: parseInt(ref.style.width), height: parseInt(ref.style.height), ...position });
                 }}
                 className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
-                style={{ pointerEvents: 'auto' }} // This makes the Rnd component interactive
+                style={{ pointerEvents: 'auto' }}
             >
                 {obj.type === 'text' ? (
                     <div style={{ fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font, whiteSpace: 'pre-wrap', lineHeight: 1.2, height: '100%' }}>{obj.text}</div>
