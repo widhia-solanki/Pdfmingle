@@ -1,6 +1,6 @@
 // src/lib/pdf/edit.ts
 
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, line, moveTo, close, LineCapStyle } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
@@ -89,8 +89,6 @@ export const applyEditsToPdf = async (
           height: height / scale 
       });
     } else if (obj.type === 'drawing') {
-      // --- THIS IS THE FIX ---
-      // We are now using the correct page.drawpath method instead of drawSvg.
       const { points, color, strokeWidth } = obj;
       const stroke = getStroke(points, {
         size: strokeWidth,
@@ -100,17 +98,17 @@ export const applyEditsToPdf = async (
       });
       const pathData = getSvgPathFromStroke(stroke);
       
-      // The y-coordinates need to be flipped for pdf-lib's coordinate system
-      const flippedPath = pathData.replace(/(\d+(\.\d+)?)\s*,?\s*(\d+(\.\d+)?)/g, (match, x, _, y) => {
-          const scaledY = pageHeight - (parseFloat(y) / scale);
-          const scaledX = parseFloat(x) / scale;
-          return `${scaledX} ${scaledY}`;
-      });
-
-      page.drawpath(flippedPath, {
-        borderColor: rgb(color.r/255, color.g/255, color.b/255),
-        borderWidth: 0, // The "stroke" from perfect-freehand is a filled shape
+      // The `drawSvgPath` method is the correct one to use here.
+      // We still need to flip the y-coordinate.
+      page.moveTo(0, pageHeight);
+      page.drawSvgPath(pathData, {
         color: rgb(color.r/255, color.g/255, color.b/255),
+        scale: 1 / scale,
+        // SVG path Y coordinates are flipped in pdf-lib
+        y: 0,
+        transform: {
+          yScale: -1,
+        }
       });
     }
   }
