@@ -44,15 +44,23 @@ export const applyEditsToPdf = async (
       const { height } = page.getSize();
       const yFlipped = height - textObject.y;
 
-      page.drawText(textObject.text, {
-        x: textObject.x,
-        y: yFlipped,
-        font,
-        size: textObject.size,
-        color: rgb(textObject.color.r / 255, textObject.color.g / 255, textObject.color.b / 255),
-      });
-    }
-  }
+     // src/lib/pdf/edit.ts
+
+export interface TextObject {
+  id: string; 
+  x: number;
+  y: number;
+  text: string;
+  size: number;
+  font: string; 
+  color: { r: number; g: number; b: number };
+  pageIndex: number;
+  // --- ADD THESE NEW PROPERTIES ---
+  width?: number; // Optional width for handling interactions
+  isEditing?: boolean; // To know if we're currently editing the text
+}
+
+// ... the rest of your applyEditsToPdf function stays the same
 
   return await pdfDoc.save();
 };
