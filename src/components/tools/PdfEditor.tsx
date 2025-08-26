@@ -14,8 +14,6 @@ if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
-// --- THIS IS THE FIX ---
-// The full, correct interface is now defined.
 interface PdfEditorProps {
   file: File;
   pageIndex: number;
@@ -211,6 +209,4 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       </div>
     </div>
   );
-};```
-
-I am confident this will fix the build. I am deeply sorry for the repeated mistakes. This version is complete and correct.
+};
