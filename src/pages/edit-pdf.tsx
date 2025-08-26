@@ -1,10 +1,9 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+import * as pdfjsLib from 'pdfjs-dist';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -18,8 +17,9 @@ import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-// --- THIS IS THE FIX ---
-GlobalWorkerOptions.workerSrc = pdfjsWorker;
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+}
 
 type Status = 'idle' | 'editing' | 'processing' | 'success' | 'error';
 
@@ -53,7 +53,7 @@ const EditPdfPage: NextPage = () => {
 
       try {
         const fileBuffer = await selectedFile.arrayBuffer();
-        const pdf = await getDocument({ data: fileBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         setPageCount(pdf.numPages);
       } catch (e) {
         setError("Could not read PDF. It may be corrupt or password-protected.");
@@ -62,17 +62,18 @@ const EditPdfPage: NextPage = () => {
     }
   };
   
-  // ... (All other handler functions remain the same)
   const handleObjectChange = (updatedObject: EditableObject) => {
     const newObjects = objects.map(obj => obj.id === updatedObject.id ? updatedObject : obj);
     setObjects(newObjects);
     setSelectedObject(updatedObject);
   };
+  
   const handleObjectDelete = () => {
       if (!selectedObject) return;
       setObjects(objects.filter(obj => obj.id !== selectedObject.id));
       setSelectedObject(null);
   };
+
   const handleImageAdd = async (imageFile: File) => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
@@ -82,6 +83,7 @@ const EditPdfPage: NextPage = () => {
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
   };
+
   const handleProcess = async () => {
     if (!file) return;
     setStatus('processing');
@@ -98,6 +100,7 @@ const EditPdfPage: NextPage = () => {
       setStatus('error');
     }
   };
+  
   const handleStartOver = useCallback((resetFile = true) => {
     if(resetFile) setFile(null);
     setStatus('idle');
