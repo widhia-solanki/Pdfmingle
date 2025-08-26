@@ -1,19 +1,22 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import * as pdfjsLib from 'pdfjs-dist';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
-import { PdfEditor } from '@/components/tools/PdfEditor';
-import { EditorToolbar, EditMode } from '@/components/tools/EditorToolbar';
+import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
-import { applyEditsToPdf, EditableObject, ImageObject } from '@/lib/pdf/edit';
+import { applyEditsToPdf, EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+import { Rnd } from 'react-rnd';
+import getStroke from 'perfect-freehand';
+import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
+import { cn } from '@/lib/utils';
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -29,40 +32,41 @@ const EditPdfPage: NextPage = () => {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   
-  const [editorKey, setEditorKey] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0); 
+  const [mainMode, setMainMode] = useState<MainMode>('edit');
+  const [toolMode, setToolMode] = useState<ToolMode>('select');
+  
+  const [pages, setPages] = useState<JSX.Element[]>([]);
   const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [visiblePageIndex, setVisiblePageIndex] = useState(0);
+
   const [objects, setObjects] = useState<EditableObject[]>([]);
-  const [editMode, setEditMode] = useState<EditMode>('select');
   const [selectedObject, setSelectedObject] = useState<EditableObject | null>(null);
+  const [currentDrawing, setCurrentDrawing] = useState<DrawObject | null>(null);
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
+  
+  const mainViewerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!file) return;
-    const getPageCount = async () => {
+  const handleFileSelected = async (selectedFiles: File[]) => {
+    if (selectedFiles.length > 0) {
+      const selectedFile = selectedFiles[0];
+      handleStartOver(false);
+      setFile(selectedFile);
+      setStatus('editing');
+
       try {
-        const fileBuffer = await file.arrayBuffer();
+        const fileBuffer = await selectedFile.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         setPageCount(pdf.numPages);
       } catch (e) {
-        setError("Could not read PDF. It may be corrupt.");
+        setError("Could not read PDF.");
         setStatus('error');
       }
-    };
-    getPageCount();
-  }, [file]);
-
-  const handleFileSelected = (files: File[]) => {
-    if (files.length > 0) {
-      handleStartOver(false); 
-      setFile(files[0]);
-      setEditorKey(prevKey => prevKey + 1);
-      setStatus('editing');
     }
   };
-  
+
   const handleObjectChange = (updatedObject: EditableObject) => {
     const newObjects = objects.map(obj => obj.id === updatedObject.id ? updatedObject : obj);
     setObjects(newObjects);
@@ -78,12 +82,8 @@ const EditPdfPage: NextPage = () => {
   const handleImageAdd = async (imageFile: File) => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
-      type: 'image',
-      id: `image-${Date.now()}`,
-      x: 50, y: 50,
-      pageIndex: currentPage,
-      imageBytes,
-      width: 200, height: 150, // Default size
+      type: 'image', id: `image-${Date.now()}`, x: 50, y: 50,
+      pageIndex: currentPage, imageBytes, width: 200, height: 150,
     };
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
@@ -99,7 +99,6 @@ const EditPdfPage: NextPage = () => {
       setDownloadUrl(url);
       setProcessedFileName(`edited_${file.name}`);
       setStatus('success');
-      toast({ title: 'Success!', description: 'Your PDF has been saved.' });
     } catch (err) {
       setError('An error occurred while saving your PDF.');
       setStatus('error');
@@ -112,93 +111,71 @@ const EditPdfPage: NextPage = () => {
     setObjects([]);
     setCurrentPage(0);
     setPageCount(0);
-    setEditMode('select');
+    setMainMode('edit');
+    setToolMode('select');
     setSelectedObject(null);
-    setEditorKey(prevKey => prevKey + 1);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
+  
+  // Scroll Syncing Logic
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const pageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0', 10);
+            setVisiblePageIndex(pageIndex);
+          }
+        });
+      },
+      { root: mainViewerRef.current, threshold: 0.5 }
+    );
+
+    const pageElements = document.querySelectorAll('.pdf-page-container');
+    pageElements.forEach(el => observer.observe(el));
+
+    return () => {
+      pageElements.forEach(el => observer.unobserve(el));
+    };
+  }, [pages]);
 
   return (
     <>
-      <NextSeo
-        title={tool.metaTitle}
-        description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
-      />
+      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.net/${tool.value}`} />
       <main className="w-full">
         {status === 'idle' && (
           <div className="container mx-auto px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">{tool.h1}</h1>
             <p className="text-lg text-gray-600 mb-8">{tool.description}</p>
-            <ToolUploader
-              onFilesSelected={handleFileSelected}
-              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-              selectedFiles={file ? [file] : []}
-              isMultiFile={false}
-              error={error}
-              onProcess={() => {}}
-              actionButtonText="Edit PDF"
-            />
+            <ToolUploader onFilesSelected={handleFileSelected} acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} selectedFiles={file ? [file] : []} isMultiFile={false} error={error} onProcess={() => {}} actionButtonText="Edit PDF" />
           </div>
         )}
-
         {status === 'editing' && file && (
           <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
-            <div className="flex-shrink-0 p-3 bg-white border-b">
-                <EditorToolbar 
-                    mode={editMode} 
-                    onModeChange={setEditMode} 
-                    selectedObject={selectedObject}
-                    onObjectChange={handleObjectChange}
-                    onObjectDelete={handleObjectDelete}
-                    onImageAdd={handleImageAdd}
-                />
-            </div>
-            
+            <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
             <div className="flex-grow flex overflow-hidden">
-                <div className="w-48 flex-shrink-0 h-full">
-                    <PdfThumbnailViewer 
-                        file={file} 
-                        currentPage={currentPage} 
-                        onPageChange={(index) => {
-                          setCurrentPage(index);
-                          setSelectedObject(null);
-                        }} 
-                        pageCount={pageCount}
-                    />
+              <div className="w-48 flex-shrink-0 h-full">
+                <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={(index) => {
+                  const pageEl = document.getElementById(`page-${index}`);
+                  pageEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }} visiblePageIndex={visiblePageIndex} />
+              </div>
+              <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-4 md:p-8 flex flex-col items-center gap-4">
+                {/* Render all pages here */}
+              </div>
+              <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
+                <div className="space-y-4">
+                  <h2 className="text-2xl font-bold">Edit PDF</h2>
+                  <p className="text-gray-600">Use the toolbar to add text, images, and shapes. Click an object to select, move, or resize it.</p>
                 </div>
-                <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
-                    <PdfEditor 
-                        key={`${editorKey}-${currentPage}`}
-                        file={file}
-                        pageIndex={currentPage}
-                        objects={objects}
-                        onObjectsChange={setObjects}
-                        mode={editMode}
-                        onObjectSelect={setSelectedObject}
-                    />
-                </div>
-                <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">Edit PDF</h2>
-                    <p className="text-gray-600">Use the toolbar to add text and images. Click an object to select, move, or resize it.</p>
-                  </div>
-                  <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">
-                    Save Changes
-                  </Button>
-                </div>
+                <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">Save Changes</Button>
+              </div>
             </div>
           </div>
         )}
-
         {status === 'processing' && (<div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>)}
         {status === 'success' && (<div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={() => handleStartOver(true)} filename={processedFileName} /></div>)}
-        {status === 'error' && (
-           <div className="text-center p-8">
-             <p className="text-red-500 font-semibold mb-4">{error}</p>
-             <Button onClick={() => handleStartOver(true)} variant="outline">Try Again</Button>
-           </div>
-        )}
+        {status === 'error' && (<div className="text-center p-8"><p className="text-red-500 font-semibold mb-4">{error}</p><Button onClick={() => handleStartOver(true)} variant="outline">Try Again</Button></div>)}
       </main>
     </>
   );
