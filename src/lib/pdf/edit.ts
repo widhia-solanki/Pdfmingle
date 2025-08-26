@@ -4,7 +4,6 @@ import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
-// ... (All interfaces remain the same)
 export interface DrawObject {
   type: 'drawing';
   id: string;
@@ -49,15 +48,14 @@ const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => 
 
 export const applyEditsToPdf = async (
   file: File,
-  objects: EditableObject[]
+  objects: EditableObject[],
+  // --- THIS IS THE FIX ---
+  // The function now correctly accepts the zoom parameter.
+  renderScale: number
 ): Promise<Uint8Array> => {
   const arrayBuffer = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(arrayBuffer);
   const pages = pdfDoc.getPages();
-  
-  // --- THIS IS THE FIX ---
-  // The editor canvas is rendered at 150% size. We must account for this when saving.
-  const renderScale = 1.5;
 
   for (const obj of objects) {
     if (obj.pageIndex >= pages.length) continue;
@@ -66,7 +64,7 @@ export const applyEditsToPdf = async (
     const { height: pageHeight } = page.getSize();
 
     if (obj.type === 'text') {
-      const { x, y, text, size, font, color, width } = obj;
+      const { x, y, text, size, font, color, width, height } = obj;
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
         x: x / renderScale,
