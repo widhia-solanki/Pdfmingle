@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
-import { TextObject } from '@/lib/pdf/edit';
+import { EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { cn } from '@/lib/utils';
 import { EditMode } from './EditorToolbar';
-import { Rnd } from 'react-rnd'; // We'll need to install this library
+import { Rnd } from 'react-rnd';
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -15,20 +15,18 @@ if (typeof window !== 'undefined') {
 interface PdfEditorProps {
   file: File;
   pageIndex: number;
-  textObjects: TextObject[];
-  onTextObjectsChange: (objects: TextObject[]) => void;
+  objects: EditableObject[];
+  onObjectsChange: (objects: EditableObject[]) => void;
   mode: EditMode;
-  onObjectSelect: (object: TextObject | null) => void;
+  onObjectSelect: (object: EditableObject | null) => void;
 }
 
-export const PdfEditor = ({ file, pageIndex, textObjects, onTextObjectsChange, mode, onObjectSelect }: PdfEditorProps) => {
+export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onObjectSelect }: PdfEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Effect to render the base PDF page
   useEffect(() => {
-    // ... (This effect remains unchanged from the previous version)
     const renderPage = async () => {
       if (!canvasRef.current || !file) return;
       setIsLoading(true);
@@ -56,36 +54,34 @@ export const PdfEditor = ({ file, pageIndex, textObjects, onTextObjectsChange, m
   
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (mode !== 'text' || !canvasRef.current) return;
-
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
 
     const newText: TextObject = {
+      type: 'text',
       id: `text-${Date.now()}`,
-      x,
-      y,
+      x, y,
       text: "Double-click to edit",
       size: 24,
       font: 'Helvetica',
       color: { r: 0, g: 0, b: 0 },
       pageIndex,
-      width: 200, // Give a default width
+      width: 200, height: 50,
     };
-    onTextObjectsChange([...textObjects, newText]);
-    onObjectSelect(newText); // Select the new object immediately
+    onObjectsChange([...objects, newText]);
+    onObjectSelect(newText);
   };
   
-  // This updates the position of a text object after dragging
-  const updateTextObject = (id: string, newProps: Partial<TextObject>) => {
-    const updatedObjects = textObjects.map(obj =>
+  const updateObject = (id: string, newProps: Partial<EditableObject>) => {
+    const updatedObjects = objects.map(obj =>
       obj.id === id ? { ...obj, ...newProps } : obj
     );
-    onTextObjectsChange(updatedObjects);
+    onObjectsChange(updatedObjects);
   };
   
-  if (error) { //... (Error handling remains unchanged)
+  if (error) {
     return (
       <div className="flex items-center justify-center h-96 bg-red-50 border border-red-200 rounded-lg">
         <p className="text-red-600 font-semibold">{error}</p>
@@ -102,36 +98,31 @@ export const PdfEditor = ({ file, pageIndex, textObjects, onTextObjectsChange, m
       )}
       <canvas
         ref={canvasRef}
-        className={cn(
-          "border rounded-md", 
-          mode === 'text' && "cursor-text",
-          isLoading && "opacity-0"
-        )}
+        className={cn("border rounded-md", mode === 'text' && "cursor-text", isLoading && "opacity-0")}
         onClick={handleCanvasClick}
       />
       
-      {/* This is where the interactive text objects are rendered */}
       {!isLoading &&
-        textObjects
+        objects
           .filter(obj => obj.pageIndex === pageIndex)
-          .map((obj, index) => (
+          .map((obj) => (
             <Rnd
               key={obj.id}
               bounds="parent"
-              size={{ width: obj.width || 200, height: 'auto' }}
+              size={{ width: obj.width, height: obj.height }}
               position={{ x: obj.x, y: obj.y }}
               onDragStart={() => onObjectSelect(obj)}
-              onDragStop={(e, d) => {
-                updateTextObject(obj.id, { x: d.x, y: d.y });
-              }}
+              onDragStop={(e, d) => updateObject(obj.id, { x: d.x, y: d.y })}
               onResizeStop={(e, direction, ref, delta, position) => {
-                 updateTextObject(obj.id, {
+                 updateObject(obj.id, {
                   width: parseInt(ref.style.width),
+                  height: parseInt(ref.style.height),
                   ...position,
                 });
               }}
               className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
             >
+              {obj.type === 'text' ? (
                 <div
                     style={{
                       fontSize: `${obj.size}px`,
@@ -143,9 +134,16 @@ export const PdfEditor = ({ file, pageIndex, textObjects, onTextObjectsChange, m
                 >
                  {obj.text}
                 </div>
+              ) : (
+                <img 
+                  src={URL.createObjectURL(new Blob([obj.imageBytes]))} 
+                  alt="user upload" 
+                  className="w-full h-full object-contain"
+                />
+              )}
             </Rnd>
           ))
       }
     </div>
   );
-};
+};``
