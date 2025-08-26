@@ -157,13 +157,12 @@ const EditPdfPage: NextPage = () => {
                     pageEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                   }} pageCount={pageCount} />
                 </div>
-                {/* --- THIS IS THE FIX --- */}
                 <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-8">
                   <div 
-                    className="mx-auto w-fit" // Use mx-auto to center the block-level element
+                    className="mx-auto w-fit"
                     style={{ 
                       transform: `scale(${zoom})`, 
-                      transformOrigin: 'center top' // Zoom from the center top
+                      transformOrigin: 'center top'
                     }}
                   >
                     <div className="flex flex-col items-center gap-8">
@@ -209,6 +208,4 @@ const EditPdfPage: NextPage = () => {
   );
 };
 
-export default EditPdfPage;```
-
-After you commit this change, the main editor will be perfectly centered, and the zoom will feel natural and smooth. My apologies for the styling error. This version is correct.
+export default EditPdfPage;
