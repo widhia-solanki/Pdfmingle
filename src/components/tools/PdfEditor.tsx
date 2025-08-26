@@ -21,14 +21,11 @@ interface PdfEditorProps {
   onObjectsChange: (objects: EditableObject[]) => void;
   mode: ToolMode;
   onObjectSelect: (object: EditableObject | null) => void;
-  zoom: number;
 }
 
-// --- THIS IS THE FIX ---
-// We now EXPORT the constant so other files can import it.
 export const RENDER_SCALE = 1.5;
 
-export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onObjectSelect, zoom }: PdfEditorProps) => {
+export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onObjectSelect }: PdfEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -112,13 +109,10 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
   if (error) { return <div className="flex items-center justify-center h-96 bg-red-50 border border-red-200 rounded-lg"><p className="text-red-600 font-semibold">{error}</p></div>; }
 
   return (
-    <div 
-      className="relative w-fit h-fit shadow-2xl bg-white origin-top-left"
-      style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
-    >
+    <div className="relative w-fit h-fit bg-white shadow-lg">
       {isLoading && (<div className="absolute inset-0 flex items-center justify-center bg-white/50 z-30"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>)}
       
-      <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} />
+      <canvas ref={canvasRef} className={cn("border rounded-sm", isLoading && "opacity-0")} />
       
       <div
           className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none")}
