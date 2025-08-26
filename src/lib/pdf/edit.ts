@@ -1,6 +1,6 @@
 // src/lib/pdf/edit.ts
 
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, pushOperators, PopGraphicsState, scale, translate } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
@@ -63,18 +63,18 @@ export const applyEditsToPdf = async (
     const page = pages[obj.pageIndex];
     const { height: pageHeight } = page.getSize();
     
-    const scale = 1.5;
+    const scaleFactor = 1.5;
 
     if (obj.type === 'text') {
       const { x, y, text, size, font, color, width } = obj;
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
-        x: x / scale,
-        y: pageHeight - y / scale - size,
+        x: x / scaleFactor,
+        y: pageHeight - y / scaleFactor - size,
         font: pdfFont,
         size: size,
         color: rgb(color.r / 255, color.g / 255, color.b / 255),
-        maxWidth: width / scale,
+        maxWidth: width / scaleFactor,
         lineHeight: size * 1.2,
       });
     } else if (obj.type === 'image') {
@@ -83,12 +83,13 @@ export const applyEditsToPdf = async (
           ? pdfDoc.embedPng(imageBytes)
           : pdfDoc.embedJpg(imageBytes));
       page.drawImage(image, { 
-          x: x / scale, 
-          y: pageHeight - (y / scale) - (height / scale),
-          width: width / scale, 
-          height: height / scale 
+          x: x / scaleFactor, 
+          y: pageHeight - (y / scaleFactor) - (height / scaleFactor),
+          width: width / scaleFactor, 
+          height: height / scaleFactor 
       });
     } else if (obj.type === 'drawing') {
+      // --- THIS IS THE FINAL, CORRECT IMPLEMENTATION ---
       const { points, color, strokeWidth } = obj;
       const stroke = getStroke(points, {
         size: strokeWidth,
@@ -98,18 +99,22 @@ export const applyEditsToPdf = async (
       });
       const pathData = getSvgPathFromStroke(stroke);
       
-      // The `drawSvgPath` method is the correct one to use here.
-      // We still need to flip the y-coordinate.
-      page.moveTo(0, pageHeight);
+      page.pushOperators(
+        // Save the current graphics state
+        pushOperators.q(),
+        // Apply transformations: scale down and flip the y-axis
+        scale(1 / scaleFactor, -1 / scaleFactor),
+        // Translate the origin to the top-left corner
+        translate(0, -pageHeight * scaleFactor)
+      );
+
+      // Draw the path within the transformed coordinate system
       page.drawSvgPath(pathData, {
         color: rgb(color.r/255, color.g/255, color.b/255),
-        scale: 1 / scale,
-        // SVG path Y coordinates are flipped in pdf-lib
-        y: 0,
-        transform: {
-          yScale: -1,
-        }
       });
+
+      // Restore the graphics state
+      page.pushOperators(PopGraphicsState);
     }
   }
 
