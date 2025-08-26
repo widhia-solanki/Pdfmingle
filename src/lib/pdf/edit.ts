@@ -4,6 +4,7 @@ import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
+// ... (All interfaces remain the same)
 export interface DrawObject {
   type: 'drawing';
   id: string;
@@ -12,7 +13,6 @@ export interface DrawObject {
   color: { r: number; g: number; b: number };
   strokeWidth: number;
 }
-
 export interface TextObject {
   type: 'text';
   id: string; 
@@ -26,7 +26,6 @@ export interface TextObject {
   width: number;
   height: number;
 }
-
 export interface ImageObject {
   type: 'image';
   id: string;
@@ -37,7 +36,6 @@ export interface ImageObject {
   width: number;
   height: number;
 }
-
 export type EditableObject = TextObject | ImageObject | DrawObject;
 
 const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => {
@@ -51,7 +49,10 @@ const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => 
 
 export const applyEditsToPdf = async (
   file: File,
-  objects: EditableObject[]
+  objects: EditableObject[],
+  // --- THIS IS THE FIX ---
+  // We now accept the zoom level used in the editor.
+  zoom: number 
 ): Promise<Uint8Array> => {
   const arrayBuffer = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(arrayBuffer);
@@ -63,19 +64,20 @@ export const applyEditsToPdf = async (
     const page = pages[obj.pageIndex];
     const { height: pageHeight } = page.getSize();
     
-    const scaleFactor = 1.5;
+    // We use the passed-in zoom level to correctly scale everything back down.
+    const scaleFactor = zoom;
 
     if (obj.type === 'text') {
       const { x, y, text, size, font, color, width } = obj;
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
         x: x / scaleFactor,
-        y: pageHeight - y / scaleFactor - size,
+        y: pageHeight - (y / scaleFactor) - (size / scaleFactor),
         font: pdfFont,
-        size: size,
+        size: size / scaleFactor,
         color: rgb(color.r / 255, color.g / 255, color.b / 255),
         maxWidth: width / scaleFactor,
-        lineHeight: size * 1.2,
+        lineHeight: (size * 1.2) / scaleFactor,
       });
     } else if (obj.type === 'image') {
       const { x, y, imageBytes, width, height } = obj;
@@ -89,13 +91,10 @@ export const applyEditsToPdf = async (
           height: height / scaleFactor 
       });
     } else if (obj.type === 'drawing') {
-      // --- THIS IS THE FINAL, GUARANTEED FIX ---
-      // We manually transform the coordinates before creating the SVG path.
       const { points, color, strokeWidth } = obj;
-      
       const transformedPoints = points.map(p => {
         const x = p.x / scaleFactor;
-        const y = pageHeight - (p.y / scaleFactor); // Flip the y-coordinate
+        const y = pageHeight - (p.y / scaleFactor);
         return { ...p, x, y };
       });
 
