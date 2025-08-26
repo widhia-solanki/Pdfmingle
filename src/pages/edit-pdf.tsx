@@ -28,16 +28,31 @@ const EditPdfPage: NextPage = () => {
   const [currentPage, setCurrentPage] = useState(0); 
   const [textObjects, setTextObjects] = useState<TextObject[]>([]);
   const [editMode, setEditMode] = useState<EditMode>('select');
+  const [selectedObject, setSelectedObject] = useState<TextObject | null>(null); // NEW: Track selected object
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
 
   const handleFileSelected = (files: File[]) => {
     if (files.length > 0) {
+      // Fully reset the state for the new file
+      handleStartOver(false); 
       setFile(files[0]);
       setEditorKey(prevKey => prevKey + 1);
       setStatus('editing');
     }
+  };
+  
+  const handleObjectChange = (updatedObject: TextObject) => {
+    const newObjects = textObjects.map(obj => obj.id === updatedObject.id ? updatedObject : obj);
+    setTextObjects(newObjects);
+    setSelectedObject(updatedObject);
+  };
+  
+  const handleObjectDelete = () => {
+      if (!selectedObject) return;
+      setTextObjects(textObjects.filter(obj => obj.id !== selectedObject.id));
+      setSelectedObject(null);
   };
 
   const handleProcess = async () => {
@@ -57,12 +72,13 @@ const EditPdfPage: NextPage = () => {
     }
   };
   
-  const handleStartOver = useCallback(() => {
-    setFile(null);
+  const handleStartOver = useCallback((resetFile = true) => {
+    if(resetFile) setFile(null);
     setStatus('idle');
     setTextObjects([]);
     setCurrentPage(0);
     setEditMode('select');
+    setSelectedObject(null);
     setEditorKey(prevKey => prevKey + 1);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
@@ -93,38 +109,42 @@ const EditPdfPage: NextPage = () => {
 
         {status === 'editing' && file && (
           <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
-            {/* Top Toolbar */}
             <div className="flex-shrink-0 p-3 bg-white border-b">
-                <EditorToolbar mode={editMode} onModeChange={setEditMode} />
+                <EditorToolbar 
+                    mode={editMode} 
+                    onModeChange={setEditMode} 
+                    selectedObject={selectedObject}
+                    onObjectChange={handleObjectChange}
+                    onObjectDelete={handleObjectDelete}
+                />
             </div>
             
             <div className="flex-grow flex overflow-hidden">
-                {/* Left Panel: Thumbnails */}
                 <div className="w-48 flex-shrink-0 h-full">
                     <PdfThumbnailViewer 
                         file={file} 
                         currentPage={currentPage} 
-                        onPageChange={setCurrentPage} 
+                        onPageChange={(index) => {
+                          setCurrentPage(index);
+                          setSelectedObject(null); // Deselect object when changing page
+                        }} 
                     />
                 </div>
-
-                {/* Center Panel: Main Editor */}
                 <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
                     <PdfEditor 
-                        key={`${editorKey}-${currentPage}`} // Also change key when page changes
+                        key={`${editorKey}-${currentPage}`}
                         file={file}
                         pageIndex={currentPage}
                         textObjects={textObjects}
                         onTextObjectsChange={setTextObjects}
                         mode={editMode}
+                        onObjectSelect={setSelectedObject}
                     />
                 </div>
-
-                {/* Right Panel: Actions */}
                 <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
                   <div className="space-y-4">
                     <h2 className="text-2xl font-bold">Edit PDF</h2>
-                    <p className="text-gray-600">Use the toolbar to modify or add text, images, and annotate with ease.</p>
+                    <p className="text-gray-600">Click an item to select it. Click 'T' to add new text.</p>
                   </div>
                   <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">
                     Save Changes
@@ -134,16 +154,12 @@ const EditPdfPage: NextPage = () => {
           </div>
         )}
 
-        {status === 'processing' && (
-            <div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>
-        )}
-        {status === 'success' && (
-            <div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} /></div>
-        )}
+        {status === 'processing' && (<div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>)}
+        {status === 'success' && (<div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={() => handleStartOver(true)} filename={processedFileName} /></div>)}
         {status === 'error' && (
            <div className="text-center p-8">
              <p className="text-red-500 font-semibold mb-4">{error}</p>
-             <Button onClick={handleStartOver} variant="outline">Try Again</Button>
+             <Button onClick={() => handleStartOver(true)} variant="outline">Try Again</Button>
            </div>
         )}
       </main>
