@@ -13,7 +13,7 @@ import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
 // --- THIS IS THE FIX ---
 // We now load the worker from a reliable CDN.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
 }
 
 interface PdfEditorProps {
