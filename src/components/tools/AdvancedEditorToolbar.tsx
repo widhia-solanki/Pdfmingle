@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MousePointer, Type, Trash2, Pen, Square, Image as ImageIcon } from 'lucide-react';
+import { MousePointer, Type, Trash2, Pen, Square, Image as ImageIcon, Highlighter } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EditableObject } from '@/lib/pdf/edit';
 
 export type MainMode = 'annotate' | 'edit';
-export type ToolMode = 'select' | 'text' | 'image' | 'draw' | 'shape';
+export type ToolMode = 'select' | 'text' | 'image' | 'draw' | 'shape' | 'highlight';
 
 interface AdvancedEditorToolbarProps {
   mainMode: MainMode;
@@ -58,6 +58,8 @@ export const AdvancedEditorToolbar = ({
         {mainMode === 'annotate' && (
           <>
             <Button variant="ghost" size="icon" onClick={() => onToolModeChange('draw')} className={cn(toolMode === 'draw' && 'bg-blue-200')} aria-label="Draw"><Pen className="h-5 w-5" /></Button>
+            {/* --- NEW HIGHLIGHTER BUTTON --- */}
+            <Button variant="ghost" size="icon" onClick={() => onToolModeChange('highlight')} className={cn(toolMode === 'highlight' && 'bg-blue-200')} aria-label="Highlight"><Highlighter className="h-5 w-5" /></Button>
             <Button variant="ghost" size="icon" onClick={() => onToolModeChange('shape')} className={cn(toolMode === 'shape' && 'bg-blue-200')} aria-label="Add Shape" disabled><Square className="h-5 w-5" /></Button>
           </>
         )}
@@ -74,15 +76,8 @@ export const AdvancedEditorToolbar = ({
                   <SelectItem value="Courier">Courier</SelectItem>
                 </SelectContent>
               </Select>
-              <Input
-                type="number"
-                className="w-16 h-8"
-                value={textObject.size}
-                onChange={(e) => onObjectChange({ ...textObject, size: parseInt(e.target.value) || 12 })}
-              />
-              <input 
-                type="color" 
-                value={`#${textObject.color.r.toString(16).padStart(2, '0')}${textObject.color.g.toString(16).padStart(2, '0')}${textObject.color.b.toString(16).padStart(2, '0')}`}
+              <Input type="number" className="w-16 h-8" value={textObject.size} onChange={(e) => onObjectChange({ ...textObject, size: parseInt(e.target.value) || 12 })} />
+              <input type="color" value={`#${textObject.color.r.toString(16).padStart(2, '0')}${textObject.color.g.toString(16).padStart(2, '0')}${textObject.color.b.toString(16).padStart(2, '0')}`}
                 onChange={(e) => {
                     const r = parseInt(e.target.value.slice(1, 3), 16);
                     const g = parseInt(e.target.value.slice(3, 5), 16);
@@ -92,6 +87,9 @@ export const AdvancedEditorToolbar = ({
                 className="w-8 h-8 p-0 border-none cursor-pointer bg-transparent"
               />
           </div>
+        )}
+        {selectedObject && selectedObject.type !== 'text' && (
+             <p className="text-sm font-medium text-gray-600">{selectedObject.type.charAt(0).toUpperCase() + selectedObject.type.slice(1)} Selected</p>
         )}
         {selectedObject && (
           <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
