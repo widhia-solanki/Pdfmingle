@@ -1,14 +1,14 @@
 // src/components/tools/PdfThumbnailViewer.tsx
 
 import React, { useState, useEffect } from 'react';
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-// --- THIS IS THE FIX ---
-GlobalWorkerOptions.workerSrc = pdfjsWorker;
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+}
 
 interface PdfThumbnailViewerProps {
   file: File;
@@ -26,7 +26,7 @@ export const PdfThumbnailViewer = ({ file, currentPage, onPageChange, pageCount 
       setIsLoading(true);
       try {
         const fileBuffer = await file.arrayBuffer();
-        const pdf = await getDocument({ data: fileBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
 
         setThumbnails(Array(pdf.numPages).fill(''));
 
@@ -65,7 +65,10 @@ export const PdfThumbnailViewer = ({ file, currentPage, onPageChange, pageCount 
           <button
             key={index}
             onClick={() => onPageChange(index)}
-            className={cn("w-full p-1 border-2 rounded-md transition-all", currentPage === index ? "border-blue-500" : "border-transparent hover:border-gray-400")}
+            className={cn(
+              "w-full p-1 border-2 rounded-md transition-all",
+              currentPage === index ? "border-blue-500" : "border-transparent hover:border-gray-400"
+            )}
           >
             {src ? (
               <img src={src} alt={`Page ${index + 1}`} className="w-full shadow-md rounded-sm" />
