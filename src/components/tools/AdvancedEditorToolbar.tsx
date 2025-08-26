@@ -2,19 +2,25 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { MousePointer, Type, Pen, Square, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MousePointer, Type, Trash2, Pen, Square, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EditableObject } from '@/lib/pdf/edit';
 
 export type MainMode = 'annotate' | 'edit';
 export type ToolMode = 'select' | 'text' | 'image' | 'draw' | 'shape';
 
+// --- THIS IS THE FIX ---
+// The full, correct interface with all props is now defined.
 interface AdvancedEditorToolbarProps {
   mainMode: MainMode;
   onMainModeChange: (mode: MainMode) => void;
   toolMode: ToolMode;
   onToolModeChange: (mode: ToolMode) => void;
   selectedObject: EditableObject | null;
+  onObjectChange: (updatedObject: EditableObject) => void;
   onObjectDelete: () => void;
   onImageAdd: (file: File) => void;
 }
@@ -22,7 +28,7 @@ interface AdvancedEditorToolbarProps {
 export const AdvancedEditorToolbar = ({ 
   mainMode, onMainModeChange, 
   toolMode, onToolModeChange,
-  selectedObject, onObjectDelete, onImageAdd
+  selectedObject, onObjectChange, onObjectDelete, onImageAdd
 }: AdvancedEditorToolbarProps) => {
   const imageInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -71,6 +77,18 @@ export const AdvancedEditorToolbar = ({
       
       {/* Right Side: Contextual Actions */}
       <div className="flex items-center gap-4">
+        {selectedObject?.type === 'text' && (
+            <div className="flex items-center gap-2">
+                <Label htmlFor="font-size" className="text-sm">Size:</Label>
+                <Input
+                id="font-size"
+                type="number"
+                className="w-20 h-9"
+                value={selectedObject.size}
+                onChange={(e) => onObjectChange({ ...selectedObject, size: parseInt(e.target.value) || 12 })}
+                />
+            </div>
+        )}
         {selectedObject && (
           <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
             <Trash2 className="h-5 w-5"/>
