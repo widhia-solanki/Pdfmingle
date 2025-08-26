@@ -59,6 +59,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'draw') return;
+    e.currentTarget.setPointerCapture(e.pointerId);
     const rect = e.currentTarget.getBoundingClientRect();
     const pressure = e.pressure || 0.5;
     const newDrawing: DrawObject = {
@@ -78,6 +79,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
       if (mode !== 'draw' || !currentDrawing) return;
+      e.currentTarget.releasePointerCapture(e.pointerId);
       if (currentDrawing.points.length > 2) {
           onObjectsChange([...objects, currentDrawing]);
       }
@@ -105,6 +107,24 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       );
       onObjectsChange(updatedObjects as EditableObject[]);
   };
+  
+  const handleDoubleClick = (obj: TextObject) => {
+    const newObjects = objects.map(o => 
+      o.id === obj.id ? { ...o, isEditing: true } : { ...o, isEditing: false }
+    );
+    onObjectsChange(newObjects as EditableObject[]);
+    onObjectSelect(obj);
+  };
+
+  const handleTextChange = (id: string, newText: string) => {
+    const newObjects = objects.map(o => o.id === id ? { ...o, text: newText } : o);
+    onObjectsChange(newObjects as EditableObject[]);
+  };
+  
+  const handleTextBlur = (obj: TextObject) => {
+    const newObjects = objects.map(o => o.id === obj.id ? { ...o, isEditing: false } : o);
+    onObjectsChange(newObjects as EditableObject[]);
+  };
 
   if (error) { return <div className="flex items-center justify-center h-96 bg-red-50 border border-red-200 rounded-lg"><p className="text-red-600 font-semibold">{error}</p></div>; }
 
@@ -115,7 +135,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       <canvas ref={canvasRef} className={cn("border rounded-sm", isLoading && "opacity-0")} />
       
       <div
-          className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none")}
+          className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' || mode === 'text' ? "pointer-events-auto" : "pointer-events-none", mode === 'draw' && 'cursor-crosshair', mode === 'text' && 'cursor-text')}
           onClick={(e) => mode === 'text' && handleCanvasClick(e)}
           onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}
       >
@@ -138,9 +158,24 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
                 }}
                 className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
                 style={{ pointerEvents: 'auto' }}
+                onDoubleClick={() => obj.type === 'text' && handleDoubleClick(obj)}
             >
                 {obj.type === 'text' ? (
+                  obj.isEditing ? (
+                    <textarea
+                      value={obj.text}
+                      onChange={(e) => handleTextChange(obj.id, e.target.value)}
+                      onBlur={() => handleTextBlur(obj)}
+                      autoFocus
+                      style={{
+                        width: '100%', height: '100%', border: 'none', outline: 'none',
+                        padding: 0, margin: 0, resize: 'none', background: 'transparent',
+                        fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font,
+                      }}
+                    />
+                  ) : (
                     <div style={{ fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font, whiteSpace: 'pre-wrap', lineHeight: 1.2, height: '100%' }}>{obj.text}</div>
+                  )
                 ) : (
                     <img src={URL.createObjectURL(new Blob([obj.imageBytes]))} alt="user upload" className="w-full h-full object-contain" />
                 )}
