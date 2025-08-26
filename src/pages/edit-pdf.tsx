@@ -8,6 +8,7 @@ import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { PdfEditor } from '@/components/tools/PdfEditor';
 import { EditorToolbar, EditMode } from '@/components/tools/EditorToolbar';
+import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { applyEditsToPdf, TextObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -23,10 +24,7 @@ const EditPdfPage: NextPage = () => {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   
-  // --- FIX #1: Add a key to force component re-creation ---
   const [editorKey, setEditorKey] = useState(0);
-
-  // Editor-specific state
   const [currentPage, setCurrentPage] = useState(0); 
   const [textObjects, setTextObjects] = useState<TextObject[]>([]);
   const [editMode, setEditMode] = useState<EditMode>('select');
@@ -37,9 +35,8 @@ const EditPdfPage: NextPage = () => {
   const handleFileSelected = (files: File[]) => {
     if (files.length > 0) {
       setFile(files[0]);
-      // Increment the key to force the PdfEditor to remount
       setEditorKey(prevKey => prevKey + 1);
-      setStatus('editing'); 
+      setStatus('editing');
     }
   };
 
@@ -60,14 +57,13 @@ const EditPdfPage: NextPage = () => {
     }
   };
   
-  // --- FIX #2: Ensure the key is reset on Start Over ---
   const handleStartOver = useCallback(() => {
     setFile(null);
     setStatus('idle');
     setTextObjects([]);
     setCurrentPage(0);
     setEditMode('select');
-    setEditorKey(prevKey => prevKey + 1); // Also increment key here for a clean slate
+    setEditorKey(prevKey => prevKey + 1);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
 
@@ -78,9 +74,9 @@ const EditPdfPage: NextPage = () => {
         description={tool.metaDescription}
         canonical={`https://pdfmingle.net/${tool.value}`}
       />
-      <main className="container mx-auto px-4 py-8">
+      <main className="w-full">
         {status === 'idle' && (
-          <div className="text-center">
+          <div className="container mx-auto px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">{tool.h1}</h1>
             <p className="text-lg text-gray-600 mb-8">{tool.description}</p>
             <ToolUploader
@@ -96,32 +92,54 @@ const EditPdfPage: NextPage = () => {
         )}
 
         {status === 'editing' && file && (
-          <div className="flex flex-col items-center gap-6">
-            <h1 className="text-3xl font-bold">Edit PDF</h1>
-            <EditorToolbar mode={editMode} onModeChange={setEditMode} />
-            <div className="w-full max-w-4xl mx-auto">
-              <PdfEditor 
-                key={editorKey} // --- THE KEY PROP IS APPLIED HERE ---
-                file={file}
-                pageIndex={currentPage}
-                textObjects={textObjects}
-                onTextObjectsChange={setTextObjects}
-                mode={editMode}
-              />
+          <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
+            {/* Top Toolbar */}
+            <div className="flex-shrink-0 p-3 bg-white border-b">
+                <EditorToolbar mode={editMode} onModeChange={setEditMode} />
             </div>
-            <div className="flex gap-4">
-              <Button size="lg" variant="outline" onClick={handleStartOver}>
-                Start Over
-              </Button>
-              <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600">
-                Save Changes
-              </Button>
+            
+            <div className="flex-grow flex overflow-hidden">
+                {/* Left Panel: Thumbnails */}
+                <div className="w-48 flex-shrink-0 h-full">
+                    <PdfThumbnailViewer 
+                        file={file} 
+                        currentPage={currentPage} 
+                        onPageChange={setCurrentPage} 
+                    />
+                </div>
+
+                {/* Center Panel: Main Editor */}
+                <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
+                    <PdfEditor 
+                        key={`${editorKey}-${currentPage}`} // Also change key when page changes
+                        file={file}
+                        pageIndex={currentPage}
+                        textObjects={textObjects}
+                        onTextObjectsChange={setTextObjects}
+                        mode={editMode}
+                    />
+                </div>
+
+                {/* Right Panel: Actions */}
+                <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
+                  <div className="space-y-4">
+                    <h2 className="text-2xl font-bold">Edit PDF</h2>
+                    <p className="text-gray-600">Use the toolbar to modify or add text, images, and annotate with ease.</p>
+                  </div>
+                  <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">
+                    Save Changes
+                  </Button>
+                </div>
             </div>
           </div>
         )}
 
-        {status === 'processing' && <ToolProcessor />}
-        {status === 'success' && <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} />}
+        {status === 'processing' && (
+            <div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>
+        )}
+        {status === 'success' && (
+            <div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} /></div>
+        )}
         {status === 'error' && (
            <div className="text-center p-8">
              <p className="text-red-500 font-semibold mb-4">{error}</p>
