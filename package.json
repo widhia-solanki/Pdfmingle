@@ -12,6 +12,9 @@
     "lint": "next lint"
   },
   "dependencies": {
+   
+    "perfect-freehand": "^1.2.2",
+    "get-svg-path-from-stroke": "^3.1.2",
     "@emailjs/browser": "^4.3.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
