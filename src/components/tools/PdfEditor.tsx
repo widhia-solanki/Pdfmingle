@@ -74,12 +74,24 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     onObjectSelect(newText);
   };
   
-  // --- THIS IS THE FIX ---
-  // We use a more specific type for the new properties to help TypeScript.
-  const updateObject = (id: string, newProps: Partial<TextObject> | Partial<ImageObject>) => {
-    const updatedObjects = objects.map(obj =>
-      obj.id === id ? { ...obj, ...newProps } : obj
-    );
+  // --- THIS IS THE DEFINITIVE FIX ---
+  // We explicitly check the type of the object before updating it.
+  // This removes all ambiguity for TypeScript.
+  const updateObject = (id: string, newProps: Partial<EditableObject>) => {
+    const updatedObjects = objects.map(obj => {
+      if (obj.id === id) {
+        // Create a new object with the updated properties
+        const updatedObj = { ...obj, ...newProps };
+        // Ensure the 'type' property is correct based on the original object
+        if (obj.type === 'text' && updatedObj.type === 'text') {
+          return updatedObj as TextObject;
+        }
+        if (obj.type === 'image' && updatedObj.type === 'image') {
+          return updatedObj as ImageObject;
+        }
+      }
+      return obj;
+    });
     onObjectsChange(updatedObjects);
   };
   
