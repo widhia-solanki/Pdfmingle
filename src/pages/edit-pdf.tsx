@@ -35,7 +35,7 @@ const EditPdfPage: NextPage = () => {
   const [toolMode, setToolMode] = useState<ToolMode>('select');
   
   const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [visiblePageIndex, setVisiblePageIndex] = useState(0);
   const [zoom, setZoom] = useState(1.0);
 
   const [objects, setObjects] = useState<EditableObject[]>([]);
@@ -43,6 +43,8 @@ const EditPdfPage: NextPage = () => {
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
+  
+  const mainViewerRef = useRef<HTMLDivElement>(null);
 
   const handleFileSelected = async (selectedFiles: File[]) => {
     if (selectedFiles.length > 0) {
@@ -78,7 +80,7 @@ const EditPdfPage: NextPage = () => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
       type: 'image', id: `image-${Date.now()}`, x: 50, y: 50,
-      pageIndex: currentPage, imageBytes, width: 200, height: 150,
+      pageIndex: visiblePageIndex, imageBytes, width: 200, height: 150,
     };
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
@@ -106,13 +108,32 @@ const EditPdfPage: NextPage = () => {
     setStatus('idle');
     setObjects([]);
     setPageCount(0);
-    setCurrentPage(0);
+    setVisiblePageIndex(0);
     setMainMode('edit');
     setToolMode('select');
     setSelectedObject(null);
     setZoom(1.0);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
+  
+  useEffect(() => {
+    if (!mainViewerRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            const pageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0', 10);
+            setVisiblePageIndex(pageIndex);
+            return;
+          }
+        }
+      },
+      { root: mainViewerRef.current, threshold: 0.5 }
+    );
+    const pageElements = mainViewerRef.current.querySelectorAll('.pdf-page-container');
+    pageElements.forEach(el => observer.observe(el));
+    return () => pageElements.forEach(el => observer.unobserve(el));
+  }, [pageCount]);
 
   return (
     <>
@@ -131,22 +152,29 @@ const EditPdfPage: NextPage = () => {
               <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
               <div className="flex-grow flex overflow-hidden relative">
                 <div className="w-48 flex-shrink-0 h-full">
-                  <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
+                  <PdfThumbnailViewer file={file} currentPage={visiblePageIndex} onPageChange={(index) => {
+                    const pageEl = document.getElementById(`page-${index}`);
+                    pageEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  }} pageCount={pageCount} />
                 </div>
                 {/* --- THIS IS THE FIX --- */}
-                {/* Added a wrapper div with padding and a shadow for the page effect */}
-                <div className="flex-grow h-full overflow-auto p-8 flex justify-center">
-                  <div className="w-fit h-fit p-4 bg-white shadow-lg rounded-sm">
-                    <PdfEditor 
-                        key={`${file.name}-${currentPage}`}
-                        file={file}
-                        pageIndex={currentPage}
-                        objects={objects}
-                        onObjectsChange={setObjects}
-                        mode={toolMode}
-                        onObjectSelect={setSelectedObject}
-                        zoom={zoom}
-                    />
+                <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-8">
+                  <div 
+                    className="flex flex-col items-center gap-8 mx-auto"
+                    style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}
+                  >
+                    {Array.from({ length: pageCount }).map((_, index) => (
+                      <div key={index} id={`page-${index}`} data-page-index={index} className="pdf-page-container">
+                        <PdfEditor 
+                            file={file}
+                            pageIndex={index}
+                            objects={objects}
+                            onObjectsChange={setObjects}
+                            mode={toolMode}
+                            onObjectSelect={setSelectedObject}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
                 <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
