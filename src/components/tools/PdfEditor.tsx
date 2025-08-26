@@ -11,7 +11,7 @@ import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'; // Use .js for broader compatibility
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 }
 
 interface PdfEditorProps {
@@ -73,7 +73,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       if (mode !== 'draw' || !currentDrawing || e.buttons !== 1) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const pressure = e.pressure || 0.5;
-      setCurrentDrawing(prev => ({ ...prev!, points: [...prev!.points, { x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }] }));
+      setCurrentDrawing(prev => ({ ...prev!, points: [...prev!.points, { x: e.clientX - rect.top, y: e.clientY - rect.top, pressure }] }));
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -125,7 +125,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
           onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}
       >
         {/* SVG for drawing lives here */}
-        <svg width="100%" height="100%" className="absolute top-0 left-0">
+        <svg width="100%" height="100%" className="absolute top-0 left-0 pointer-events-none">
             {objects.filter((obj): obj is DrawObject => obj.type === 'drawing' && obj.pageIndex === pageIndex).map(obj => (
                 <path key={obj.id} d={getSvgPathFromStroke(getStroke(obj.points, { size: obj.strokeWidth, thinning: 0.5 }))} fill={`rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`} />
             ))}
