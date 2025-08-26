@@ -1,8 +1,6 @@
 // src/lib/pdf/edit.ts
 
-// --- THIS IS THE FIX ---
-// Removed 'svgPathToAcroform' and 'AcroForm' as they are not used.
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, line, moveTo, close, LineCapStyle } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
@@ -72,12 +70,12 @@ export const applyEditsToPdf = async (
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
         x: x / scale,
-        y: pageHeight - (y / scale) - (size), // Adjusted y-calculation for text
+        y: pageHeight - y / scale - size,
         font: pdfFont,
         size: size,
         color: rgb(color.r / 255, color.g / 255, color.b / 255),
         maxWidth: width / scale,
-        lineHeight: (size * 1.2),
+        lineHeight: size * 1.2,
       });
     } else if (obj.type === 'image') {
       const { x, y, imageBytes, width, height } = obj;
@@ -91,24 +89,29 @@ export const applyEditsToPdf = async (
           height: height / scale 
       });
     } else if (obj.type === 'drawing') {
-        const { points, color, strokeWidth } = obj;
-        const scaledPoints = points.map(p => ({ ...p, x: p.x / scale, y: p.y / scale }));
-        const stroke = getStroke(scaledPoints, {
-            size: strokeWidth / scale,
-            thinning: 0.5,
-            smoothing: 0.5,
-            streamline: 0.5,
-        });
-        const pathData = getSvgPathFromStroke(stroke);
-        
-        page.drawSvg(pathData, {
-            color: rgb(color.r / 255, color.g / 255, color.b / 255),
-            // The y-coordinate needs to be flipped for SVG rendering in pdf-lib
-            y: pageHeight,
-            transform: {
-                yScale: -1,
-            }
-        });
+      // --- THIS IS THE FIX ---
+      // We are now using the correct page.drawpath method instead of drawSvg.
+      const { points, color, strokeWidth } = obj;
+      const stroke = getStroke(points, {
+        size: strokeWidth,
+        thinning: 0.5,
+        smoothing: 0.5,
+        streamline: 0.5,
+      });
+      const pathData = getSvgPathFromStroke(stroke);
+      
+      // The y-coordinates need to be flipped for pdf-lib's coordinate system
+      const flippedPath = pathData.replace(/(\d+(\.\d+)?)\s*,?\s*(\d+(\.\d+)?)/g, (match, x, _, y) => {
+          const scaledY = pageHeight - (parseFloat(y) / scale);
+          const scaledX = parseFloat(x) / scale;
+          return `${scaledX} ${scaledY}`;
+      });
+
+      page.drawpath(flippedPath, {
+        borderColor: rgb(color.r/255, color.g/255, color.b/255),
+        borderWidth: 0, // The "stroke" from perfect-freehand is a filled shape
+        color: rgb(color.r/255, color.g/255, color.b/255),
+      });
     }
   }
 
