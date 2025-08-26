@@ -12,6 +12,7 @@ export interface DrawObject {
   color: { r: number; g: number; b: number };
   strokeWidth: number;
 }
+
 export interface TextObject {
   type: 'text';
   id: string; 
@@ -24,7 +25,9 @@ export interface TextObject {
   pageIndex: number;
   width: number;
   height: number;
+  isEditing?: boolean; // Added for live editing state
 }
+
 export interface ImageObject {
   type: 'image';
   id: string;
@@ -35,6 +38,7 @@ export interface ImageObject {
   width: number;
   height: number;
 }
+
 export type EditableObject = TextObject | ImageObject | DrawObject;
 
 const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => {
@@ -49,8 +53,6 @@ const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => 
 export const applyEditsToPdf = async (
   file: File,
   objects: EditableObject[],
-  // --- THIS IS THE FIX ---
-  // The function now correctly accepts the zoom parameter.
   renderScale: number
 ): Promise<Uint8Array> => {
   const arrayBuffer = await file.arrayBuffer();
@@ -64,7 +66,7 @@ export const applyEditsToPdf = async (
     const { height: pageHeight } = page.getSize();
 
     if (obj.type === 'text') {
-      const { x, y, text, size, font, color, width, height } = obj;
+      const { x, y, text, size, font, color, width } = obj;
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
         x: x / renderScale,
