@@ -3,14 +3,16 @@
 import { PDFDocument, rgb, StandardFonts, PDFFont } from 'pdf-lib';
 
 export interface TextObject {
-  id: string; // Unique ID for the text object
+  id: string; 
   x: number;
   y: number;
   text: string;
   size: number;
-  font: string; // We'll map this to a PDFFont
+  font: string; 
   color: { r: number; g: number; b: number };
   pageIndex: number;
+  width?: number; 
+  isEditing?: boolean;
 }
 
 // A helper to map font names to the standard fonts
@@ -27,6 +29,7 @@ const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => 
   }
 };
 
+// --- THIS IS THE FULL, CORRECT FUNCTION ---
 export const applyEditsToPdf = async (
   file: File,
   textObjects: TextObject[]
@@ -40,27 +43,24 @@ export const applyEditsToPdf = async (
       const page = pages[textObject.pageIndex];
       const font = await getFont(pdfDoc, textObject.font);
       
-      // The y-coordinate needs to be flipped, as pdf-lib's origin is the bottom-left
       const { height } = page.getSize();
-      const yFlipped = height - textObject.y;
+      // Adjust for canvas scale (1.5) and flipped y-coordinate.
+      // The y coordinate also needs to account for the font size to align properly.
+      const yFlipped = height - (textObject.y / 1.5) - (textObject.size);
+      const x = textObject.x / 1.5;
 
-     // src/lib/pdf/edit.ts
 
-export interface TextObject {
-  id: string; 
-  x: number;
-  y: number;
-  text: string;
-  size: number;
-  font: string; 
-  color: { r: number; g: number; b: number };
-  pageIndex: number;
-  // --- ADD THESE NEW PROPERTIES ---
-  width?: number; // Optional width for handling interactions
-  isEditing?: boolean; // To know if we're currently editing the text
-}
-
-// ... the rest of your applyEditsToPdf function stays the same
+      page.drawText(textObject.text, {
+        x: x,
+        y: yFlipped,
+        font,
+        size: textObject.size,
+        color: rgb(textObject.color.r / 255, textObject.color.g / 255, textObject.color.b / 255),
+        lineHeight: textObject.size * 1.2,
+        maxWidth: textObject.width ? textObject.width / 1.5 : undefined
+      });
+    }
+  }
 
   return await pdfDoc.save();
 };
