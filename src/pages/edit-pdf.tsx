@@ -9,7 +9,8 @@ import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
-import { PdfEditor } from '@/components/tools/PdfEditor'; // Make sure PdfEditor is imported
+import { PdfEditor } from '@/components/tools/PdfEditor';
+import { ZoomControls } from '@/components/tools/ZoomControls'; // Import new component
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -34,6 +35,7 @@ const EditPdfPage: NextPage = () => {
   
   const [pageCount, setPageCount] = useState(0);
   const [visiblePageIndex, setVisiblePageIndex] = useState(0);
+  const [zoom, setZoom] = useState(1.0); // NEW: State for zoom level
 
   const [objects, setObjects] = useState<EditableObject[]>([]);
   const [selectedObject, setSelectedObject] = useState<EditableObject | null>(null);
@@ -60,7 +62,8 @@ const EditPdfPage: NextPage = () => {
       }
     }
   };
-
+  
+  // ... (All other handler functions remain the same)
   const handleObjectChange = (updatedObject: EditableObject) => {
     const newObjects = objects.map(obj => obj.id === updatedObject.id ? updatedObject : obj);
     setObjects(newObjects);
@@ -108,6 +111,7 @@ const EditPdfPage: NextPage = () => {
     setMainMode('edit');
     setToolMode('select');
     setSelectedObject(null);
+    setZoom(1.0);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
   
@@ -130,7 +134,7 @@ const EditPdfPage: NextPage = () => {
     return () => {
       pageElements.forEach(el => observer.unobserve(el));
     };
-  }, [file, pageCount]); // Re-run when pages are rendered
+  }, [file, pageCount]);
 
   return (
     <>
@@ -146,7 +150,7 @@ const EditPdfPage: NextPage = () => {
         {status === 'editing' && file && (
           <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
             <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
-            <div className="flex-grow flex overflow-hidden">
+            <div className="flex-grow flex overflow-hidden relative">
               <div className="w-48 flex-shrink-0 h-full">
                 <PdfThumbnailViewer file={file} currentPage={visiblePageIndex} onPageChange={(index) => {
                   const pageEl = document.getElementById(`page-${index}`);
@@ -154,8 +158,6 @@ const EditPdfPage: NextPage = () => {
                 }} visiblePageIndex={visiblePageIndex} />
               </div>
               <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-4 md:p-8 flex flex-col items-center gap-4">
-                {/* --- THIS IS THE FIX --- */}
-                {/* We now render a PdfEditor component for each page */}
                 {Array.from({ length: pageCount }).map((_, index) => (
                   <div key={index} id={`page-${index}`} data-page-index={index} className="pdf-page-container">
                     <PdfEditor 
@@ -165,6 +167,7 @@ const EditPdfPage: NextPage = () => {
                         onObjectsChange={setObjects}
                         mode={toolMode}
                         onObjectSelect={setSelectedObject}
+                        zoom={zoom}
                     />
                   </div>
                 ))}
@@ -175,6 +178,11 @@ const EditPdfPage: NextPage = () => {
                   <p className="text-gray-600">Use the toolbar to add text, images, and shapes. Click an object to select, move, or resize it.</p>
                 </div>
                 <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">Save Changes</Button>
+              </div>
+              
+              {/* --- ZOOM CONTROLS --- */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
+                <ZoomControls zoom={zoom} onZoomChange={setZoom} />
               </div>
             </div>
           </div>
