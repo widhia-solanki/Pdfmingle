@@ -52,7 +52,6 @@ export const applyEditsToPdf = async (
     const page = pages[obj.pageIndex];
     const { height: pageHeight } = page.getSize();
     
-    // Adjust for canvas scale (1.5) and flipped y-coordinate
     const scale = 1.5;
     const x = obj.x / scale;
     const y = pageHeight - (obj.y / scale) - (obj.height / scale);
@@ -72,8 +71,12 @@ export const applyEditsToPdf = async (
       });
     } else if (obj.type === 'image') {
       let image: PDFImage;
-      // Check if the image is a PNG or JPG by looking at the first few bytes
-      const isPng = obj.imageBytes[0] === 0x89 && obj.imageBytes[1] === 0x50;
+      
+      // --- THIS IS THE FIX ---
+      // We must create a Uint8Array view to read the bytes of the ArrayBuffer.
+      const bytes = new Uint8Array(obj.imageBytes);
+      const isPng = bytes[0] === 0x89 && bytes[1] === 0x50;
+      
       if (isPng) {
         image = await pdfDoc.embedPng(obj.imageBytes);
       } else {
