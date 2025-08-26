@@ -1,8 +1,9 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
+import * as pdfjsLib from 'pdfjs-dist';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -13,6 +14,10 @@ import { applyEditsToPdf, TextObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+}
 
 type Status = 'idle' | 'editing' | 'processing' | 'success' | 'error';
 
@@ -26,16 +31,33 @@ const EditPdfPage: NextPage = () => {
   
   const [editorKey, setEditorKey] = useState(0);
   const [currentPage, setCurrentPage] = useState(0); 
+  const [pageCount, setPageCount] = useState(0); // NEW: Track total pages
   const [textObjects, setTextObjects] = useState<TextObject[]>([]);
   const [editMode, setEditMode] = useState<EditMode>('select');
-  const [selectedObject, setSelectedObject] = useState<TextObject | null>(null); // NEW: Track selected object
+  const [selectedObject, setSelectedObject] = useState<TextObject | null>(null);
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
 
+  // Effect to get the page count when a file is selected
+  useEffect(() => {
+    if (!file) return;
+    const getPageCount = async () => {
+      try {
+        const fileBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
+        setPageCount(pdf.numPages);
+      } catch (e) {
+        console.error("Could not get page count", e);
+        setError("Could not read PDF. It may be corrupt.");
+        setStatus('error');
+      }
+    };
+    getPageCount();
+  }, [file]);
+
   const handleFileSelected = (files: File[]) => {
     if (files.length > 0) {
-      // Fully reset the state for the new file
       handleStartOver(false); 
       setFile(files[0]);
       setEditorKey(prevKey => prevKey + 1);
@@ -77,6 +99,7 @@ const EditPdfPage: NextPage = () => {
     setStatus('idle');
     setTextObjects([]);
     setCurrentPage(0);
+    setPageCount(0);
     setEditMode('select');
     setSelectedObject(null);
     setEditorKey(prevKey => prevKey + 1);
@@ -126,8 +149,9 @@ const EditPdfPage: NextPage = () => {
                         currentPage={currentPage} 
                         onPageChange={(index) => {
                           setCurrentPage(index);
-                          setSelectedObject(null); // Deselect object when changing page
+                          setSelectedObject(null);
                         }} 
+                        pageCount={pageCount}
                     />
                 </div>
                 <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
@@ -144,7 +168,7 @@ const EditPdfPage: NextPage = () => {
                 <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
                   <div className="space-y-4">
                     <h2 className="text-2xl font-bold">Edit PDF</h2>
-                    <p className="text-gray-600">Click an item to select it. Click 'T' to add new text.</p>
+                    <p className="text-gray-600">Use the toolbar to add text, images, and shapes. Click an object to select and modify it.</p>
                   </div>
                   <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">
                     Save Changes
