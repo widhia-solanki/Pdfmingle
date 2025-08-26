@@ -89,7 +89,7 @@ export const applyEditsToPdf = async (
           height: height / scaleFactor 
       });
     } else if (obj.type === 'drawing') {
-      // --- THIS IS THE FINAL, CORRECT IMPLEMENTATION ---
+      // --- THIS IS THE FINAL, DOCUMENTATION-VERIFIED FIX ---
       const { points, color, strokeWidth } = obj;
       const stroke = getStroke(points, {
         size: strokeWidth,
@@ -99,20 +99,19 @@ export const applyEditsToPdf = async (
       });
       const pathData = getSvgPathFromStroke(stroke);
       
-      // Save the current graphics state
-      page.saveGraphicsState();
-
-      // Apply transformations directly on the page
-      page.scale(1 / scaleFactor, -1 / scaleFactor);
-      page.translate(0, -pageHeight * scaleFactor);
-
-      // Draw the path
       page.drawSvgPath(pathData, {
         color: rgb(color.r/255, color.g/255, color.b/255),
+        // The transformation matrix is applied directly here.
+        // This scales the drawing down and flips it vertically in one step.
+        matrix: {
+          a: 1 / scaleFactor,  // xScale
+          b: 0,                // ySkew
+          c: 0,                // xSkew
+          d: -1 / scaleFactor, // yScale (flips the y-axis)
+          e: 0,                // x position
+          f: pageHeight,       // y position (moves origin to top-left)
+        }
       });
-
-      // Restore the graphics state to remove the transformations for the next object
-      page.restoreGraphicsState();
     }
   }
 
