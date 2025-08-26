@@ -1,6 +1,6 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -11,13 +11,13 @@ import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/Ad
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor } from '@/components/tools/PdfEditor';
 import { ZoomControls } from '@/components/tools/ZoomControls';
-import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
+import { applyEditsToPdf, EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 }
 
 type Status = 'idle' | 'editing' | 'processing' | 'success' | 'error';
@@ -34,7 +34,7 @@ const EditPdfPage: NextPage = () => {
   const [toolMode, setToolMode] = useState<ToolMode>('select');
   
   const [pageCount, setPageCount] = useState(0);
-  const [visiblePageIndex, setVisiblePageIndex] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
   const [zoom, setZoom] = useState(1.0);
 
   const [objects, setObjects] = useState<EditableObject[]>([]);
@@ -42,8 +42,6 @@ const EditPdfPage: NextPage = () => {
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
-  
-  const mainViewerRef = useRef<HTMLDivElement>(null);
 
   const handleFileSelected = async (selectedFiles: File[]) => {
     if (selectedFiles.length > 0) {
@@ -57,7 +55,7 @@ const EditPdfPage: NextPage = () => {
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         setPageCount(pdf.numPages);
       } catch (e) {
-        setError("Could not read PDF.");
+        setError("Could not read PDF. It may be corrupt or password-protected.");
         setStatus('error');
       }
     }
@@ -79,7 +77,7 @@ const EditPdfPage: NextPage = () => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
       type: 'image', id: `image-${Date.now()}`, x: 50, y: 50,
-      pageIndex: visiblePageIndex, imageBytes, width: 200 * zoom, height: 150 * zoom,
+      pageIndex: currentPage, imageBytes, width: 200 * zoom, height: 150 * zoom,
     };
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
@@ -89,21 +87,16 @@ const EditPdfPage: NextPage = () => {
     if (!file) return;
     setStatus('processing');
     try {
-      // --- THIS IS THE FIX ---
-      // Pass the current zoom level to the saving function.
       const pdfBytes = await applyEditsToPdf(file, objects, zoom);
-      
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProcessedFileName(`edited_${file.name}`);
       setStatus('success');
-      toast({ title: 'Success!', description: 'Your PDF has been saved.' });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(`Save failed: ${message}`);
       setStatus('error');
-      toast({ title: 'Error', description: message, variant: 'destructive' });
     }
   };
   
@@ -112,34 +105,13 @@ const EditPdfPage: NextPage = () => {
     setStatus('idle');
     setObjects([]);
     setPageCount(0);
-    setVisiblePageIndex(0);
+    setCurrentPage(0);
     setMainMode('edit');
     setToolMode('select');
     setSelectedObject(null);
     setZoom(1.0);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
-  
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            const pageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0', 10);
-            setVisiblePageIndex(pageIndex);
-          }
-        });
-      },
-      { root: mainViewerRef.current, threshold: 0.5 }
-    );
-
-    const pageElements = document.querySelectorAll('.pdf-page-container');
-    pageElements.forEach(el => observer.observe(el));
-
-    return () => {
-      pageElements.forEach(el => observer.unobserve(el));
-    };
-  }, [file, pageCount]);
 
   return (
     <>
@@ -157,25 +129,21 @@ const EditPdfPage: NextPage = () => {
             <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
             <div className="flex-grow flex overflow-hidden relative">
               <div className="w-48 flex-shrink-0 h-full">
-                <PdfThumbnailViewer file={file} currentPage={visiblePageIndex} onPageChange={(index) => {
-                  const pageEl = document.getElementById(`page-${index}`);
-                  pageEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }} visiblePageIndex={visiblePageIndex} />
+                <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} visiblePageIndex={currentPage} />
               </div>
-              <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-4 md:p-8 flex flex-col items-center gap-4">
-                {Array.from({ length: pageCount }).map((_, index) => (
-                  <div key={index} id={`page-${index}`} data-page-index={index} className="pdf-page-container">
-                    <PdfEditor 
-                        file={file}
-                        pageIndex={index}
-                        objects={objects}
-                        onObjectsChange={setObjects}
-                        mode={toolMode}
-                        onObjectSelect={setSelectedObject}
-                        zoom={zoom}
-                    />
-                  </div>
-                ))}
+              <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
+                {/* --- THIS IS THE FIX --- */}
+                {/* We now render only ONE PdfEditor, and we pass it a key to force it to re-render when the page changes. */}
+                <PdfEditor 
+                    key={`${file.name}-${currentPage}`}
+                    file={file}
+                    pageIndex={currentPage}
+                    objects={objects}
+                    onObjectsChange={setObjects}
+                    mode={toolMode}
+                    onObjectSelect={setSelectedObject}
+                    zoom={zoom}
+                />
               </div>
               <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
                 <div className="space-y-4">
