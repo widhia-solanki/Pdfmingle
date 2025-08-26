@@ -3,11 +3,12 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MousePointer, Type, Trash2 } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MousePointer, Type, Trash2, Pen, Square, Image as ImageIcon, Bold, Italic } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TextObject } from '@/lib/pdf/edit';
 
-export type EditMode = 'select' | 'text';
+export type EditMode = 'select' | 'text' | 'draw' | 'shape' | 'image';
 
 interface EditorToolbarProps {
   mode: EditMode;
@@ -25,42 +26,53 @@ export const EditorToolbar = ({
   onObjectDelete
 }: EditorToolbarProps) => {
   return (
-    <div className="flex items-center justify-between p-2 bg-gray-100 border rounded-lg shadow-sm">
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onModeChange('select')}
-          className={cn(mode === 'select' && 'bg-blue-200')}
-          aria-label="Select Tool"
-        >
+    <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-white border rounded-lg shadow-sm">
+      {/* Main Tool Selection */}
+      <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-md">
+        <Button variant="ghost" size="icon" onClick={() => onModeChange('select')} className={cn(mode === 'select' && 'bg-blue-200')} aria-label="Select Tool">
           <MousePointer className="h-5 w-5" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => onModeChange('text')}
-          className={cn(mode === 'text' && 'bg-blue-200')}
-          aria-label="Add Text Tool"
-        >
+        <Button variant="ghost" size="icon" onClick={() => onModeChange('text')} className={cn(mode === 'text' && 'bg-blue-200')} aria-label="Add Text Tool">
           <Type className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => onModeChange('draw')} className={cn(mode === 'draw' && 'bg-blue-200')} aria-label="Draw Tool" disabled>
+          <Pen className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => onModeChange('shape')} className={cn(mode === 'shape' && 'bg-blue-200')} aria-label="Add Shape Tool" disabled>
+          <Square className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => onModeChange('image')} className={cn(mode === 'image' && 'bg-blue-200')} aria-label="Add Image Tool" disabled>
+          <ImageIcon className="h-5 w-5" />
         </Button>
       </div>
 
-      {/* Show text editing options only when a text object is selected */}
+      {/* Contextual Options for Selected Text */}
       {selectedObject && (
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <Select 
+            value={selectedObject.font}
+            onValueChange={(font) => onObjectChange({ ...selectedObject, font })}
+          >
+            <SelectTrigger className="w-[140px] h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Helvetica">Helvetica</SelectItem>
+              <SelectItem value="TimesRoman">Times New Roman</SelectItem>
+              <SelectItem value="Courier">Courier</SelectItem>
+            </SelectContent>
+          </Select>
+          
           <div className="flex items-center gap-2">
-            <Label htmlFor="font-size">Size:</Label>
+            <Label htmlFor="font-size" className="text-sm">Size:</Label>
             <Input
               id="font-size"
               type="number"
-              className="w-20"
+              className="w-20 h-9"
               value={selectedObject.size}
               onChange={(e) => onObjectChange({ ...selectedObject, size: parseInt(e.target.value) || 12 })}
             />
           </div>
-           <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
+          
+          <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
              <Trash2 className="h-5 w-5"/>
            </Button>
         </div>
