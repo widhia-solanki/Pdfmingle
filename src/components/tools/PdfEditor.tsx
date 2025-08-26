@@ -24,7 +24,9 @@ interface PdfEditorProps {
   zoom: number;
 }
 
-const RENDER_SCALE = 1.5; // Render the canvas at a fixed high resolution
+// --- THIS IS THE FIX ---
+// We now EXPORT the constant so other files can import it.
+export const RENDER_SCALE = 1.5;
 
 export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onObjectSelect, zoom }: PdfEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,8 +46,6 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
         const fileBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         const page = await pdf.getPage(pageIndex + 1);
-        // --- ZOOM FIX ---
-        // We now render ONCE at a fixed high resolution.
         const viewport = page.getViewport({ scale: RENDER_SCALE });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
@@ -58,7 +58,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       }
     };
     renderPage();
-  }, [file, pageIndex]); // The zoom dependency is REMOVED.
+  }, [file, pageIndex]);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'draw') return;
@@ -67,7 +67,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     const newDrawing: DrawObject = {
       type: 'drawing', id: `draw-${Date.now()}`, pageIndex,
       points: [{ x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }],
-      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8, // Stroke width is now independent of zoom
+      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8,
     };
     setCurrentDrawing(newDrawing);
   };
@@ -94,9 +94,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     const y = event.clientY - rect.top;
     const newText: TextObject = {
       type: 'text', id: `text-${Date.now()}`, x, y,
-      text: "New Text", size: 24, font: 'Helvetica', // Font size is now independent of zoom
+      text: "New Text", size: 24, font: 'Helvetica',
       color: { r: 0, g: 0, b: 0 }, pageIndex,
-      width: 200, height: 50, // Default size is now independent of zoom
+      width: 200, height: 50,
     };
     onObjectsChange([...objects, newText]);
     onObjectSelect(newText);
@@ -112,8 +112,6 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
   if (error) { return <div className="flex items-center justify-center h-96 bg-red-50 border border-red-200 rounded-lg"><p className="text-red-600 font-semibold">{error}</p></div>; }
 
   return (
-    // --- THIS IS THE FIX ---
-    // This wrapper handles the CSS scaling for smooth zooming.
     <div 
       className="relative w-fit h-fit shadow-2xl bg-white origin-top-left"
       style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
