@@ -9,14 +9,11 @@ import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
-import { applyEditsToPdf, EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
+import { PdfEditor } from '@/components/tools/PdfEditor'; // Make sure PdfEditor is imported
+import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
-import { Rnd } from 'react-rnd';
-import getStroke from 'perfect-freehand';
-import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
-import { cn } from '@/lib/utils';
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
@@ -35,14 +32,11 @@ const EditPdfPage: NextPage = () => {
   const [mainMode, setMainMode] = useState<MainMode>('edit');
   const [toolMode, setToolMode] = useState<ToolMode>('select');
   
-  const [pages, setPages] = useState<JSX.Element[]>([]);
   const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
   const [visiblePageIndex, setVisiblePageIndex] = useState(0);
 
   const [objects, setObjects] = useState<EditableObject[]>([]);
   const [selectedObject, setSelectedObject] = useState<EditableObject | null>(null);
-  const [currentDrawing, setCurrentDrawing] = useState<DrawObject | null>(null);
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
@@ -83,7 +77,7 @@ const EditPdfPage: NextPage = () => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
       type: 'image', id: `image-${Date.now()}`, x: 50, y: 50,
-      pageIndex: currentPage, imageBytes, width: 200, height: 150,
+      pageIndex: visiblePageIndex, imageBytes, width: 200, height: 150,
     };
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
@@ -109,15 +103,14 @@ const EditPdfPage: NextPage = () => {
     if(resetFile) setFile(null);
     setStatus('idle');
     setObjects([]);
-    setCurrentPage(0);
     setPageCount(0);
+    setVisiblePageIndex(0);
     setMainMode('edit');
     setToolMode('select');
     setSelectedObject(null);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
   
-  // Scroll Syncing Logic
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -137,7 +130,7 @@ const EditPdfPage: NextPage = () => {
     return () => {
       pageElements.forEach(el => observer.unobserve(el));
     };
-  }, [pages]);
+  }, [file, pageCount]); // Re-run when pages are rendered
 
   return (
     <>
@@ -155,13 +148,26 @@ const EditPdfPage: NextPage = () => {
             <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
             <div className="flex-grow flex overflow-hidden">
               <div className="w-48 flex-shrink-0 h-full">
-                <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={(index) => {
+                <PdfThumbnailViewer file={file} currentPage={visiblePageIndex} onPageChange={(index) => {
                   const pageEl = document.getElementById(`page-${index}`);
-                  pageEl?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  pageEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }} visiblePageIndex={visiblePageIndex} />
               </div>
               <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-4 md:p-8 flex flex-col items-center gap-4">
-                {/* Render all pages here */}
+                {/* --- THIS IS THE FIX --- */}
+                {/* We now render a PdfEditor component for each page */}
+                {Array.from({ length: pageCount }).map((_, index) => (
+                  <div key={index} id={`page-${index}`} data-page-index={index} className="pdf-page-container">
+                    <PdfEditor 
+                        file={file}
+                        pageIndex={index}
+                        objects={objects}
+                        onObjectsChange={setObjects}
+                        mode={toolMode}
+                        onObjectSelect={setSelectedObject}
+                    />
+                  </div>
+                ))}
               </div>
               <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
                 <div className="space-y-4">
