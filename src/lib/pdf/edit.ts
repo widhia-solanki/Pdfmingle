@@ -1,8 +1,19 @@
 // src/lib/pdf/edit.ts
 
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, cmyk, grayscale } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
+
+// --- ADDED HIGHLIGHT OBJECT TYPE ---
+export interface HighlightObject {
+  type: 'highlight';
+  id: string;
+  pageIndex: number;
+  points: { x: number; y: number; pressure: number }[];
+  color: { r: number; g: number; b: number };
+  strokeWidth: number;
+  opacity: number;
+}
 
 export interface DrawObject {
   type: 'drawing';
@@ -25,7 +36,7 @@ export interface TextObject {
   pageIndex: number;
   width: number;
   height: number;
-  isEditing?: boolean; // Added for live editing state
+  isEditing?: boolean;
 }
 
 export interface ImageObject {
@@ -39,7 +50,8 @@ export interface ImageObject {
   height: number;
 }
 
-export type EditableObject = TextObject | ImageObject | DrawObject;
+// Add the new type to our union
+export type EditableObject = TextObject | ImageObject | DrawObject | HighlightObject;
 
 const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => {
   switch (fontName) {
@@ -88,7 +100,8 @@ export const applyEditsToPdf = async (
           width: width / renderScale, 
           height: height / renderScale 
       });
-    } else if (obj.type === 'drawing') {
+    } else if (obj.type === 'drawing' || obj.type === 'highlight') {
+      // --- UPDATED TO HANDLE BOTH DRAWING AND HIGHLIGHTING ---
       const { points, color, strokeWidth } = obj;
       const transformedPoints = points.map(p => {
         const x = p.x / renderScale;
@@ -97,7 +110,12 @@ export const applyEditsToPdf = async (
       });
       const stroke = getStroke(transformedPoints, { size: strokeWidth / renderScale });
       const pathData = getSvgPathFromStroke(stroke);
-      page.drawSvgPath(pathData, { color: rgb(color.r/255, color.g/255, color.b/255) });
+      
+      page.drawSvgPath(pathData, { 
+        color: rgb(color.r/255, color.g/255, color.b/255),
+        // Highlights are semi-transparent
+        opacity: obj.type === 'highlight' ? obj.opacity : 1.0,
+      });
     }
   }
 
