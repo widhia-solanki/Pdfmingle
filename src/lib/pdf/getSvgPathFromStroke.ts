@@ -1,6 +1,7 @@
 // src/lib/pdf/getSvgPathFromStroke.ts
 
 // This is a helper function that turns the points from perfect-freehand into an SVG path string.
+// This code is a standard implementation for use with the library.
 
 const average = (a: number, b: number) => (a + b) / 2;
 
