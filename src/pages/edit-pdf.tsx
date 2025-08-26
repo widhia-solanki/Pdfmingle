@@ -22,9 +22,12 @@ const EditPdfPage: NextPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
+  
+  // --- FIX #1: Add a key to force component re-creation ---
+  const [editorKey, setEditorKey] = useState(0);
 
   // Editor-specific state
-  const [currentPage, setCurrentPage] = useState(0); // Show page 1 by default
+  const [currentPage, setCurrentPage] = useState(0); 
   const [textObjects, setTextObjects] = useState<TextObject[]>([]);
   const [editMode, setEditMode] = useState<EditMode>('select');
   
@@ -34,7 +37,9 @@ const EditPdfPage: NextPage = () => {
   const handleFileSelected = (files: File[]) => {
     if (files.length > 0) {
       setFile(files[0]);
-      setStatus('editing'); // Go directly to the editor screen
+      // Increment the key to force the PdfEditor to remount
+      setEditorKey(prevKey => prevKey + 1);
+      setStatus('editing'); 
     }
   };
 
@@ -55,12 +60,14 @@ const EditPdfPage: NextPage = () => {
     }
   };
   
+  // --- FIX #2: Ensure the key is reset on Start Over ---
   const handleStartOver = useCallback(() => {
     setFile(null);
     setStatus('idle');
     setTextObjects([]);
     setCurrentPage(0);
     setEditMode('select');
+    setEditorKey(prevKey => prevKey + 1); // Also increment key here for a clean slate
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
 
@@ -94,6 +101,7 @@ const EditPdfPage: NextPage = () => {
             <EditorToolbar mode={editMode} onModeChange={setEditMode} />
             <div className="w-full max-w-4xl mx-auto">
               <PdfEditor 
+                key={editorKey} // --- THE KEY PROP IS APPLIED HERE ---
                 file={file}
                 pageIndex={currentPage}
                 textObjects={textObjects}
