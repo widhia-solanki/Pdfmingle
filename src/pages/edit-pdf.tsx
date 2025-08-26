@@ -11,6 +11,7 @@ import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/Ad
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor';
 import { ZoomControls } from '@/components/tools/ZoomControls';
+import { HistoryPanel } from '@/components/tools/HistoryPanel';
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -52,7 +53,6 @@ const EditPdfPage: NextPage = () => {
       handleStartOver(false);
       setFile(selectedFile);
       setStatus('editing');
-
       try {
         const fileBuffer = await selectedFile.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
@@ -70,10 +70,11 @@ const EditPdfPage: NextPage = () => {
     setSelectedObject(updatedObject);
   };
   
-  const handleObjectDelete = () => {
-      if (!selectedObject) return;
-      setObjects(objects.filter(obj => obj.id !== selectedObject.id));
-      setSelectedObject(null);
+  const handleObjectDelete = (idToDelete?: string) => {
+    const id = idToDelete || selectedObject?.id;
+    if (!id) return;
+    setObjects(objects.filter(obj => obj.id !== id));
+    setSelectedObject(null);
   };
 
   const handleImageAdd = async (imageFile: File) => {
@@ -115,25 +116,6 @@ const EditPdfPage: NextPage = () => {
     setZoom(1.0);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
   }, [downloadUrl]);
-  
-  useEffect(() => {
-    if (!mainViewerRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            const pageIndex = parseInt(entry.target.getAttribute('data-page-index') || '0', 10);
-            setCurrentPage(pageIndex);
-            return;
-          }
-        }
-      },
-      { root: mainViewerRef.current, threshold: 0.5 }
-    );
-    const pageElements = mainViewerRef.current.querySelectorAll('.pdf-page-container');
-    pageElements.forEach(el => observer.observe(el));
-    return () => pageElements.forEach(el => observer.unobserve(el));
-  }, [pageCount]);
 
   return (
     <>
@@ -149,22 +131,13 @@ const EditPdfPage: NextPage = () => {
         {status === 'editing' && file && (
           pageCount > 0 ? (
             <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
-              <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
+              <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
               <div className="flex-grow flex overflow-hidden relative">
                 <div className="w-48 flex-shrink-0 h-full">
-                  <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={(index) => {
-                    const pageEl = document.getElementById(`page-${index}`);
-                    pageEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                  }} pageCount={pageCount} />
+                  <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
-                <div ref={mainViewerRef} className="flex-grow h-full overflow-auto p-8">
-                  <div 
-                    className="mx-auto w-fit"
-                    style={{ 
-                      transform: `scale(${zoom})`, 
-                      transformOrigin: 'center top'
-                    }}
-                  >
+                <div className="flex-grow h-full overflow-auto p-8 flex justify-center">
+                  <div className="mx-auto w-fit" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
                     <div className="flex flex-col items-center gap-8">
                       {Array.from({ length: pageCount }).map((_, index) => (
                         <div key={index} id={`page-${index}`} data-page-index={index} className="pdf-page-container">
@@ -181,12 +154,11 @@ const EditPdfPage: NextPage = () => {
                     </div>
                   </div>
                 </div>
-                <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
-                  <div className="space-y-4">
-                    <h2 className="text-2xl font-bold">Edit PDF</h2>
-                    <p className="text-gray-600">Use the toolbar to add text, images, and shapes. Click an object to select, move, or resize it.</p>
+                <div className="w-72 flex-shrink-0 bg-white flex flex-col">
+                  <HistoryPanel objects={objects} onObjectSelect={setSelectedObject} onObjectDelete={handleObjectDelete} />
+                  <div className="p-4 border-t">
+                    <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">Save & Download</Button>
                   </div>
-                  <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">Save Changes</Button>
                 </div>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
                   <ZoomControls zoom={zoom} onZoomChange={setZoom} />
