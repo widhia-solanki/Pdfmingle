@@ -12,9 +12,6 @@
     "lint": "next lint"
   },
   "dependencies": {
-  
-    "react-rnd": "^10.4.10",
-    "@types/react-rnd": "^10.3.0",
     "@emailjs/browser": "^4.3.3",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -69,6 +66,7 @@
     "react-dom": "^18",
     "react-dropzone": "^14.2.3",
     "react-resizable-panels": "^2.1.9",
+    "react-rnd": "^10.4.10",
     "recharts": "^2.12.7",
     "sonner": "^1.5.0",
     "tailwind-merge": "^2.6.0",
@@ -82,6 +80,7 @@
     "@types/react": "^18",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18",
+    "@types/react-rnd": "*",
     "autoprefixer": "^10.4.19",
     "cpy-cli": "^5.0.0",
     "eslint": "^8",
