@@ -6,8 +6,10 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
+// --- THIS IS THE FIX ---
+// We now load the worker from a reliable CDN.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 }
 
 interface PdfThumbnailViewerProps {
@@ -22,12 +24,13 @@ export const PdfThumbnailViewer = ({ file, currentPage, onPageChange, pageCount 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // This effect now renders thumbnails one by one without blocking the UI
     const generateThumbnails = async () => {
       setIsLoading(true);
       try {
         const fileBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
+        
+        setThumbnails(Array(pdf.numPages).fill(''));
 
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
