@@ -11,7 +11,7 @@ import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/Ad
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor } from '@/components/tools/PdfEditor';
 import { ZoomControls } from '@/components/tools/ZoomControls';
-import { applyEditsToPdf, EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
+import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
@@ -129,11 +129,16 @@ const EditPdfPage: NextPage = () => {
             <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={handleObjectDelete} onImageAdd={handleImageAdd} />
             <div className="flex-grow flex overflow-hidden relative">
               <div className="w-48 flex-shrink-0 h-full">
-                <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} visiblePageIndex={currentPage} />
+                {/* --- THIS IS THE FIX --- */}
+                {/* Removed the incorrect 'visiblePageIndex' prop */}
+                <PdfThumbnailViewer 
+                    file={file} 
+                    currentPage={currentPage} 
+                    onPageChange={setCurrentPage} 
+                    pageCount={pageCount}
+                />
               </div>
               <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
-                {/* --- THIS IS THE FIX --- */}
-                {/* We now render only ONE PdfEditor, and we pass it a key to force it to re-render when the page changes. */}
                 <PdfEditor 
                     key={`${file.name}-${currentPage}`}
                     file={file}
