@@ -1,6 +1,18 @@
 // src/lib/pdf/edit.ts
 
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, svgPathToAcroform, AcroForm } from 'pdf-lib';
+import getStroke from 'perfect-freehand';
+import { getSvgPathFromStroke } from './getSvgPathFromStroke';
+
+// --- ADDED DRAW OBJECT TYPE ---
+export interface DrawObject {
+  type: 'drawing';
+  id: string;
+  pageIndex: number;
+  points: { x: number; y: number; pressure: number }[];
+  color: { r: number; g: number; b: number };
+  strokeWidth: number;
+}
 
 export interface TextObject {
   type: 'text';
@@ -27,16 +39,18 @@ export interface ImageObject {
   height: number;
 }
 
-export type EditableObject = TextObject | ImageObject;
+export type EditableObject = TextObject | ImageObject | DrawObject;
 
+// ... (getFont function remains the same)
 const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => {
-  switch (fontName) {
-    case 'Helvetica': return await doc.embedFont(StandardFonts.Helvetica);
-    case 'TimesRoman': return await doc.embedFont(StandardFonts.TimesRoman);
-    case 'Courier': return await doc.embedFont(StandardFonts.Courier);
-    default: return await doc.embedFont(StandardFonts.Helvetica);
-  }
+    switch (fontName) {
+        case 'Helvetica': return await doc.embedFont(StandardFonts.Helvetica);
+        case 'TimesRoman': return await doc.embedFont(StandardFonts.TimesRoman);
+        case 'Courier': return await doc.embedFont(StandardFonts.Courier);
+        default: return await doc.embedFont(StandardFonts.Helvetica);
+    }
 };
+
 
 export const applyEditsToPdf = async (
   file: File,
@@ -50,39 +64,59 @@ export const applyEditsToPdf = async (
     if (obj.pageIndex >= pages.length) continue;
     
     const page = pages[obj.pageIndex];
-    const { height: pageHeight } = page.getSize();
+    const { height: pageHeight, width: pageWidth } = page.getSize();
     
     const scale = 1.5;
-    const x = obj.x / scale;
-    const y = pageHeight - (obj.y / scale) - (obj.height / scale);
-    const width = obj.width / scale;
-    const height = obj.height / scale;
 
     if (obj.type === 'text') {
-      const font = await getFont(pdfDoc, obj.font);
-      page.drawText(obj.text, {
-        x,
-        y,
-        font,
-        size: obj.size / scale,
-        color: rgb(obj.color.r / 255, obj.color.g / 255, obj.color.b / 255),
-        lineHeight: (obj.size * 1.2) / scale,
-        maxWidth: width,
+      const { x, y, text, size, font, color, width } = obj;
+      const pdfFont = await getFont(pdfDoc, font);
+      page.drawText(text, {
+        x: x / scale,
+        y: pageHeight - (y / scale) - (size / scale),
+        font: pdfFont,
+        size: size / scale,
+        color: rgb(color.r / 255, color.g / 255, color.b / 255),
+        maxWidth: width / scale,
       });
     } else if (obj.type === 'image') {
-      let image: PDFImage;
-      
-      // --- THIS IS THE FIX ---
-      // We must create a Uint8Array view to read the bytes of the ArrayBuffer.
-      const bytes = new Uint8Array(obj.imageBytes);
-      const isPng = bytes[0] === 0x89 && bytes[1] === 0x50;
-      
-      if (isPng) {
-        image = await pdfDoc.embedPng(obj.imageBytes);
-      } else {
-        image = await pdfDoc.embedJpg(obj.imageBytes);
-      }
-      page.drawImage(image, { x, y, width, height });
+      const { x, y, imageBytes, width, height } = obj;
+      const image = await (new Uint8Array(imageBytes)[0] === 0x89
+          ? pdfDoc.embedPng(imageBytes)
+          : pdfDoc.embedJpg(imageBytes));
+      page.drawImage(image, { 
+          x: x / scale, 
+          y: pageHeight - (y / scale) - (height / scale),
+          width: width / scale, 
+          height: height / scale 
+      });
+    } else if (obj.type === 'drawing') {
+        // --- NEW DRAWING LOGIC ---
+        const { points, color, strokeWidth } = obj;
+        const scaledPoints = points.map(p => ({ ...p, x: p.x / scale, y: p.y / scale }));
+        const stroke = getStroke(scaledPoints, {
+            size: strokeWidth,
+            thinning: 0.5,
+            smoothing: 0.5,
+            streamline: 0.5,
+        });
+        const pathData = getSvgPathFromStroke(stroke);
+        
+        page.drawSvg(pathData, {
+            x: 0,
+            y: pageHeight, // SVG origin is top-left, but we must flip the y-axis
+            color: rgb(color.r / 255, color.g / 255, color.b / 255),
+            scale: 1,
+            // Invert the y-axis for the entire SVG path
+            transform: {
+                ySkew: 0,
+                xSkew: 0,
+                yScale: -1, // This flips the drawing vertically
+                xScale: 1,
+                y: pageHeight, // Move it back into view
+                x: 0
+            }
+        });
     }
   }
 
