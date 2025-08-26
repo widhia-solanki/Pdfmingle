@@ -49,35 +49,33 @@ const getFont = async (doc: PDFDocument, fontName: string): Promise<PDFFont> => 
 
 export const applyEditsToPdf = async (
   file: File,
-  objects: EditableObject[],
-  // --- THIS IS THE FIX ---
-  // We now accept the zoom level used in the editor.
-  zoom: number 
+  objects: EditableObject[]
 ): Promise<Uint8Array> => {
   const arrayBuffer = await file.arrayBuffer();
   const pdfDoc = await PDFDocument.load(arrayBuffer);
   const pages = pdfDoc.getPages();
+  
+  // --- THIS IS THE FIX ---
+  // The editor canvas is rendered at 150% size. We must account for this when saving.
+  const renderScale = 1.5;
 
   for (const obj of objects) {
     if (obj.pageIndex >= pages.length) continue;
     
     const page = pages[obj.pageIndex];
     const { height: pageHeight } = page.getSize();
-    
-    // We use the passed-in zoom level to correctly scale everything back down.
-    const scaleFactor = zoom;
 
     if (obj.type === 'text') {
       const { x, y, text, size, font, color, width } = obj;
       const pdfFont = await getFont(pdfDoc, font);
       page.drawText(text, {
-        x: x / scaleFactor,
-        y: pageHeight - (y / scaleFactor) - (size / scaleFactor),
+        x: x / renderScale,
+        y: pageHeight - y / renderScale - size / renderScale,
         font: pdfFont,
-        size: size / scaleFactor,
+        size: size / renderScale,
         color: rgb(color.r / 255, color.g / 255, color.b / 255),
-        maxWidth: width / scaleFactor,
-        lineHeight: (size * 1.2) / scaleFactor,
+        maxWidth: width / renderScale,
+        lineHeight: (size * 1.2) / renderScale,
       });
     } else if (obj.type === 'image') {
       const { x, y, imageBytes, width, height } = obj;
@@ -85,31 +83,21 @@ export const applyEditsToPdf = async (
           ? pdfDoc.embedPng(imageBytes)
           : pdfDoc.embedJpg(imageBytes));
       page.drawImage(image, { 
-          x: x / scaleFactor, 
-          y: pageHeight - (y / scaleFactor) - (height / scaleFactor),
-          width: width / scaleFactor, 
-          height: height / scaleFactor 
+          x: x / renderScale, 
+          y: pageHeight - (y / renderScale) - (height / renderScale),
+          width: width / renderScale, 
+          height: height / renderScale 
       });
     } else if (obj.type === 'drawing') {
       const { points, color, strokeWidth } = obj;
       const transformedPoints = points.map(p => {
-        const x = p.x / scaleFactor;
-        const y = pageHeight - (p.y / scaleFactor);
+        const x = p.x / renderScale;
+        const y = pageHeight - (p.y / renderScale);
         return { ...p, x, y };
       });
-
-      const stroke = getStroke(transformedPoints, {
-        size: strokeWidth / scaleFactor,
-        thinning: 0.5,
-        smoothing: 0.5,
-        streamline: 0.5,
-      });
-
+      const stroke = getStroke(transformedPoints, { size: strokeWidth / renderScale });
       const pathData = getSvgPathFromStroke(stroke);
-      
-      page.drawSvgPath(pathData, {
-        color: rgb(color.r/255, color.g/255, color.b/255),
-      });
+      page.drawSvgPath(pathData, { color: rgb(color.r/255, color.g/255, color.b/255) });
     }
   }
 
