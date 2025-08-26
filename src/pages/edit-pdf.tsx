@@ -10,7 +10,7 @@ import { ToolDownloader } from '@/components/ToolDownloader';
 import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor } from '@/components/tools/PdfEditor';
-import { ZoomControls } from '@/components/tools/ZoomControls'; // Import new component
+import { ZoomControls } from '@/components/tools/ZoomControls';
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -35,7 +35,7 @@ const EditPdfPage: NextPage = () => {
   
   const [pageCount, setPageCount] = useState(0);
   const [visiblePageIndex, setVisiblePageIndex] = useState(0);
-  const [zoom, setZoom] = useState(1.0); // NEW: State for zoom level
+  const [zoom, setZoom] = useState(1.0);
 
   const [objects, setObjects] = useState<EditableObject[]>([]);
   const [selectedObject, setSelectedObject] = useState<EditableObject | null>(null);
@@ -63,7 +63,6 @@ const EditPdfPage: NextPage = () => {
     }
   };
   
-  // ... (All other handler functions remain the same)
   const handleObjectChange = (updatedObject: EditableObject) => {
     const newObjects = objects.map(obj => obj.id === updatedObject.id ? updatedObject : obj);
     setObjects(newObjects);
@@ -80,7 +79,7 @@ const EditPdfPage: NextPage = () => {
     const imageBytes = await imageFile.arrayBuffer();
     const newImage: ImageObject = {
       type: 'image', id: `image-${Date.now()}`, x: 50, y: 50,
-      pageIndex: visiblePageIndex, imageBytes, width: 200, height: 150,
+      pageIndex: visiblePageIndex, imageBytes, width: 200 * zoom, height: 150 * zoom,
     };
     setObjects([...objects, newImage]);
     setSelectedObject(newImage);
@@ -90,15 +89,21 @@ const EditPdfPage: NextPage = () => {
     if (!file) return;
     setStatus('processing');
     try {
-      const pdfBytes = await applyEditsToPdf(file, objects);
+      // --- THIS IS THE FIX ---
+      // Pass the current zoom level to the saving function.
+      const pdfBytes = await applyEditsToPdf(file, objects, zoom);
+      
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProcessedFileName(`edited_${file.name}`);
       setStatus('success');
+      toast({ title: 'Success!', description: 'Your PDF has been saved.' });
     } catch (err) {
-      setError('An error occurred while saving your PDF.');
+      const message = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(`Save failed: ${message}`);
       setStatus('error');
+      toast({ title: 'Error', description: message, variant: 'destructive' });
     }
   };
   
@@ -180,7 +185,6 @@ const EditPdfPage: NextPage = () => {
                 <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">Save Changes</Button>
               </div>
               
-              {/* --- ZOOM CONTROLS --- */}
               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
                 <ZoomControls zoom={zoom} onZoomChange={setZoom} />
               </div>
