@@ -74,7 +74,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     onObjectSelect(newText);
   };
   
-  const updateObject = (id: string, newProps: Partial<EditableObject>) => {
+  // --- THIS IS THE FIX ---
+  // We use a more specific type for the new properties to help TypeScript.
+  const updateObject = (id: string, newProps: Partial<TextObject> | Partial<ImageObject>) => {
     const updatedObjects = objects.map(obj =>
       obj.id === id ? { ...obj, ...newProps } : obj
     );
@@ -146,4 +148,4 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       }
     </div>
   );
-};``
+};
