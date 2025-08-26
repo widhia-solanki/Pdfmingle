@@ -1,6 +1,6 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -9,7 +9,7 @@ import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
-import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor'; // Import RENDER_SCALE
+import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor';
 import { ZoomControls } from '@/components/tools/ZoomControls';
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
@@ -88,10 +88,7 @@ const EditPdfPage: NextPage = () => {
     if (!file) return;
     setStatus('processing');
     try {
-      // --- THIS IS THE FIX ---
-      // We now pass the fixed RENDER_SCALE, not the UI zoom level.
       const pdfBytes = await applyEditsToPdf(file, objects, RENDER_SCALE);
-      
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
@@ -136,17 +133,21 @@ const EditPdfPage: NextPage = () => {
                 <div className="w-48 flex-shrink-0 h-full">
                   <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
-                <div className="flex-grow h-full overflow-auto p-4 md:p-8 flex justify-center">
-                  <PdfEditor 
-                      key={`${file.name}-${currentPage}`}
-                      file={file}
-                      pageIndex={currentPage}
-                      objects={objects}
-                      onObjectsChange={setObjects}
-                      mode={toolMode}
-                      onObjectSelect={setSelectedObject}
-                      zoom={zoom}
-                  />
+                {/* --- THIS IS THE FIX --- */}
+                {/* Added a wrapper div with padding and a shadow for the page effect */}
+                <div className="flex-grow h-full overflow-auto p-8 flex justify-center">
+                  <div className="w-fit h-fit p-4 bg-white shadow-lg rounded-sm">
+                    <PdfEditor 
+                        key={`${file.name}-${currentPage}`}
+                        file={file}
+                        pageIndex={currentPage}
+                        objects={objects}
+                        onObjectsChange={setObjects}
+                        mode={toolMode}
+                        onObjectSelect={setSelectedObject}
+                        zoom={zoom}
+                    />
+                  </div>
                 </div>
                 <div className="w-72 flex-shrink-0 bg-white p-6 border-l flex flex-col justify-between">
                   <div className="space-y-4">
