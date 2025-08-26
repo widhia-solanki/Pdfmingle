@@ -1,8 +1,7 @@
 // src/components/tools/PdfEditor.tsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
-import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.entry';
+import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
 import { cn } from '@/lib/utils';
@@ -11,8 +10,9 @@ import { Rnd } from 'react-rnd';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
 
-// --- THIS IS THE FIX ---
-GlobalWorkerOptions.workerSrc = pdfjsWorker;
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+}
 
 interface PdfEditorProps {
   file: File;
@@ -40,7 +40,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       if (!context) return;
       try {
         const fileBuffer = await file.arrayBuffer();
-        const pdf = await getDocument({ data: fileBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         const page = await pdf.getPage(pageIndex + 1);
         const viewport = page.getViewport({ scale: zoom });
         canvas.width = viewport.width;
@@ -56,7 +56,6 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     renderPage();
   }, [file, pageIndex, zoom]);
 
-  // ... (All other functions in this component remain the same)
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'draw') return;
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -69,12 +68,14 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     };
     setCurrentDrawing(newDrawing);
   };
+
   const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
       if (mode !== 'draw' || !currentDrawing || e.buttons !== 1) return;
       const rect = e.currentTarget.getBoundingClientRect();
       const pressure = e.pressure || 0.5;
       setCurrentDrawing(prev => ({ ...prev!, points: [...prev!.points, { x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }] }));
   };
+
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
       if (mode !== 'draw' || !currentDrawing) return;
       e.currentTarget.releasePointerCapture(e.pointerId);
@@ -83,6 +84,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       }
       setCurrentDrawing(null);
   };
+  
   const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
     if (mode !== 'text' || !canvasRef.current) return;
     const canvas = canvasRef.current;
@@ -98,6 +100,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     onObjectsChange([...objects, newText]);
     onObjectSelect(newText);
   };
+  
   const updateObject = (id: string, newProps: Partial<TextObject> | Partial<ImageObject>) => {
       const updatedObjects = objects.map(obj =>
         obj.id === id ? { ...obj, ...newProps } : obj
@@ -110,16 +113,33 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
   return (
     <div className="relative w-fit h-fit shadow-2xl bg-white">
       {isLoading && (<div className="absolute inset-0 flex items-center justify-center bg-white/50 z-30"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>)}
+      
       <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} onClick={handleCanvasClick}/>
-      <div className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none")} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}>
+      
+      <div
+          className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none")}
+          onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}
+      >
         <svg width="100%" height="100%" className="absolute top-0 left-0 pointer-events-none">
             {objects.filter((obj): obj is DrawObject => obj.type === 'drawing' && obj.pageIndex === pageIndex).map(obj => (
                 <path key={obj.id} d={getSvgPathFromStroke(getStroke(obj.points, { size: obj.strokeWidth, thinning: 0.5 }))} fill={`rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`} />
             ))}
             {currentDrawing && <path d={getSvgPathFromStroke(getStroke(currentDrawing.points, { size: currentDrawing.strokeWidth, thinning: 0.5 }))} fill={`rgb(${currentDrawing.color.r}, ${currentDrawing.color.g}, ${currentDrawing.color.b})`} />}
         </svg>
+
         {!isLoading && objects.filter((obj): obj is TextObject | ImageObject => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
-            <Rnd key={obj.id} bounds="parent" size={{ width: obj.width, height: obj.height }} position={{ x: obj.x, y: obj.y }} onDragStart={() => onObjectSelect(obj)} onDragStop={(e, d) => updateObject(obj.id, { x: d.x, y: d.y })} onResizeStop={(e, direction, ref, delta, position) => { updateObject(obj.id, { width: parseInt(ref.style.width), height: parseInt(ref.style.height), ...position }); }} className="border-2 border-transparent hover:border-blue-500 hover:border-dashed" style={{ pointerEvents: 'auto' }}>
+            <Rnd
+                key={obj.id} bounds="parent"
+                size={{ width: obj.width, height: obj.height }}
+                position={{ x: obj.x, y: obj.y }}
+                onDragStart={() => onObjectSelect(obj)}
+                onDragStop={(e, d) => updateObject(obj.id, { x: d.x, y: d.y })}
+                onResizeStop={(e, direction, ref, delta, position) => {
+                    updateObject(obj.id, { width: parseInt(ref.style.width), height: parseInt(ref.style.height), ...position });
+                }}
+                className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
+                style={{ pointerEvents: 'auto' }}
+            >
                 {obj.type === 'text' ? (
                     <div style={{ fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font, whiteSpace: 'pre-wrap', lineHeight: 1.2, height: '100%' }}>{obj.text}</div>
                 ) : (
