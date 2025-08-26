@@ -24,6 +24,8 @@ interface PdfEditorProps {
   zoom: number;
 }
 
+const RENDER_SCALE = 1.5; // Render the canvas at a fixed high resolution
+
 export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onObjectSelect, zoom }: PdfEditorProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,7 +44,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
         const fileBuffer = await file.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         const page = await pdf.getPage(pageIndex + 1);
-        const viewport = page.getViewport({ scale: zoom });
+        // --- ZOOM FIX ---
+        // We now render ONCE at a fixed high resolution.
+        const viewport = page.getViewport({ scale: RENDER_SCALE });
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         await page.render({ canvasContext: context, viewport: viewport }).promise;
@@ -54,17 +58,16 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       }
     };
     renderPage();
-  }, [file, pageIndex, zoom]);
+  }, [file, pageIndex]); // The zoom dependency is REMOVED.
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'draw') return;
-    e.currentTarget.setPointerCapture(e.pointerId);
     const rect = e.currentTarget.getBoundingClientRect();
     const pressure = e.pressure || 0.5;
     const newDrawing: DrawObject = {
       type: 'drawing', id: `draw-${Date.now()}`, pageIndex,
       points: [{ x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }],
-      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8 * zoom,
+      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8, // Stroke width is now independent of zoom
     };
     setCurrentDrawing(newDrawing);
   };
@@ -78,24 +81,22 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
 
   const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
       if (mode !== 'draw' || !currentDrawing) return;
-      e.currentTarget.releasePointerCapture(e.pointerId);
       if (currentDrawing.points.length > 2) {
           onObjectsChange([...objects, currentDrawing]);
       }
       setCurrentDrawing(null);
   };
   
-  const handleCanvasClick = (event: React.MouseEvent<HTMLCanvasElement>) => {
+  const handleCanvasClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (mode !== 'text' || !canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
+    const rect = event.currentTarget.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
     const newText: TextObject = {
       type: 'text', id: `text-${Date.now()}`, x, y,
-      text: "New Text", size: 24 * zoom, font: 'Helvetica',
+      text: "New Text", size: 24, font: 'Helvetica', // Font size is now independent of zoom
       color: { r: 0, g: 0, b: 0 }, pageIndex,
-      width: 200 * zoom, height: 50 * zoom,
+      width: 200, height: 50, // Default size is now independent of zoom
     };
     onObjectsChange([...objects, newText]);
     onObjectSelect(newText);
@@ -111,13 +112,19 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
   if (error) { return <div className="flex items-center justify-center h-96 bg-red-50 border border-red-200 rounded-lg"><p className="text-red-600 font-semibold">{error}</p></div>; }
 
   return (
-    <div className="relative w-fit h-fit shadow-2xl bg-white">
+    // --- THIS IS THE FIX ---
+    // This wrapper handles the CSS scaling for smooth zooming.
+    <div 
+      className="relative w-fit h-fit shadow-2xl bg-white origin-top-left"
+      style={{ transform: `scale(${zoom})`, transformOrigin: 'top left' }}
+    >
       {isLoading && (<div className="absolute inset-0 flex items-center justify-center bg-white/50 z-30"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>)}
       
-      <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} onClick={handleCanvasClick}/>
+      <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} />
       
       <div
           className={cn("absolute top-0 left-0 w-full h-full z-10", mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none")}
+          onClick={(e) => mode === 'text' && handleCanvasClick(e)}
           onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}
       >
         <svg width="100%" height="100%" className="absolute top-0 left-0 pointer-events-none">
