@@ -5,8 +5,7 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { EditableObject, TextObject, ImageObject, DrawObject } from '@/lib/pdf/edit';
 import { cn } from '@/lib/utils';
-// --- THIS IS THE FIX ---
-import { ToolMode } from './AdvancedEditorToolbar'; // Changed EditMode to ToolMode
+import { ToolMode } from './AdvancedEditorToolbar';
 import { Rnd } from 'react-rnd';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
@@ -20,7 +19,7 @@ interface PdfEditorProps {
   pageIndex: number;
   objects: EditableObject[];
   onObjectsChange: (objects: EditableObject[]) => void;
-  mode: ToolMode; // Changed EditMode to ToolMode
+  mode: ToolMode;
   onObjectSelect: (object: EditableObject | null) => void;
   zoom: number;
 }
@@ -63,8 +62,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     const pressure = e.pressure || 0.5;
     const newDrawing: DrawObject = {
       type: 'drawing', id: `draw-${Date.now()}`, pageIndex,
+      // --- FIX: Scale stroke width with zoom ---
       points: [{ x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }],
-      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8 * zoom, // Scale stroke with zoom
+      color: { r: 255, g: 0, b: 0 }, strokeWidth: 8 * zoom,
     };
     setCurrentDrawing(newDrawing);
   };
@@ -113,10 +113,15 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
     <div className="relative w-fit h-fit shadow-2xl bg-white">
       {isLoading && (<div className="absolute inset-0 flex items-center justify-center bg-white/50 z-30"><Loader2 className="h-12 w-12 animate-spin text-gray-500" /></div>)}
       
-      <canvas ref={canvasRef} className={cn(isLoading && "opacity-0")} onClick={handleCanvasClick}/>
+      <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} onClick={handleCanvasClick}/>
       
+      {/* --- THIS IS THE FIX --- */}
+      {/* This overlay is now interactive ONLY when in 'draw' mode */}
       <div
-          className={cn("absolute top-0 left-0 w-full h-full", mode === 'draw' ? "cursor-crosshair z-20" : "pointer-events-none z-10")}
+          className={cn(
+            "absolute top-0 left-0 w-full h-full z-20", 
+            mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none"
+          )}
           onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}
       >
           <svg width="100%" height="100%">
@@ -127,6 +132,7 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
           </svg>
       </div>
 
+      {/* This layer for Text and Image objects remains separate */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
           {!isLoading && objects.filter((obj): obj is TextObject | ImageObject => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
               <Rnd
