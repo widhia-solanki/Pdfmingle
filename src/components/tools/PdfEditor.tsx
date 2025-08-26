@@ -11,7 +11,7 @@ import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from '@/lib/pdf/getSvgPathFromStroke';
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js'; // Use .js for broader compatibility
 }
 
 interface PdfEditorProps {
@@ -58,11 +58,11 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'draw') return;
+    e.currentTarget.setPointerCapture(e.pointerId);
     const rect = e.currentTarget.getBoundingClientRect();
     const pressure = e.pressure || 0.5;
     const newDrawing: DrawObject = {
       type: 'drawing', id: `draw-${Date.now()}`, pageIndex,
-      // --- FIX: Scale stroke width with zoom ---
       points: [{ x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }],
       color: { r: 255, g: 0, b: 0 }, strokeWidth: 8 * zoom,
     };
@@ -76,8 +76,9 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       setCurrentDrawing(prev => ({ ...prev!, points: [...prev!.points, { x: e.clientX - rect.left, y: e.clientY - rect.top, pressure }] }));
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
       if (mode !== 'draw' || !currentDrawing) return;
+      e.currentTarget.releasePointerCapture(e.pointerId);
       if (currentDrawing.points.length > 2) {
           onObjectsChange([...objects, currentDrawing]);
       }
@@ -115,45 +116,43 @@ export const PdfEditor = ({ file, pageIndex, objects, onObjectsChange, mode, onO
       
       <canvas ref={canvasRef} className={cn("border rounded-md", isLoading && "opacity-0")} onClick={handleCanvasClick}/>
       
-      {/* --- THIS IS THE FIX --- */}
-      {/* This overlay is now interactive ONLY when in 'draw' mode */}
+      {/* --- THIS IS THE FIX: A SINGLE, UNIFIED INTERACTIVE OVERLAY --- */}
       <div
           className={cn(
-            "absolute top-0 left-0 w-full h-full z-20", 
+            "absolute top-0 left-0 w-full h-full z-10", 
             mode === 'draw' ? "cursor-crosshair pointer-events-auto" : "pointer-events-none"
           )}
-          onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onPointerLeave={handlePointerUp}
+          onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp}
       >
-          <svg width="100%" height="100%">
-              {objects.filter((obj): obj is DrawObject => obj.type === 'drawing' && obj.pageIndex === pageIndex).map(obj => (
-                  <path key={obj.id} d={getSvgPathFromStroke(getStroke(obj.points, { size: obj.strokeWidth, thinning: 0.5 }))} fill={`rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`} />
-              ))}
-              {currentDrawing && <path d={getSvgPathFromStroke(getStroke(currentDrawing.points, { size: currentDrawing.strokeWidth, thinning: 0.5 }))} fill={`rgb(${currentDrawing.color.r}, ${currentDrawing.color.g}, ${currentDrawing.color.b})`} />}
-          </svg>
-      </div>
+        {/* SVG for drawing lives here */}
+        <svg width="100%" height="100%" className="absolute top-0 left-0">
+            {objects.filter((obj): obj is DrawObject => obj.type === 'drawing' && obj.pageIndex === pageIndex).map(obj => (
+                <path key={obj.id} d={getSvgPathFromStroke(getStroke(obj.points, { size: obj.strokeWidth, thinning: 0.5 }))} fill={`rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`} />
+            ))}
+            {currentDrawing && <path d={getSvgPathFromStroke(getStroke(currentDrawing.points, { size: currentDrawing.strokeWidth, thinning: 0.5 }))} fill={`rgb(${currentDrawing.color.r}, ${currentDrawing.color.g}, ${currentDrawing.color.b})`} />}
+        </svg>
 
-      {/* This layer for Text and Image objects remains separate */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none z-10">
-          {!isLoading && objects.filter((obj): obj is TextObject | ImageObject => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
-              <Rnd
-                  key={obj.id} bounds="parent"
-                  size={{ width: obj.width, height: obj.height }}
-                  position={{ x: obj.x, y: obj.y }}
-                  onDragStart={() => onObjectSelect(obj)}
-                  onDragStop={(e, d) => updateObject(obj.id, { x: d.x, y: d.y })}
-                  onResizeStop={(e, direction, ref, delta, position) => {
-                      updateObject(obj.id, { width: parseInt(ref.style.width), height: parseInt(ref.style.height), ...position });
-                  }}
-                  className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
-                  style={{ pointerEvents: 'auto' }}
-              >
-                  {obj.type === 'text' ? (
-                      <div style={{ fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font, whiteSpace: 'pre-wrap', lineHeight: 1.2, height: '100%' }}>{obj.text}</div>
-                  ) : (
-                      <img src={URL.createObjectURL(new Blob([obj.imageBytes]))} alt="user upload" className="w-full h-full object-contain" />
-                  )}
-              </Rnd>
-          ))}
+        {/* Draggable Text and Image objects also live here */}
+        {!isLoading && objects.filter((obj): obj is TextObject | ImageObject => (obj.type === 'text' || obj.type === 'image') && obj.pageIndex === pageIndex).map(obj => (
+            <Rnd
+                key={obj.id} bounds="parent"
+                size={{ width: obj.width, height: obj.height }}
+                position={{ x: obj.x, y: obj.y }}
+                onDragStart={() => onObjectSelect(obj)}
+                onDragStop={(e, d) => updateObject(obj.id, { x: d.x, y: d.y })}
+                onResizeStop={(e, direction, ref, delta, position) => {
+                    updateObject(obj.id, { width: parseInt(ref.style.width), height: parseInt(ref.style.height), ...position });
+                }}
+                className="border-2 border-transparent hover:border-blue-500 hover:border-dashed"
+                style={{ pointerEvents: 'auto' }} // This makes the Rnd component interactive
+            >
+                {obj.type === 'text' ? (
+                    <div style={{ fontSize: `${obj.size}px`, color: `rgb(${obj.color.r}, ${obj.color.g}, ${obj.color.b})`, fontFamily: obj.font, whiteSpace: 'pre-wrap', lineHeight: 1.2, height: '100%' }}>{obj.text}</div>
+                ) : (
+                    <img src={URL.createObjectURL(new Blob([obj.imageBytes]))} alt="user upload" className="w-full h-full object-contain" />
+                )}
+            </Rnd>
+        ))}
       </div>
     </div>
   );
