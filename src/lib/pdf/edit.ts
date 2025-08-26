@@ -1,6 +1,6 @@
 // src/lib/pdf/edit.ts
 
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, pushOperators, PopGraphicsState, scale, translate } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
 import getStroke from 'perfect-freehand';
 import { getSvgPathFromStroke } from './getSvgPathFromStroke';
 
@@ -99,22 +99,20 @@ export const applyEditsToPdf = async (
       });
       const pathData = getSvgPathFromStroke(stroke);
       
-      page.pushOperators(
-        // Save the current graphics state
-        pushOperators.q(),
-        // Apply transformations: scale down and flip the y-axis
-        scale(1 / scaleFactor, -1 / scaleFactor),
-        // Translate the origin to the top-left corner
-        translate(0, -pageHeight * scaleFactor)
-      );
+      // Save the current graphics state
+      page.saveGraphicsState();
 
-      // Draw the path within the transformed coordinate system
+      // Apply transformations directly on the page
+      page.scale(1 / scaleFactor, -1 / scaleFactor);
+      page.translate(0, -pageHeight * scaleFactor);
+
+      // Draw the path
       page.drawSvgPath(pathData, {
         color: rgb(color.r/255, color.g/255, color.b/255),
       });
 
-      // Restore the graphics state
-      page.pushOperators(PopGraphicsState);
+      // Restore the graphics state to remove the transformations for the next object
+      page.restoreGraphicsState();
     }
   }
 
