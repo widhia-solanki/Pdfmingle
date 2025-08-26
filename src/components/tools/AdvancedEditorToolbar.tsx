@@ -12,8 +12,6 @@ import { EditableObject } from '@/lib/pdf/edit';
 export type MainMode = 'annotate' | 'edit';
 export type ToolMode = 'select' | 'text' | 'image' | 'draw' | 'shape';
 
-// --- THIS IS THE FIX ---
-// The full, correct interface with all props is now defined.
 interface AdvancedEditorToolbarProps {
   mainMode: MainMode;
   onMainModeChange: (mode: MainMode) => void;
@@ -39,29 +37,19 @@ export const AdvancedEditorToolbar = ({
     e.target.value = '';
   };
 
+  const textObject = selectedObject?.type === 'text' ? selectedObject : null;
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-white border-b">
-      {/* Left Side: Main Mode Toggle */}
       <div className="flex items-center gap-2 p-1 bg-gray-100 rounded-lg">
-        <Button 
-          onClick={() => onMainModeChange('annotate')}
-          className={cn("font-semibold", mainMode === 'annotate' ? 'bg-white shadow-sm' : 'bg-transparent text-gray-600')}
-        >
-          <Pen className="mr-2 h-4 w-4" /> Annotate
-        </Button>
-        <Button 
-          onClick={() => onMainModeChange('edit')}
-          className={cn("font-semibold", mainMode === 'edit' ? 'bg-white shadow-sm' : 'bg-transparent text-gray-600')}
-        >
-          <Type className="mr-2 h-4 w-4" /> Edit
-        </Button>
+        <Button onClick={() => onMainModeChange('annotate')} className={cn("font-semibold", mainMode === 'annotate' ? 'bg-white shadow-sm' : 'bg-transparent text-gray-600')}><Pen className="mr-2 h-4 w-4" /> Annotate</Button>
+        <Button onClick={() => onMainModeChange('edit')} className={cn("font-semibold", mainMode === 'edit' ? 'bg-white shadow-sm' : 'bg-transparent text-gray-600')}><Type className="mr-2 h-4 w-4" /> Edit</Button>
       </div>
 
-      {/* Center: Tool Selection */}
       <div className="flex items-center gap-1 p-1 bg-gray-100 rounded-md">
         {mainMode === 'edit' && (
           <>
-            <Button variant="ghost" size="icon" onClick={() => onToolModeChange('select')} className={cn(toolMode === 'select' && 'bg-blue-200')} aria-label="Select Tool"><MousePointer className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => onToolModeChange('select')} className={cn(toolMode === 'select' && 'bg-blue-200')} aria-label="Select"><MousePointer className="h-5 w-5" /></Button>
             <Button variant="ghost" size="icon" onClick={() => onToolModeChange('text')} className={cn(toolMode === 'text' && 'bg-blue-200')} aria-label="Add Text"><Type className="h-5 w-5" /></Button>
             <Button variant="ghost" size="icon" onClick={() => imageInputRef.current?.click()} aria-label="Add Image"><ImageIcon className="h-5 w-5" /></Button>
             <input type="file" ref={imageInputRef} onChange={handleImageUpload} accept="image/png, image/jpeg" className="hidden" />
@@ -75,19 +63,35 @@ export const AdvancedEditorToolbar = ({
         )}
       </div>
       
-      {/* Right Side: Contextual Actions */}
       <div className="flex items-center gap-4">
-        {selectedObject?.type === 'text' && (
-            <div className="flex items-center gap-2">
-                <Label htmlFor="font-size" className="text-sm">Size:</Label>
-                <Input
-                id="font-size"
+        {textObject && (
+          <div className="flex items-center gap-4 p-1 bg-gray-100 rounded-md">
+             <Select value={textObject.font} onValueChange={(font) => onObjectChange({ ...textObject, font })}>
+                <SelectTrigger className="w-[130px] h-8"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Helvetica">Helvetica</SelectItem>
+                  <SelectItem value="TimesRoman">Times Roman</SelectItem>
+                  <SelectItem value="Courier">Courier</SelectItem>
+                </SelectContent>
+              </Select>
+              <Input
                 type="number"
-                className="w-20 h-9"
-                value={selectedObject.size}
-                onChange={(e) => onObjectChange({ ...selectedObject, size: parseInt(e.target.value) || 12 })}
-                />
-            </div>
+                className="w-16 h-8"
+                value={textObject.size}
+                onChange={(e) => onObjectChange({ ...textObject, size: parseInt(e.target.value) || 12 })}
+              />
+              <input 
+                type="color" 
+                value={`#${textObject.color.r.toString(16).padStart(2, '0')}${textObject.color.g.toString(16).padStart(2, '0')}${textObject.color.b.toString(16).padStart(2, '0')}`}
+                onChange={(e) => {
+                    const r = parseInt(e.target.value.slice(1, 3), 16);
+                    const g = parseInt(e.target.value.slice(3, 5), 16);
+                    const b = parseInt(e.target.value.slice(5, 7), 16);
+                    onObjectChange({ ...textObject, color: { r, g, b } });
+                }}
+                className="w-8 h-8 p-0 border-none cursor-pointer bg-transparent"
+              />
+          </div>
         )}
         {selectedObject && (
           <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
