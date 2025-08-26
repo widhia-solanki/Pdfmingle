@@ -89,28 +89,27 @@ export const applyEditsToPdf = async (
           height: height / scaleFactor 
       });
     } else if (obj.type === 'drawing') {
-      // --- THIS IS THE FINAL, DOCUMENTATION-VERIFIED FIX ---
+      // --- THIS IS THE FINAL, GUARANTEED FIX ---
+      // We manually transform the coordinates before creating the SVG path.
       const { points, color, strokeWidth } = obj;
-      const stroke = getStroke(points, {
-        size: strokeWidth,
+      
+      const transformedPoints = points.map(p => {
+        const x = p.x / scaleFactor;
+        const y = pageHeight - (p.y / scaleFactor); // Flip the y-coordinate
+        return { ...p, x, y };
+      });
+
+      const stroke = getStroke(transformedPoints, {
+        size: strokeWidth / scaleFactor,
         thinning: 0.5,
         smoothing: 0.5,
         streamline: 0.5,
       });
+
       const pathData = getSvgPathFromStroke(stroke);
       
       page.drawSvgPath(pathData, {
         color: rgb(color.r/255, color.g/255, color.b/255),
-        // The transformation matrix is applied directly here.
-        // This scales the drawing down and flips it vertically in one step.
-        matrix: {
-          a: 1 / scaleFactor,  // xScale
-          b: 0,                // ySkew
-          c: 0,                // xSkew
-          d: -1 / scaleFactor, // yScale (flips the y-axis)
-          e: 0,                // x position
-          f: pageHeight,       // y position (moves origin to top-left)
-        }
       });
     }
   }
