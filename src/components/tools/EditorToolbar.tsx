@@ -11,8 +11,15 @@ import { EditableObject } from '@/lib/pdf/edit';
 
 export type EditMode = 'select' | 'text' | 'draw' | 'shape' | 'image';
 
+// --- THIS IS THE FIX ---
+// The full, correct interface is now defined.
 interface EditorToolbarProps {
-  // ... (interface props remain the same)
+  mode: EditMode;
+  onModeChange: (mode: EditMode) => void;
+  selectedObject: EditableObject | null;
+  onObjectChange: (updatedObject: EditableObject) => void;
+  onObjectDelete: () => void;
+  onImageAdd: (file: File) => void;
 }
 
 export const EditorToolbar = ({ 
@@ -54,7 +61,45 @@ export const EditorToolbar = ({
         </Button>
       </div>
 
-      {/* ... (rest of the component is the same as before) ... */}
+      {selectedObject?.type === 'text' && (
+        <div className="flex flex-wrap items-center gap-4">
+          <Select 
+            value={selectedObject.font}
+            onValueChange={(font) => onObjectChange({ ...selectedObject, font })}
+          >
+            <SelectTrigger className="w-[140px] h-9"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Helvetica">Helvetica</SelectItem>
+              <SelectItem value="TimesRoman">Times New Roman</SelectItem>
+              <SelectItem value="Courier">Courier</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <div className="flex items-center gap-2">
+            <Label htmlFor="font-size" className="text-sm">Size:</Label>
+            <Input
+              id="font-size"
+              type="number"
+              className="w-20 h-9"
+              value={selectedObject.size}
+              onChange={(e) => onObjectChange({ ...selectedObject, size: parseInt(e.target.value) || 12 })}
+            />
+          </div>
+          
+          <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
+             <Trash2 className="h-5 w-5"/>
+           </Button>
+        </div>
+      )}
+      
+      {selectedObject?.type === 'image' && (
+         <div className="flex items-center gap-4">
+            <p className="text-sm font-medium">Image Selected</p>
+            <Button variant="destructive" size="icon" onClick={onObjectDelete} aria-label="Delete selected object">
+             <Trash2 className="h-5 w-5"/>
+           </Button>
+         </div>
+      )}
     </div>
   );
 };
