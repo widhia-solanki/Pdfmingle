@@ -11,36 +11,44 @@ import SEO from '../../next-seo.config';
 import CookieConsent from "react-cookie-consent";
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useIsMobile } from '@/hooks/use-mobile'; // We need this hook
-import { DevelopmentSplash } from '@/components/DevelopmentSplash'; // Our new component
+import { useIsMobile } from '@/hooks/use-mobile';
+import { DevelopmentSplash } from '@/components/DevelopmentSplash';
+import { MaintenanceSplash } from '@/components/MaintenanceSplash'; // <-- New import
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isMobile = useIsMobile();
   const [hasAccess, setHasAccess] = useState(false);
 
-  // --- THIS IS THE SECRET ACCESS LOGIC ---
   useEffect(() => {
-    // This effect runs only in the browser
     if (router.isReady) {
-      // 1. Check if the secret code is in the URL
       if (router.query.dev === 'true') {
         sessionStorage.setItem('dev_access', 'true');
         setHasAccess(true);
       } 
-      // 2. Check if we already granted access during this session
       else if (sessionStorage.getItem('dev_access') === 'true') {
         setHasAccess(true);
       }
     }
   }, [router.isReady, router.query]);
 
-  // If the user is on mobile AND doesn't have secret access, show the splash page.
+  // Prevent flash of content while hook initializes
+  if (isMobile === undefined) {
+    return null; 
+  }
+
+  // --- THIS IS THE NEW LOGIC ---
+  // 1. If the user is on a desktop device, show the maintenance page.
+  if (!isMobile) {
+    return <MaintenanceSplash />;
+  }
+
+  // 2. If the user is on mobile AND doesn't have secret access, show the mobile development splash page.
   if (isMobile && !hasAccess) {
     return <DevelopmentSplash />;
   }
-
-  // Otherwise, show the normal website.
+  
+  // 3. Otherwise (mobile with developer access), show the normal website.
   return (
     <>
       <Head>
