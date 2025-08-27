@@ -119,7 +119,7 @@ const EditPdfPage: NextPage = () => {
 
   return (
     <>
-      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.net/${tool.value}`} />
+      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.com/${tool.value}`} />
       <main className="w-full">
         {status === 'idle' && (
           <div className="container mx-auto px-4 py-12 text-center">
@@ -136,7 +136,8 @@ const EditPdfPage: NextPage = () => {
                 <div className="w-48 flex-shrink-0 h-full">
                   <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
-                <div className="flex-grow h-full overflow-auto p-8 flex justify-center">
+                {/* --- THIS IS THE FIX --- */}
+                <div className="flex-grow h-full overflow-auto px-8 py-16 flex justify-center">
                   <div className="mx-auto w-fit" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
                     <div className="flex flex-col items-center gap-8">
                       {Array.from({ length: pageCount }).map((_, index) => (
