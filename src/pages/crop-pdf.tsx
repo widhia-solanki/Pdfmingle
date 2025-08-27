@@ -149,7 +149,6 @@ const CropPdfPage: NextPage = () => {
                   onReset={handleReset}
                   margins={currentMargins}
                   onMarginsChange={handleMarginChange}
-                  pageDimensions={pageDimensions}
                 />
               </div>
               <Button size="lg" onClick={handleProcess} className="w-full bg-brand-blue hover:bg-brand-blue-dark font-bold py-6 text-lg">
