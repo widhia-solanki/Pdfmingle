@@ -30,7 +30,7 @@ export const MaintenanceSplash = () => {
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="font-semibold text-blue-800">
                 We expect to be back online by: <br/>
-                <span className="text-xl">August 29th, 2025</span>
+                <span className="text-xl">August 30th, 2025</span>
             </p>
         </div>
         
