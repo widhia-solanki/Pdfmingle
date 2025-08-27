@@ -32,7 +32,7 @@ const CropPdfPage: NextPage = () => {
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [cropBox, setCropBox] = useState<CropBox | undefined>(undefined);
-  const [cropMode, setCropMode] = useState<CropMode>('current');
+  const [cropMode, setCropMode] = useState<CropMode>('all');
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
@@ -109,6 +109,10 @@ const CropPdfPage: NextPage = () => {
     setDownloadUrl('');
   }, [downloadUrl]);
 
+  const handleResetCrop = () => {
+      setCropBox(undefined); // This will trigger the re-initialization in PdfCropper
+  };
+
   return (
     <>
       <NextSeo
@@ -130,15 +134,18 @@ const CropPdfPage: NextPage = () => {
             <div className="w-64 flex-shrink-0 h-full border-r bg-gray-50 shadow-md">
               <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
             </div>
-            <div className="flex-grow h-full flex flex-col items-center justify-center bg-gray-200 p-8 overflow-auto">
+            <div className="flex-grow h-full flex items-center justify-center bg-slate-400 p-8 overflow-auto">
               <PdfCropper file={file} pageIndex={currentPage} onCropChange={setCropBox} initialCropBox={cropBox}/>
             </div>
-            <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col justify-between shadow-lg border-l">
-              <div>
-                <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Crop Options</h2>
-                <CropOptions mode={cropMode} onModeChange={setCropMode} currentPage={currentPage} />
+            <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col shadow-lg border-l">
+              <div className="flex-grow">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800">Crop PDF</h2>
+                <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg mb-6 text-sm">
+                  <p>Click and drag to select the area you want to keep. Resize if needed.</p>
+                </div>
+                <CropOptions mode={cropMode} onModeChange={setCropMode} onReset={handleResetCrop} />
               </div>
-              <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6 text-lg">
+              <Button size="lg" onClick={handleProcess} className="w-full bg-brand-blue hover:bg-brand-blue-dark font-bold py-6 text-lg">
                 <Crop className="mr-2 h-5 w-5"/>
                 Crop PDF
               </Button>
