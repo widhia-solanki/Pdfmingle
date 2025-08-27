@@ -2,14 +2,16 @@
 
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
-  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps
+  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps,
+  Crop // <-- Import the new icon
 } from "lucide-react";
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
 
 export const iconMap: { [key: string]: React.ElementType<LucideProps> } = {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
-  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon
+  Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon,
+  Crop // <-- Add the new icon to the map
 };
 
 export interface Tool {
@@ -236,8 +238,6 @@ export const tools: ToolMap = {
       { question: "Is the conversion process secure?", answer: "Yes. Your images are uploaded over an encrypted connection and are permanently deleted from our servers after a short time." }
     ]
   },
-  // --- THIS IS THE FIX ---
-  // Renamed from 'pdf-to-jpg' to 'pdf-to-image' for consistency
   "pdf-to-image": {
     value: "pdf-to-image",
     label: "PDF to Image",
@@ -378,6 +378,33 @@ export const tools: ToolMap = {
       { question: "Will organizing my PDF affect the file's quality?", answer: "No, reorganizing, deleting, or adding pages will not affect the visual quality of your document's content." }
     ]
   },
+  // --- NEW TOOL DEFINITION ---
+  "crop-pdf": {
+    value: "crop-pdf",
+    label: "Crop PDF",
+    h1: "Crop PDF Files Online",
+    description: "Visually select and trim the margins of your PDF pages. Fast, simple, and free.",
+    category: "Edit",
+    icon: 'Crop',
+    color: "#E54D2E",
+    metaTitle: "Crop PDF Online – Free PDF Cropping Tool",
+    metaDescription: "Easily crop your PDF files online. Select the area you want to keep and remove the rest. A free, secure, and visual PDF cropping tool.",
+    metaKeywords: "crop pdf, pdf cropper, trim pdf, resize pdf pages",
+    steps: [
+      "Upload your PDF file.",
+      "An adjustable crop box will appear on your page.",
+      "Drag the corners and sides of the box to define the area you want to keep.",
+      "Choose to apply the crop to the current page or all pages.",
+      "Click 'Crop PDF' and download your new file."
+    ],
+    isBrowserOnly: false,
+    isMultiFile: false,
+    faqs: [
+      { question: "Can I crop all pages of my PDF at once?", answer: "Yes, you can choose to apply the same crop area to either the current page or all pages in the document." },
+      { question: "Is the cropping precise?", answer: "Yes, you can drag the crop box to the exact dimensions you need. The tool provides a live preview of the selected area." },
+      { question: "Does cropping reduce the quality of my PDF?", answer: "No, cropping only removes the outer areas of the page content. The quality of the content within the cropped area remains unchanged." }
+    ]
+  }
 };
 
 // Also export the tools as an array for components that need to map over them
