@@ -3,7 +3,9 @@
 import React from 'react';
 import { Button } from './ui/button';
 import Link from 'next/link';
-import { type Tool } from '@/types';
+// --- THIS IS THE FIX ---
+// Import the Tool type from its correct location
+import { type Tool } from '@/constants/tools'; 
 import { Wrench } from 'lucide-react';
 
 interface ToolComingSoonProps {
