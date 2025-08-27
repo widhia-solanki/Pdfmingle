@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Crop } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
 }
 
 type Status = 'idle' | 'cropping' | 'processing' | 'success' | 'error';
@@ -88,11 +88,27 @@ const CropPdfPage: NextPage = () => {
   }, [downloadUrl]);
 
   const handleMarginChange = (newMargins: MarginState) => {
-    setMargins(prev => ({ ...prev, [currentPage]: newMargins }));
+    if (cropMode === 'all') {
+      const newAllMargins: { [key: number]: MarginState } = {};
+      for (let i = 0; i < pageCount; i++) {
+        newAllMargins[i] = newMargins;
+      }
+      setMargins(newAllMargins);
+    } else {
+      setMargins(prev => ({ ...prev, [currentPage]: newMargins }));
+    }
   };
 
   const handleReset = () => {
-    setMargins(prev => ({ ...prev, [currentPage]: defaultMargins }));
+    if (cropMode === 'all') {
+      const newAllMargins: { [key: number]: MarginState } = {};
+      for (let i = 0; i < pageCount; i++) {
+        newAllMargins[i] = defaultMargins;
+      }
+      setMargins(newAllMargins);
+    } else {
+      setMargins(prev => ({ ...prev, [currentPage]: defaultMargins }));
+    }
   };
 
   const currentMargins = margins[currentPage] || defaultMargins;
