@@ -13,8 +13,8 @@ export const ZoomControls = ({ zoom, onZoomChange }: ZoomControlsProps) => {
   const zoomPercentage = Math.round(zoom * 100);
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-gray-800 text-white rounded-lg shadow-md">
-      <Button variant="ghost" size="icon" onClick={() => onZoomChange(Math.max(0.25, zoom - 0.25))}>
+    <div className="flex items-center gap-2 p-2 bg-gray-800 text-white rounded-lg shadow-lg">
+      <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700" onClick={() => onZoomChange(Math.max(0.25, zoom - 0.25))}>
         <ZoomOut className="h-5 w-5" />
       </Button>
       <Slider
@@ -25,10 +25,10 @@ export const ZoomControls = ({ zoom, onZoomChange }: ZoomControlsProps) => {
         step={25}
         className="w-32"
       />
-      <Button variant="ghost" size="icon" onClick={() => onZoomChange(Math.min(2, zoom + 0.25))}>
+      <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700" onClick={() => onZoomChange(Math.min(2, zoom + 0.25))}>
         <ZoomIn className="h-5 w-5" />
       </Button>
-      <div className="w-16 text-center font-semibold">{zoomPercentage}%</div>
+      <div className="w-16 text-center font-semibold text-sm">{zoomPercentage}%</div>
     </div>
   );
 };
