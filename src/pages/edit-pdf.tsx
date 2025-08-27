@@ -10,12 +10,12 @@ import { ToolDownloader } from '@/components/ToolDownloader';
 import { AdvancedEditorToolbar, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor';
-import { BottomControls } from '@/components/tools/BottomControls'; // <-- New Component
+import { BottomControls } from '@/components/tools/BottomControls';
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MessageSquare } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -137,8 +137,8 @@ const EditPdfPage: NextPage = () => {
                     <AdvancedEditorToolbar toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
                   </header>
                   
-                  <div className="flex-grow overflow-auto p-8">
-                    <div className="mx-auto w-fit shadow-xl" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+                  <div className="flex-grow overflow-auto flex p-8">
+                    <div className="m-auto shadow-xl" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
                       <PdfEditor 
                         file={file} pageIndex={currentPage} objects={objects}
                         onObjectsChange={setObjects} mode={toolMode} onObjectSelect={setSelectedObject}
@@ -159,6 +159,7 @@ const EditPdfPage: NextPage = () => {
                   <div className="mt-auto">
                     <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6 text-lg">
                       Edit PDF
+                      <MessageSquare className="ml-2 h-5 w-5" />
                     </Button>
                   </div>
                 </div>
