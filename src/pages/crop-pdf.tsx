@@ -50,7 +50,7 @@ const CropPdfPage: NextPage = () => {
         setStatus('cropping');
       } catch (e) {
         setError("Could not read PDF. It may be corrupt or password-protected.");
-        setStatus('idle');
+        setStatus('idle'); 
         setFile(null);
       }
     }
@@ -154,7 +154,8 @@ const CropPdfPage: NextPage = () => {
             <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col justify-between shadow-lg border-l">
               <div>
                 <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Crop Options</h2>
-                <CropOptions mode={cropMode} onModeChange={setCropMode} currentPage={currentPage} />
+                {/* --- THIS IS THE FIX --- */}
+                <CropOptions mode={cropMode} onModeChange={setCropMode} />
               </div>
               <Button size="lg" onClick={handleProcess} className="w-full bg-brand-blue hover:bg-brand-blue-dark font-bold py-6 text-lg">
                 <Crop className="mr-2 h-5 w-5"/>
