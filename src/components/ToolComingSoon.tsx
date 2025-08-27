@@ -3,17 +3,17 @@
 import React from 'react';
 import { Button } from './ui/button';
 import Link from 'next/link';
-import { type Tool } from '@/constants/tools';
 import { Wrench } from 'lucide-react';
+import { type Tool } from '@/types'; // Use the central type definition
 
 interface ToolComingSoonProps {
   tool: Tool;
 }
 
 export const ToolComingSoon = ({ tool }: ToolComingSoonProps) => {
-  // --- THIS IS THE FIX ---
-  // The property on the tool object is 'icon' (lowercase 'i').
-  const Icon = tool.icon;
+  // --- THIS IS THE FINAL, CORRECT FIX ---
+  // The tool object itself now contains the component, so we just use it directly.
+  const Icon = tool.Icon;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
