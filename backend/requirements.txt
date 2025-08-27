@@ -1,3 +1,5 @@
+# backend/requirements.txt
+
 Flask
 Flask-Cors
 PyPDF2
@@ -7,3 +9,4 @@ Pillow
 gunicorn
 pdf2image
 docx2pdf
+PyMuPDF
