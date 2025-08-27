@@ -71,7 +71,7 @@ export const PdfCropper = ({ file, pageIndex, onCropChange, initialCropBox }: Pd
       }
     };
     renderPage();
-  }, [file, pageIndex]);
+  }, [file, pageIndex, initialCropBox]); // Rerun if initialCropBox is reset
 
   return (
     <div 
@@ -99,7 +99,7 @@ export const PdfCropper = ({ file, pageIndex, onCropChange, initialCropBox }: Pd
           }}
           className="z-10"
         >
-          <div className="w-full h-full border-4 border-dashed border-red-500 bg-black/20 cursor-move relative">
+          <div className="w-full h-full border-4 border-dashed border-blue-600 bg-black/20 cursor-move relative">
              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs font-semibold px-2 py-1 rounded">
                {Math.round(cropBox.width / CROPPER_RENDER_SCALE)} x {Math.round(cropBox.height / CROPPER_RENDER_SCALE)} px
              </div>
