@@ -1,36 +1,36 @@
 // src/components/tools/CropOptions.tsx
 
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FileSearch, Layers } from 'lucide-react';
-import { cn } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 export type CropMode = 'current' | 'all';
 
 interface CropOptionsProps {
   mode: CropMode;
   onModeChange: (mode: CropMode) => void;
-  currentPage: number;
+  onReset: () => void;
 }
 
-export const CropOptions = ({ mode, onModeChange, currentPage }: CropOptionsProps) => {
+export const CropOptions = ({ mode, onModeChange, onReset }: CropOptionsProps) => {
   return (
-    <div className="flex flex-col items-center gap-3">
-       <h3 className="text-lg font-semibold text-gray-700">Apply Crop To:</h3>
-      <ToggleGroup 
-        type="single" 
-        value={mode} 
-        onValueChange={(value: CropMode) => value && onModeChange(value)}
-        className="bg-white p-1 rounded-lg border shadow-sm"
-      >
-        <ToggleGroupItem value="current" aria-label="Crop current page" className={cn("px-4 py-2 text-sm rounded-md data-[state=on]:bg-red-500 data-[state=on]:text-white")}>
-          <FileSearch className="h-4 w-4 mr-2"/>
-          Current Page ({currentPage + 1})
-        </ToggleGroupItem>
-        <ToggleGroupItem value="all" aria-label="Crop all pages" className={cn("px-4 py-2 text-sm rounded-md data-[state=on]:bg-red-500 data-[state=on]:text-white")}>
-          <Layers className="h-4 w-4 mr-2"/>
-          All Pages
-        </ToggleGroupItem>
-      </ToggleGroup>
+    <div className="w-full space-y-4">
+      <div className="flex justify-between items-center">
+        <h3 className="font-semibold text-gray-700">Pages:</h3>
+        <Button variant="link" className="text-blue-600 p-0 h-auto" onClick={onReset}>
+          Reset all
+        </Button>
+      </div>
+      <RadioGroup value={mode} onValueChange={onModeChange} className="space-y-2">
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="all" id="all-pages" />
+          <Label htmlFor="all-pages" className="cursor-pointer">All pages</Label>
+        </div>
+        <div className="flex items-center space-x-2">
+          <RadioGroupItem value="current" id="current-page" />
+          <Label htmlFor="current-page" className="cursor-pointer">Current page</Label>
+        </div>
+      </RadioGroup>
     </div>
   );
 };
