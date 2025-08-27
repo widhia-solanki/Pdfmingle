@@ -116,6 +116,11 @@ const CropPdfPage: NextPage = () => {
     setDownloadUrl('');
   }, [downloadUrl]);
 
+  // This function is passed to the reset button in the options panel
+  const handleResetCrop = () => {
+      setCropBox(undefined);
+  };
+
   return (
     <>
       <NextSeo
@@ -154,8 +159,11 @@ const CropPdfPage: NextPage = () => {
             <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col justify-between shadow-lg border-l">
               <div>
                 <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">Crop Options</h2>
-                {/* --- THIS IS THE FIX --- */}
-                <CropOptions mode={cropMode} onModeChange={setCropMode} />
+                <CropOptions 
+                  mode={cropMode} 
+                  onModeChange={setCropMode} 
+                  onReset={handleResetCrop} // <-- THIS IS THE FIX
+                />
               </div>
               <Button size="lg" onClick={handleProcess} className="w-full bg-brand-blue hover:bg-brand-blue-dark font-bold py-6 text-lg">
                 <Crop className="mr-2 h-5 w-5"/>
