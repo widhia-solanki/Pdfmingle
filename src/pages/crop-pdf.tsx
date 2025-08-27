@@ -43,7 +43,7 @@ const CropPdfPage: NextPage = () => {
   const handleFileSelected = async (selectedFiles: File[]) => {
     if (selectedFiles.length > 0) {
       const selectedFile = selectedFiles[0];
-      handleStartOver();
+      handleStartOver(); // Reset state for the new file
       setFile(selectedFile);
       try {
         const fileBuffer = await selectedFile.arrayBuffer();
@@ -52,7 +52,11 @@ const CropPdfPage: NextPage = () => {
         setStatus('cropping');
       } catch (e) {
         setError("Could not read PDF. It may be corrupt or password-protected.");
-        setStatus('error');
+        // --- THIS IS THE FIX ---
+        // Instead of a separate error status, we stay on 'idle' to show the uploader
+        // and pass the error message to it.
+        setStatus('idle'); 
+        setFile(null); // Clear the invalid file
       }
     }
   };
@@ -71,7 +75,7 @@ const CropPdfPage: NextPage = () => {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(`Crop failed: ${message}`);
-      setStatus('error');
+      setStatus('error'); // Keep a dedicated status for processing errors
       toast({ title: 'Error', description: message, variant: 'destructive' });
     }
   };
@@ -121,11 +125,24 @@ const CropPdfPage: NextPage = () => {
         canonical={`https://pdfmingle.com/${tool.value}`}
       />
       <main className="w-full">
-        {status === 'idle' && (
+        {(status === 'idle' || status === 'error') && (
           <div className="container mx-auto px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">{tool.h1}</h1>
             <p className="text-lg text-gray-600 mb-8">{tool.description}</p>
-            <ToolUploader onFilesSelected={handleFileSelected} acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} selectedFiles={file ? [file] : []} isMultiFile={false} error={error} onProcess={() => {}} actionButtonText={tool.label} />
+            {/* --- THIS IS THE FIX --- */}
+            {/* Pass the error to the uploader. If it's a processing error, provide a start over button */}
+            <ToolUploader 
+              onFilesSelected={handleFileSelected} 
+              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} 
+              selectedFiles={file ? [file] : []} 
+              isMultiFile={false} 
+              error={error} 
+              onProcess={() => {}} 
+              actionButtonText={tool.label} 
+            />
+            {status === 'error' && (
+                 <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>
+            )}
           </div>
         )}
 
@@ -161,7 +178,6 @@ const CropPdfPage: NextPage = () => {
 
         {status === 'processing' && <div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>}
         {status === 'success' && <div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} /></div>}
-        {status === 'error' && <div className="text-center p-8"><p className="text-red-500 font-semibold mb-4">{error}</p><Button onClick={handleStartOver} variant="outline">Try Again</Button></div>}
       </main>
     </>
   );
