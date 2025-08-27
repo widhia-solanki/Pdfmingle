@@ -59,15 +59,15 @@ export const PdfThumbnailViewer = ({ file, currentPage, onPageChange, pageCount 
   }, [file, pageCount]);
 
   return (
-    <ScrollArea className="w-full h-full bg-gray-100 p-2 border-r">
-      <div className="space-y-2">
+    <ScrollArea className="w-full h-full bg-gray-50 p-4">
+      <div className="space-y-4">
         {thumbnails.map((src, index) => (
           <button
             key={index}
             onClick={() => onPageChange(index)}
             className={cn(
-              "w-full p-1 border-2 rounded-md transition-all",
-              currentPage === index ? "border-blue-500" : "border-transparent hover:border-gray-400"
+              "w-full p-1 border-2 rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500",
+              currentPage === index ? "border-red-500" : "border-transparent hover:border-gray-300"
             )}
           >
             {src ? (
@@ -77,7 +77,7 @@ export const PdfThumbnailViewer = ({ file, currentPage, onPageChange, pageCount 
                 <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
               </div>
             )}
-            <p className="text-xs font-semibold mt-1">{index + 1}</p>
+            <p className="text-sm font-semibold mt-2 text-gray-700">{index + 1}</p>
           </button>
         ))}
       </div>
