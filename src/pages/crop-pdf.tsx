@@ -8,8 +8,9 @@ import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
-import { PdfCropper, CropBox } from '@/components/tools/PdfCropper';
-import { CropOptions, CropMode } from '@/components/tools/CropOptions';
+import { MarginCropControls, CropMode } from '@/components/tools/MarginCropControls';
+import { PdfMarginPreviewer } from '@/components/tools/PdfMarginPreviewer';
+import { cropPdfWithMargins, MarginState } from '@/lib/pdf/crop';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,7 @@ if (typeof window !== 'undefined') {
 }
 
 type Status = 'idle' | 'cropping' | 'processing' | 'success' | 'error';
+const defaultMargins: MarginState = { top: 0, bottom: 0, left: 0, right: 0, unit: 'px' };
 
 const CropPdfPage: NextPage = () => {
   const tool = tools['crop-pdf'];
@@ -31,8 +33,8 @@ const CropPdfPage: NextPage = () => {
 
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [cropBox, setCropBox] = useState<CropBox | undefined>(undefined);
-  const [renderScale, setRenderScale] = useState(1.0);
+  const [pageDimensions, setPageDimensions] = useState({ width: 0, height: 0 });
+  const [margins, setMargins] = useState<{ [key: number]: MarginState }>({});
   const [cropMode, setCropMode] = useState<CropMode>('all');
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
@@ -55,42 +57,12 @@ const CropPdfPage: NextPage = () => {
     }
   };
 
-  const handleCropChange = (box: CropBox, scale: number) => {
-    setCropBox(box);
-    setRenderScale(scale);
-  };
-
   const handleProcess = async () => {
-    if (!file || !cropBox) {
-      toast({ title: 'Error', description: 'File or crop area not defined.', variant: 'destructive' });
-      return;
-    }
+    if (!file) return;
     setStatus('processing');
-    setError(null);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('x', cropBox.x.toString());
-    formData.append('y', cropBox.y.toString());
-    formData.append('width', cropBox.width.toString());
-    formData.append('height', cropBox.height.toString());
-    formData.append('scale', renderScale.toString());
-    formData.append('mode', cropMode);
-    formData.append('pageIndex', currentPage.toString());
-    
     try {
-      const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
-      const response = await fetch(`${apiBaseUrl}/api/crop-pdf`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'A server error occurred.');
-      }
-
-      const blob = await response.blob();
+      const pdfBytes = await cropPdfWithMargins(file, margins, cropMode, currentPage);
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProcessedFileName(`cropped_${file.name}`);
@@ -109,15 +81,21 @@ const CropPdfPage: NextPage = () => {
     setStatus('idle');
     setPageCount(0);
     setCurrentPage(0);
-    setCropBox(undefined);
+    setMargins({});
     setError(null);
     if (downloadUrl) URL.revokeObjectURL(downloadUrl);
     setDownloadUrl('');
   }, [downloadUrl]);
 
-  const handleResetCrop = () => {
-      setCropBox(undefined);
+  const handleMarginChange = (newMargins: MarginState) => {
+    setMargins(prev => ({ ...prev, [currentPage]: newMargins }));
   };
+
+  const handleReset = () => {
+    setMargins(prev => ({ ...prev, [currentPage]: defaultMargins }));
+  };
+
+  const currentMargins = margins[currentPage] || defaultMargins;
 
   return (
     <>
@@ -141,15 +119,22 @@ const CropPdfPage: NextPage = () => {
               <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
             </div>
             <div className="flex-grow h-full flex items-center justify-center bg-gray-400 p-4 overflow-auto">
-              <PdfCropper file={file} pageIndex={currentPage} onCropChange={handleCropChange} initialCropBox={cropBox}/>
+              <PdfMarginPreviewer file={file} pageIndex={currentPage} margins={currentMargins} onDimensionsChange={setPageDimensions} />
             </div>
             <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col shadow-lg border-l">
               <div className="flex-grow">
                 <h2 className="text-2xl font-bold mb-4 text-gray-800">Crop PDF</h2>
                 <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg mb-6 text-sm">
-                  <p>Click and drag to select the area you want to keep. Resize if needed.</p>
+                  <p>Adjust the margins to select the area you want to keep.</p>
                 </div>
-                <CropOptions mode={cropMode} onModeChange={setCropMode} onReset={handleResetCrop} />
+                <MarginCropControls 
+                  mode={cropMode} 
+                  onModeChange={setCropMode} 
+                  onReset={handleReset}
+                  margins={currentMargins}
+                  onMarginsChange={handleMarginChange}
+                  pageDimensions={pageDimensions}
+                />
               </div>
               <Button size="lg" onClick={handleProcess} className="w-full bg-brand-blue hover:bg-brand-blue-dark font-bold py-6 text-lg">
                 <Crop className="mr-2 h-5 w-5"/>
