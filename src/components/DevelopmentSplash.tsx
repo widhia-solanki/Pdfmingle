@@ -23,7 +23,7 @@ export const DevelopmentSplash = () => {
           <div className="mt-8 flex flex-col items-center gap-4">
             <Cog className="h-16 w-16 animate-spin" style={{ animationDuration: '5s' }} />
             <p className="font-semibold text-lg">
-              The site is fully functional on desktop.
+              The site is will be avalable on 30th August.
             </p>
             <p className="text-gray-400">
               Please check back soon on your mobile device!
