@@ -3,9 +3,7 @@
 import React from 'react';
 import { Button } from './ui/button';
 import Link from 'next/link';
-// --- THIS IS THE FIX ---
-// Import the Tool type from its correct location
-import { type Tool } from '@/constants/tools'; 
+import { type Tool } from '@/constants/tools';
 import { Wrench } from 'lucide-react';
 
 interface ToolComingSoonProps {
@@ -13,7 +11,9 @@ interface ToolComingSoonProps {
 }
 
 export const ToolComingSoon = ({ tool }: ToolComingSoonProps) => {
-  const Icon = tool.Icon;
+  // --- THIS IS THE FIX ---
+  // The property on the tool object is 'icon' (lowercase 'i').
+  const Icon = tool.icon;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
