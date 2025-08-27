@@ -43,11 +43,11 @@ export const BottomControls = ({ zoom, onZoomChange, currentPage, pageCount, onP
       
       <div className="w-px h-6 bg-gray-600 mx-2"></div>
 
-      <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700" onClick={() => onZoomChange(Math.max(0.25, zoom - 0.1))}>
+      <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700" onClick={() => onZoomChange(Math.max(0.1, zoom - 0.1))}>
         <ZoomOut className="h-5 w-5" />
       </Button>
       <span className="w-16 text-center font-semibold text-sm">{zoomPercentage}%</span>
-      <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700" onClick={() => onZoomChange(Math.min(2, zoom + 0.1))}>
+      <Button variant="ghost" size="icon" className="text-white hover:bg-gray-700" onClick={() => onZoomChange(Math.min(2.5, zoom + 0.1))}>
         <ZoomIn className="h-5 w-5" />
       </Button>
     </div>
