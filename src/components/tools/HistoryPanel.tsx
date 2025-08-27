@@ -1,4 +1,4 @@
-src/components/tools/HistoryPanel.tsx
+// src/components/tools/HistoryPanel.tsx
 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
