@@ -11,7 +11,6 @@ import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/Ad
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor';
 import { ZoomControls } from '@/components/tools/ZoomControls';
-import { HistoryPanel } from '@/components/tools/HistoryPanel';
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -45,8 +44,6 @@ const EditPdfPage: NextPage = () => {
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
   
-  const mainViewerRef = useRef<HTMLDivElement>(null);
-
   const handleFileSelected = async (selectedFiles: File[]) => {
     if (selectedFiles.length > 0) {
       const selectedFile = selectedFiles[0];
@@ -128,51 +125,61 @@ const EditPdfPage: NextPage = () => {
             <ToolUploader onFilesSelected={handleFileSelected} acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} selectedFiles={file ? [file] : []} isMultiFile={false} error={error} onProcess={() => {}} actionButtonText="Edit PDF" />
           </div>
         )}
+
         {status === 'editing' && file && (
-          pageCount > 0 ? (
-            <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
-              <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
-              <div className="flex-grow flex overflow-hidden relative">
-                <div className="w-48 flex-shrink-0 h-full">
+          <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
+            {pageCount > 0 ? (
+              <div className="flex w-full h-full">
+                {/* Left Panel: Thumbnails */}
+                <div className="w-60 flex-shrink-0 h-full border-r bg-white shadow-md">
                   <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
-                {/* --- THIS IS THE FIX --- */}
-                <div className="flex-grow h-full overflow-auto px-8 py-16 flex justify-center">
-                  <div className="mx-auto w-fit" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
-                    <div className="flex flex-col items-center gap-8">
-                      {Array.from({ length: pageCount }).map((_, index) => (
-                        <div key={index} id={`page-${index}`} data-page-index={index} className="pdf-page-container">
-                          <PdfEditor 
-                              file={file}
-                              pageIndex={index}
-                              objects={objects}
-                              onObjectsChange={setObjects}
-                              mode={toolMode}
-                              onObjectSelect={setSelectedObject}
-                          />
-                        </div>
-                      ))}
+
+                {/* Center Panel: Editor & Controls */}
+                <div className="flex-grow h-full flex flex-col bg-gray-400 relative overflow-hidden">
+                  <div className="flex justify-center p-2 bg-white shadow-sm z-10">
+                    <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
+                  </div>
+                  <div className="flex-grow overflow-auto p-8">
+                    <div className="mx-auto w-fit" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
+                      {/* We only render the current page for performance */}
+                      <PdfEditor 
+                        file={file}
+                        pageIndex={currentPage}
+                        objects={objects}
+                        onObjectsChange={setObjects}
+                        mode={toolMode}
+                        onObjectSelect={setSelectedObject}
+                      />
                     </div>
                   </div>
-                </div>
-                <div className="w-72 flex-shrink-0 bg-white flex flex-col">
-                  <HistoryPanel objects={objects} onObjectSelect={setSelectedObject} onObjectDelete={handleObjectDelete} />
-                  <div className="p-4 border-t">
-                    <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6">Save & Download</Button>
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                    <ZoomControls zoom={zoom} onZoomChange={setZoom} />
                   </div>
                 </div>
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30">
-                  <ZoomControls zoom={zoom} onZoomChange={setZoom} />
+
+                {/* Right Panel: Actions */}
+                <div className="w-80 flex-shrink-0 bg-gray-100 p-6 flex flex-col shadow-lg">
+                  <h2 className="text-2xl font-bold mb-4 text-gray-800">Edit PDF</h2>
+                  <div className="bg-blue-100 border border-blue-200 text-blue-800 p-4 rounded-lg mb-6 text-sm">
+                    <p>Use the toolbar to modify or add text, upload images, and annotate with ease.</p>
+                  </div>
+                  <div className="mt-auto">
+                    <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6 text-lg">
+                      Save & Download
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4 items-center justify-center h-[70vh]">
-              <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
-              <p className="text-lg font-semibold text-gray-600">Preparing your document...</p>
-            </div>
-          )
+            ) : (
+              <div className="flex flex-col gap-4 items-center justify-center h-full">
+                <Loader2 className="h-12 w-12 animate-spin text-gray-500" />
+                <p className="text-lg font-semibold text-gray-600">Preparing your document...</p>
+              </div>
+            )}
+          </div>
         )}
+
         {status === 'processing' && (<div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>)}
         {status === 'success' && (<div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={() => handleStartOver(true)} filename={processedFileName} /></div>)}
         {status === 'error' && (<div className="text-center p-8"><p className="text-red-500 font-semibold mb-4">{error}</p><Button onClick={() => handleStartOver(true)} variant="outline">Try Again</Button></div>)}
