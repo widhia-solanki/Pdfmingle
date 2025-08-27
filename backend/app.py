@@ -1,11 +1,13 @@
+# backend/app.py
+
 from flask import Flask, request, send_file, jsonify
 from flask_cors import CORS
 from pdf2docx import Converter
 from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
 from pdf2image import convert_from_path
-import docx # Import python-docx
-import fitz # Import PyMuPDF (also known as fitz)
+import docx
+import fitz  # PyMuPDF
 import io
 import os
 import uuid
@@ -16,15 +18,14 @@ import shutil
 
 app = Flask(__name__)
 
-CORS(app, resources={r"/*": {"origins": ["http://localhost:3000", "https://pdfmingle.net", "https://www.pdfmingle.net"]}})
+# Allow all origins for Vercel preview deployments and local development
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-@app.route('/')
-def index():
-    return jsonify({"message": "PDFMingle Backend is running!"})
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    return jsonify({"message": "pong"}), 200
 
-# --- ALL PREVIOUS, WORKING ENDPOINTS ---
-# ... (pdf-to-word, compress-pdf, protect-pdf, etc. - leaving them as is)
-@app.route('/pdf-to-word', methods=['POST'])
+@app.route('/api/pdf-to-word', methods=['POST'])
 def handle_pdf_to_word():
     if 'files' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files.get('files')
@@ -50,7 +51,7 @@ def handle_pdf_to_word():
     finally:
         if os.path.exists(temp_pdf_path): os.remove(temp_pdf_path)
 
-@app.route('/compress-pdf', methods=['POST'])
+@app.route('/api/compress-pdf', methods=['POST'])
 def handle_compress_pdf():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -81,7 +82,7 @@ def handle_compress_pdf():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_path): os.remove(output_path)
 
-@app.route('/protect-pdf', methods=['POST'])
+@app.route('/api/protect-pdf', methods=['POST'])
 def handle_protect_pdf():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -106,7 +107,7 @@ def handle_protect_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to protect the PDF."}), 500
 
-@app.route('/unlock-pdf', methods=['POST'])
+@app.route('/api/unlock-pdf', methods=['POST'])
 def handle_unlock_pdf():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -133,7 +134,7 @@ def handle_unlock_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to unlock the PDF."}), 500
 
-@app.route('/image-to-pdf', methods=['POST'])
+@app.route('/api/image-to-pdf', methods=['POST'])
 def handle_images_to_pdf():
     if 'files' not in request.files: return jsonify({"error": "No file part"}), 400
     files = request.files.getlist('files')
@@ -158,7 +159,7 @@ def handle_images_to_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to convert images."}), 500
 
-@app.route('/pdf-to-image', methods=['POST'])
+@app.route('/api/pdf-to-image', methods=['POST'])
 def handle_pdf_to_image():
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
@@ -191,8 +192,7 @@ def handle_pdf_to_image():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_dir): shutil.rmtree(output_dir)
 
-# --- LIGHTWEIGHT WORD TO PDF ENDPOINT ---
-@app.route('/word-to-pdf', methods=['POST'])
+@app.route('/api/word-to-pdf', methods=['POST'])
 def handle_word_to_pdf():
     if 'file' not in request.files:
         return jsonify({"error": "No file part"}), 400
@@ -204,35 +204,77 @@ def handle_word_to_pdf():
         return jsonify({"error": "Invalid file type. Please upload a Word document."}), 400
 
     try:
-        # Read the docx file in memory
         doc = docx.Document(io.BytesIO(file.read()))
-        
-        # Create a new PDF document in memory
         pdf_doc = fitz.open() 
-        
-        # Process each paragraph
         for para in doc.paragraphs:
-            # This is a simple text conversion. More complex logic can be added here
-            # for font sizes, bold, italics, etc. in the future.
-            # For now, we focus on making it work reliably.
             page = pdf_doc.new_page()
-            page.insert_text((72, 72), para.text) # Insert text at a 1-inch margin
-
-        # Save the PDF to a memory buffer
+            page.insert_text((72, 72), para.text)
         pdf_bytes = pdf_doc.write()
         pdf_stream = io.BytesIO(pdf_bytes)
         pdf_stream.seek(0)
         
         return send_file(
-            pdf_stream,
-            as_attachment=True,
+            pdf_stream, as_attachment=True,
             download_name=f"{os.path.splitext(file.filename)[0]}.pdf",
             mimetype='application/pdf'
         )
     except Exception as e:
-        print(f"Error converting Word to PDF with PyMuPDF: {e}")
         traceback.print_exc()
         return jsonify({"error": "Failed to convert the document."}), 500
 
+@app.route('/api/crop-pdf', methods=['POST'])
+def handle_crop_pdf():
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part provided."}), 400
+    
+    file = request.files['file']
+    try:
+        x = float(request.form['x'])
+        y = float(request.form['y'])
+        width = float(request.form['width'])
+        height = float(request.form['height'])
+        scale = float(request.form['scale'])
+        mode = request.form['mode']
+        page_index = int(request.form.get('pageIndex', 0))
+
+        pdf_bytes = file.read()
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        
+        def get_pdf_rect(page, fe_x, fe_y, fe_width, fe_height, fe_scale):
+            pdf_x0 = fe_x / fe_scale
+            pdf_y0 = fe_y / fe_scale
+            pdf_x1 = (fe_x + fe_width) / fe_scale
+            pdf_y1 = (fe_y + fe_height) / fe_scale
+            return fitz.Rect(pdf_x0, pdf_y0, pdf_x1, pdf_y1)
+
+        if mode == 'all':
+            first_page = doc[0]
+            crop_rect = get_pdf_rect(first_page, x, y, width, height, scale)
+            for page in doc:
+                page.set_cropbox(crop_rect)
+        elif mode == 'current':
+            if 0 <= page_index < len(doc):
+                page = doc[page_index]
+                crop_rect = get_pdf_rect(page, x, y, width, height, scale)
+                page.set_cropbox(crop_rect)
+            else:
+                return jsonify({"error": "Invalid page index provided."}), 400
+        else:
+            return jsonify({"error": "Invalid crop mode specified."}), 400
+
+        output_stream = io.BytesIO()
+        doc.save(output_stream, garbage=4, deflate=True, clean=True)
+        doc.close()
+        output_stream.seek(0)
+
+        return send_file(
+            output_stream, as_attachment=True,
+            download_name=f"cropped_{file.filename}",
+            mimetype='application/pdf'
+        )
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": "An error occurred during cropping.", "details": str(e)}), 500
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=False)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
