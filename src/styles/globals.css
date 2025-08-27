@@ -33,13 +33,7 @@
   }
 }
 
-/* 2. Tailwind Directives */
-
-@tailwind components;
-@tailwind utilities;
-
-/* 3. Animations */
-
+/* 2. Animations */
 @keyframes float1 {
   0% { transform: translateY(0px) translateX(0px); }
   50% { transform: translateY(-20px) translateX(10px); }
@@ -58,17 +52,25 @@
   100% { transform: translateY(0px) translateX(0px); }
 }
 
-/* 4. Custom Background Classes */
-
+/* 3. Custom Utility Classes */
 @layer utilities {
   .hero-gradient-background {
     background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
   }
-}
 
-/*
-  We separate usage and definitions into three blocks like this:
-    1. First we DEFINE base variables
-    2. Then we USE those variables inside Tailwind’s @layer base
-    3. We add any animation and components into  @layer utilities
-*/
+  /* Custom Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+}
