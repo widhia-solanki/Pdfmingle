@@ -58,16 +58,23 @@ export const PdfMarginPreviewer = ({ file, pageIndex, margins, onDimensionsChang
     return () => { if (containerRef.current) observer.unobserve(containerRef.current); };
   }, [file, pageIndex, onDimensionsChange]);
 
-  const getMaskStyle = (side: 'top' | 'bottom' | 'left' | 'right') => {
+  const getMaskStyle = (side: 'top' | 'bottom' | 'left' | 'right'): React.CSSProperties => {
     const { top, bottom, left, right, unit } = margins;
-    const value = unit === '%' ? '%' : 'px';
-    const baseStyle = { position: 'absolute', backgroundColor: 'rgba(107, 114, 128, 0.5)', zIndex: 10 };
+    const valueUnit = unit === '%' ? '%' : 'px';
+    
+    // --- THIS IS THE FIX ---
+    // Explicitly cast the position property to satisfy TypeScript's strict CSS property types.
+    const baseStyle: React.CSSProperties = { 
+        position: 'absolute' as 'absolute', 
+        backgroundColor: 'rgba(107, 114, 128, 0.5)', 
+        zIndex: 10 
+    };
 
     switch (side) {
-      case 'top': return { ...baseStyle, top: 0, left: 0, right: 0, height: `${top}${value}` };
-      case 'bottom': return { ...baseStyle, bottom: 0, left: 0, right: 0, height: `${bottom}${value}` };
-      case 'left': return { ...baseStyle, top: `${top}${value}`, bottom: `${bottom}${value}`, left: 0, width: `${left}${value}` };
-      case 'right': return { ...baseStyle, top: `${top}${value}`, bottom: `${bottom}${value}`, right: 0, width: `${right}${value}` };
+      case 'top': return { ...baseStyle, top: 0, left: 0, right: 0, height: `${top}${valueUnit}` };
+      case 'bottom': return { ...baseStyle, bottom: 0, left: 0, right: 0, height: `${bottom}${valueUnit}` };
+      case 'left': return { ...baseStyle, top: `${top}${valueUnit}`, bottom: `${bottom}${valueUnit}`, left: 0, width: `${left}${valueUnit}` };
+      case 'right': return { ...baseStyle, top: `${top}${valueUnit}`, bottom: `${bottom}${valueUnit}`, right: 0, width: `${right}${valueUnit}` };
     }
   };
 
