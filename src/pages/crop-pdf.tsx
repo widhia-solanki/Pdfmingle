@@ -8,7 +8,7 @@ import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
-import { PdfCropper, CropBox, CROPPER_RENDER_SCALE } from '@/components/tools/PdfCropper';
+import { PdfCropper, CropBox } from '@/components/tools/PdfCropper';
 import { CropOptions, CropMode } from '@/components/tools/CropOptions';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -32,6 +32,7 @@ const CropPdfPage: NextPage = () => {
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [cropBox, setCropBox] = useState<CropBox | undefined>(undefined);
+  const [renderScale, setRenderScale] = useState(1.0);
   const [cropMode, setCropMode] = useState<CropMode>('all');
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
@@ -54,6 +55,11 @@ const CropPdfPage: NextPage = () => {
     }
   };
 
+  const handleCropChange = (box: CropBox, scale: number) => {
+    setCropBox(box);
+    setRenderScale(scale);
+  };
+
   const handleProcess = async () => {
     if (!file || !cropBox) {
       toast({ title: 'Error', description: 'File or crop area not defined.', variant: 'destructive' });
@@ -68,7 +74,7 @@ const CropPdfPage: NextPage = () => {
     formData.append('y', cropBox.y.toString());
     formData.append('width', cropBox.width.toString());
     formData.append('height', cropBox.height.toString());
-    formData.append('scale', CROPPER_RENDER_SCALE.toString());
+    formData.append('scale', renderScale.toString());
     formData.append('mode', cropMode);
     formData.append('pageIndex', currentPage.toString());
     
@@ -110,7 +116,7 @@ const CropPdfPage: NextPage = () => {
   }, [downloadUrl]);
 
   const handleResetCrop = () => {
-      setCropBox(undefined); // This will trigger the re-initialization in PdfCropper
+      setCropBox(undefined);
   };
 
   return (
@@ -134,8 +140,8 @@ const CropPdfPage: NextPage = () => {
             <div className="w-64 flex-shrink-0 h-full border-r bg-gray-50 shadow-md">
               <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
             </div>
-            <div className="flex-grow h-full flex items-center justify-center bg-slate-400 p-8 overflow-auto">
-              <PdfCropper file={file} pageIndex={currentPage} onCropChange={setCropBox} initialCropBox={cropBox}/>
+            <div className="flex-grow h-full flex items-center justify-center bg-gray-400 p-4 overflow-auto">
+              <PdfCropper file={file} pageIndex={currentPage} onCropChange={handleCropChange} initialCropBox={cropBox}/>
             </div>
             <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col shadow-lg border-l">
               <div className="flex-grow">
