@@ -1,15 +1,17 @@
+// src/pages/pdf-to-ppt.tsx
+
 import { ToolComingSoon } from "@/components/ToolComingSoon";
-import { TOOLS } from "@/constants/tools";
+import { toolArray } from "@/constants/tools";
 import { NextSeo } from "next-seo";
 
 const PdfToPptPage = () => {
-    const tool = TOOLS.find(t => t.key === 'pdf-to-ppt');
+    const tool = toolArray.find(t => t.value === 'pdf-to-powerpoint');
     
     if (!tool) return <div>Tool not found</div>;
     
     return (
         <>
-            <NextSeo title={tool.title} description={tool.description} />
+            <NextSeo title={tool.metaTitle} description={tool.description} />
             <ToolComingSoon tool={tool} />
         </>
     )
