@@ -3,24 +3,27 @@
 import React from 'react';
 import { Button } from './ui/button';
 import Link from 'next/link';
-import { Wrench } from 'lucide-react';
-import { type Tool } from '@/types'; // Use the central type definition
+// --- THIS IS THE FIX ---
+// Import both the 'Tool' type AND the 'iconMap' for lookups.
+import { type Tool, iconMap } from '@/constants/tools'; 
+import { Wrench, FileQuestion } from 'lucide-react';
 
 interface ToolComingSoonProps {
   tool: Tool;
 }
 
 export const ToolComingSoon = ({ tool }: ToolComingSoonProps) => {
-  // --- THIS IS THE FINAL, CORRECT FIX ---
-  // The tool object itself now contains the component, so we just use it directly.
-  const Icon = tool.Icon;
+  // --- THIS IS THE FIX ---
+  // Look up the icon component from the map using the 'icon' string key from the tool object.
+  // Provide a fallback icon in case the key doesn't exist.
+  const Icon = iconMap[tool.icon] || FileQuestion;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-4">
       <div className="flex items-center justify-center h-24 w-24 rounded-full bg-blue-100 mb-6">
         <Icon className="h-12 w-12 text-blue-600" />
       </div>
-      <h1 className="text-4xl font-bold text-gray-800">{tool.title}</h1>
+      <h1 className="text-4xl font-bold text-gray-800">{tool.label}</h1>
       <p className="mt-4 text-lg max-w-xl text-gray-600">
         This tool is currently under construction.
       </p>
