@@ -1,16 +1,16 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import * as pdfjsLib from 'pdfjs-dist';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
-import { AdvancedEditorToolbar, MainMode, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
+import { AdvancedEditorToolbar, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
 import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor';
-import { ZoomControls } from '@/components/tools/ZoomControls';
+import { BottomControls } from '@/components/tools/BottomControls'; // <-- New Component
 import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
@@ -31,7 +31,6 @@ const EditPdfPage: NextPage = () => {
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   
-  const [mainMode, setMainMode] = useState<MainMode>('edit');
   const [toolMode, setToolMode] = useState<ToolMode>('select');
   
   const [pageCount, setPageCount] = useState(0);
@@ -107,7 +106,6 @@ const EditPdfPage: NextPage = () => {
     setObjects([]);
     setPageCount(0);
     setCurrentPage(0);
-    setMainMode('edit');
     setToolMode('select');
     setSelectedObject(null);
     setZoom(1.0);
@@ -130,43 +128,37 @@ const EditPdfPage: NextPage = () => {
           <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
             {pageCount > 0 ? (
               <div className="flex w-full h-full">
-                {/* Left Panel: Thumbnails */}
-                <div className="w-60 flex-shrink-0 h-full border-r bg-white shadow-md">
+                <div className="w-64 flex-shrink-0 h-full border-r bg-gray-50 shadow-md">
                   <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
 
-                {/* Center Panel: Editor & Controls */}
-                <div className="flex-grow h-full flex flex-col bg-gray-400 relative overflow-hidden">
-                  <div className="flex justify-center p-2 bg-white shadow-sm z-10">
-                    <AdvancedEditorToolbar mainMode={mainMode} onMainModeChange={setMainMode} toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
-                  </div>
+                <div className="flex-grow h-full flex flex-col bg-gray-300 relative overflow-hidden">
+                  <header className="flex-shrink-0 w-full flex justify-center p-2 bg-white shadow-sm z-10">
+                    <AdvancedEditorToolbar toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
+                  </header>
+                  
                   <div className="flex-grow overflow-auto p-8">
-                    <div className="mx-auto w-fit" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
-                      {/* We only render the current page for performance */}
+                    <div className="mx-auto w-fit shadow-xl" style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }}>
                       <PdfEditor 
-                        file={file}
-                        pageIndex={currentPage}
-                        objects={objects}
-                        onObjectsChange={setObjects}
-                        mode={toolMode}
-                        onObjectSelect={setSelectedObject}
+                        file={file} pageIndex={currentPage} objects={objects}
+                        onObjectsChange={setObjects} mode={toolMode} onObjectSelect={setSelectedObject}
                       />
                     </div>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
-                    <ZoomControls zoom={zoom} onZoomChange={setZoom} />
-                  </div>
+
+                  <footer className="flex-shrink-0 w-full flex justify-center p-2 z-10">
+                     <BottomControls zoom={zoom} onZoomChange={setZoom} currentPage={currentPage} pageCount={pageCount} onPageChange={setCurrentPage} />
+                  </footer>
                 </div>
 
-                {/* Right Panel: Actions */}
-                <div className="w-80 flex-shrink-0 bg-gray-100 p-6 flex flex-col shadow-lg">
+                <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col shadow-lg border-l">
                   <h2 className="text-2xl font-bold mb-4 text-gray-800">Edit PDF</h2>
-                  <div className="bg-blue-100 border border-blue-200 text-blue-800 p-4 rounded-lg mb-6 text-sm">
+                  <div className="bg-blue-50 border border-blue-200 text-blue-800 p-4 rounded-lg mb-6 text-sm">
                     <p>Use the toolbar to modify or add text, upload images, and annotate with ease.</p>
                   </div>
                   <div className="mt-auto">
                     <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6 text-lg">
-                      Save & Download
+                      Edit PDF
                     </Button>
                   </div>
                 </div>
