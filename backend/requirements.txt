@@ -1,5 +1,3 @@
-# backend/requirements.txt
-
 Flask
 Flask-Cors
 PyPDF2
@@ -10,3 +8,4 @@ gunicorn
 pdf2image
 docx2pdf
 PyMuPDF
+webcolors
