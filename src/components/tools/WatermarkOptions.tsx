@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
 import { ImagePlus, Type } from "lucide-react";
 
 export type WatermarkType = "text" | "image";
@@ -81,7 +80,6 @@ export const WatermarkOptions = ({ options, onOptionChange }: WatermarkOptionsPr
         <Checkbox id="tiled-watermark" checked={options.isTiled} onCheckedChange={(checked) => onOptionChange({ ...options, isTiled: !!checked })} />
         <Label htmlFor="tiled-watermark" className="cursor-pointer">Tiled Watermark</Label>
       </div>
-
     </div>
   );
 };
