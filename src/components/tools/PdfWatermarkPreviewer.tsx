@@ -1,6 +1,6 @@
 // src/components/tools/PdfWatermarkPreviewer.tsx
 
-import React, { useState, useLayoutEffect, useRef, useEffect } from 'react'; // <-- THIS IS THE FIX
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { WatermarkState } from './WatermarkOptions';
@@ -58,6 +58,7 @@ export const PdfWatermarkPreviewer = ({ file, pageIndex, options }: PdfWatermark
     position: 'absolute', inset: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     pointerEvents: 'none',
+    overflow: 'hidden'
   };
 
   const watermarkElement = options.type === 'text'
@@ -72,19 +73,20 @@ export const PdfWatermarkPreviewer = ({ file, pageIndex, options }: PdfWatermark
       }} />
     : null;
 
+  // For tiled text, we create an SVG and use it as a repeating background.
+  const tiledTextSvg = options.isTiled && options.type === 'text' 
+    ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150px" width="150px"><text x="75" y="75" fill="${options.color}" opacity="${options.opacity}" font-size="${options.fontSize}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${options.rotation}, 75, 75)">${options.text}</text></svg>')`
+    : undefined;
+
   return (
     <div ref={containerRef} className="w-full h-full flex items-center justify-center">
       <div className="relative shadow-xl bg-white" style={{ width: pageDimensions.width, height: pageDimensions.height }}>
         {!isRendered && <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-20"><Loader2 className="h-12 w-12 animate-spin text-gray-500"/></div>}
         <canvas ref={canvasRef} />
         {isRendered && (
-          options.isTiled ? (
-            <div style={{...overlayStyle, backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150px" width="150px"><text x="75" y="75" fill="${options.color}" opacity="${options.opacity}" font-size="${options.fontSize}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${options.rotation}, 75, 75)">${options.text}</text></svg>')`}} />
-          ) : (
-            <div style={overlayStyle}>
-              {watermarkElement}
-            </div>
-          )
+          <div style={{...overlayStyle, backgroundImage: tiledTextSvg}}>
+            {!options.isTiled && watermarkElement}
+          </div>
         )}
       </div>
     </div>
