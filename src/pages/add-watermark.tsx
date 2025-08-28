@@ -15,8 +15,11 @@ import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Droplets } from 'lucide-react';
 
+// --- THIS IS THE FIX ---
+// Point to the local copy of the worker file instead of the external CDN.
+// This ensures reliability and prevents loading errors.
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
 type Status = 'idle' | 'previewing' | 'processing' | 'success' | 'error';
