@@ -4,10 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { WatermarkPositionSelector, Position } from "./WatermarkPositionSelector";
 import { ImagePlus, Type } from "lucide-react";
 
 export type WatermarkType = "text" | "image";
+export type Positioning = "single" | "tiled";
 
 export interface WatermarkState {
   type: WatermarkType;
@@ -15,7 +17,8 @@ export interface WatermarkState {
   image: File | null;
   opacity: number;
   rotation: number;
-  isTiled: boolean;
+  positioning: Positioning;
+  position: Position;
   color: string;
   fontSize: number;
 }
@@ -76,10 +79,20 @@ export const WatermarkOptions = ({ options, onOptionChange }: WatermarkOptionsPr
         </div>
       </div>
       
-      <div className="flex items-center space-x-2">
-        <Checkbox id="tiled-watermark" checked={options.isTiled} onCheckedChange={(checked) => onOptionChange({ ...options, isTiled: !!checked })} />
-        <Label htmlFor="tiled-watermark" className="cursor-pointer">Tiled Watermark</Label>
+      <div>
+        <Label className="font-medium">Positioning</Label>
+        <ToggleGroup type="single" value={options.positioning} onValueChange={(v: Positioning) => v && onOptionChange({ ...options, positioning: v })} className="grid grid-cols-2 mt-2">
+          <ToggleGroupItem value="single">Single</ToggleGroupItem>
+          <ToggleGroupItem value="tiled">Tiled</ToggleGroupItem>
+        </ToggleGroup>
       </div>
+
+      {options.positioning === 'single' && (
+        <WatermarkPositionSelector 
+          position={options.position} 
+          onPositionChange={(pos) => onOptionChange({ ...options, position: pos })} 
+        />
+      )}
     </div>
   );
 };
