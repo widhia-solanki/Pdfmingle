@@ -37,24 +37,35 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
 
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-6">
-      <div {...getRootProps()} className={cn('w-full border-2 border-dashed rounded-xl p-8 text-center transition-colors', isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300', error && 'border-red-500 bg-red-50')}>
+      <div 
+        {...getRootProps()} 
+        className={cn(
+          'w-full border-2 border-dashed rounded-xl p-8 text-center transition-colors flex flex-col items-center justify-center min-h-[250px]', 
+          isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300', 
+          error && 'border-red-500 bg-red-50'
+        )}
+      >
         <input {...getInputProps()} />
-        <div className="flex flex-col items-center gap-4 text-gray-500">
-          <UploadCloud className="w-16 h-16" />
-          <p className="text-lg font-semibold">Drag & drop files here</p>
-          <p className="text-gray-400">- or -</p>
-          <Button type="button" onClick={open} className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3 px-6 rounded-lg">Select Files</Button>
-        </div>
+        
+        {error ? (
+          // --- THIS IS THE FIX: Error message is now inside the uploader ---
+          <div className="flex flex-col items-center gap-4 text-red-600">
+            <AlertTriangle className="w-16 h-16" />
+            <p className="text-lg font-semibold">Upload Failed</p>
+            <p className="text-base">{error}</p>
+          </div>
+        ) : (
+          // --- Default uploader content ---
+          <div className="flex flex-col items-center gap-4 text-gray-500">
+            <UploadCloud className="w-16 h-16" />
+            <p className="text-lg font-semibold">Drag & drop files here</p>
+            <p className="text-gray-400">- or -</p>
+            <Button type="button" onClick={open} className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3 px-6 rounded-lg">Select Files</Button>
+          </div>
+        )}
       </div>
 
-      {error && (
-        <div className="flex items-center justify-center gap-2 text-red-600 font-semibold">
-          <AlertTriangle className="h-5 w-5" />
-          <span>{error}</span>
-        </div>
-      )}
-
-      {selectedFiles.length > 0 && (
+      {selectedFiles.length > 0 && !error && (
         <div className="w-full space-y-2">
           <h3 className="font-semibold text-lg text-left">Selected Files:</h3>
           {selectedFiles.map((file, index) => (
