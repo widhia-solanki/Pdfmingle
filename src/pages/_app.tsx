@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { DevelopmentSplash } from '@/components/DevelopmentSplash';
-import { MaintenanceSplash } from '@/components/MaintenanceSplash'; // <-- New import
+import { MaintenanceSplash } from '@/components/MaintenanceSplash';
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
@@ -37,47 +37,47 @@ export default function App({ Component, pageProps }: AppProps) {
     return null; 
   }
 
-  // --- THIS IS THE NEW LOGIC ---
-  // 1. If the user is on a desktop device, show the maintenance page.
+  // --- THIS IS THE CORRECTED LOGIC ---
+
+  // 1. FIRST, check for developer access. If granted, show the full application.
+  if (hasAccess) {
+    return (
+      <>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <link rel="icon" href="/favicon.ico" sizes="any" />
+          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+          <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+          <link rel="manifest" href="/site.webmanifest" />
+        </Head>
+
+        <DefaultSeo {...SEO} />
+        
+        <MainLayout>
+          <Component {...pageProps} />
+        </MainLayout>
+        
+        <SpeedInsights />
+        <Analytics />
+
+        <CookieConsent
+          location="bottom"
+          buttonText="I understand"
+          cookieName="pdfmingleCookieConsent"
+          style={{ background: "#2B373B", fontSize: "14px" }}
+          buttonStyle={{ color: "#4e503b", background: "#fff", fontSize: "14px", borderRadius: "5px" }}
+          expires={150}
+        >
+          This website uses cookies to enhance the user experience.
+        </CookieConsent>
+      </>
+    );
+  }
+
+  // 2. If NO developer access, THEN decide which splash screen to show.
   if (!isMobile) {
     return <MaintenanceSplash />;
-  }
-
-  // 2. If the user is on mobile AND doesn't have secret access, show the mobile development splash page.
-  if (isMobile && !hasAccess) {
+  } else {
     return <DevelopmentSplash />;
   }
-  
-  // 3. Otherwise (mobile with developer access), show the normal website.
-  return (
-    <>
-      <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
-      </Head>
-
-      <DefaultSeo {...SEO} />
-      
-      <MainLayout>
-        <Component {...pageProps} />
-      </MainLayout>
-      
-      <SpeedInsights />
-      <Analytics />
-
-      <CookieConsent
-        location="bottom"
-        buttonText="I understand"
-        cookieName="pdfmingleCookieConsent"
-        style={{ background: "#2B373B", fontSize: "14px" }}
-        buttonStyle={{ color: "#4e503b", background: "#fff", fontSize: "14px", borderRadius: "5px" }}
-        expires={150}
-      >
-        This website uses cookies to enhance the user experience.
-      </CookieConsent>
-    </>
-  );
 }
