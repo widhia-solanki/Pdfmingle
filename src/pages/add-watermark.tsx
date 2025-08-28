@@ -126,7 +126,7 @@ const AddWatermarkPage: NextPage = () => {
     <>
       <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.com/${tool.value}`} />
       <main className="w-full">
-        {status === 'idle' || status === 'error' ? (
+        {(status === 'idle' || status === 'error') ? (
           <div className="container mx-auto px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">{tool.h1}</h1>
             <p className="text-lg text-gray-600 mb-8">{tool.description}</p>
