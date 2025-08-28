@@ -3,7 +3,7 @@
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps,
-  Crop // <-- Import the new icon
+  Crop
 } from "lucide-react";
 
 export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
@@ -11,7 +11,7 @@ export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Secur
 export const iconMap: { [key: string]: React.ElementType<LucideProps> } = {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon,
-  Crop // <-- Add the new icon to the map
+  Crop
 };
 
 export interface Tool {
@@ -31,13 +31,13 @@ export interface Tool {
   faqs: { question: string; answer:string; }[];
 }
 
-// Define the type for our main tools object
 type ToolMap = {
   [key: string]: Tool;
 };
 
-// Create the tools as a structured object for direct, type-safe lookups
+// --- THIS IS THE REORDERED LIST ---
 export const tools: ToolMap = {
+  // --- WORKING TOOLS ---
   "merge-pdf": {
     value: "merge-pdf",
     label: "Merge PDF",
@@ -78,6 +78,26 @@ export const tools: ToolMap = {
       { question: "How are the split files delivered?", answer: "If you split a PDF into multiple new documents, they will be delivered in a single ZIP file for easy downloading." }
     ]
   },
+  "organize-pdf": {
+    value: "organize-pdf",
+    label: "Organize PDF",
+    h1: "Organize PDF Pages – Free Online Tool",
+    description: "Reorder, arrange, and manage PDF pages effortlessly. Free and secure.",
+    category: "Organize",
+    icon: 'Files',
+    color: "#4A90E2",
+    metaTitle: "Organize PDF Pages – Free Online Tool",
+    metaDescription: "Reorder, arrange, and manage PDF pages effortlessly. Free and secure.",
+    metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
+    steps: ["Upload your PDF", "Drag pages to reorder them, or use the delete button", "Click 'Organize PDF'", "Download the modified file"],
+    isBrowserOnly: true,
+    isMultiFile: false,
+    faqs: [
+      { question: "Can I move multiple pages at once?", answer: "Yes, our interface allows you to select and drag multiple pages to reorder your document more quickly." },
+      { question: "Is it possible to add a blank page to my PDF?", answer: "Yes, you can insert blank pages at any point in your document using the organization tool." },
+      { question: "Will organizing my PDF affect the file's quality?", answer: "No, reorganizing, deleting, or adding pages will not affect the visual quality of your document's content." }
+    ]
+  },
   "compress-pdf": {
     value: "compress-pdf",
     label: "Compress PDF",
@@ -96,6 +116,112 @@ export const tools: ToolMap = {
         { question: "How do I compress a PDF without losing quality?", answer: "Our tool uses advanced algorithms to reduce file size while maintaining the best possible text and image quality. For most documents, the quality difference is negligible." },
         { question: "What is the maximum file size I can compress?", answer: "Our PDF compressor is designed to handle large files, but for best results, we recommend files under 100MB. Performance may vary based on your connection speed." },
         { question: "Why should I compress a PDF?", answer: "Compressing a PDF makes it much easier to share via email or upload to the web. It saves storage space and reduces download times for recipients." }
+    ]
+  },
+  "edit-pdf": {
+    value: "edit-pdf",
+    label: "Edit PDF",
+    h1: "Edit PDF Online – Free PDF Editor",
+    description: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.",
+    category: "Edit",
+    icon: 'FileText',
+    color: "#7ED321",
+    metaTitle: "Edit PDF Online – Free PDF Editor",
+    metaDescription: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.",
+    metaKeywords: "edit pdf, pdf editor, annotate pdf, modify pdf",
+    steps: ["Upload your PDF", "Use the toolbar to add text, images, or shapes", "Save your changes", "Download the edited PDF"],
+    isBrowserOnly: true,
+    isMultiFile: false,
+    faqs: [
+      { question: "Can I edit the existing text in a PDF?", answer: "Our editor allows you to add new text, images, and shapes on top of the PDF. Editing the original, underlying text is a more complex feature that we are developing." },
+      { question: "Are my edits saved automatically?", answer: "You will need to click the 'Save' or 'Download' button to process and finalize your edits into a new PDF file." },
+      { question: "Is this online PDF editor secure?", answer: "Yes, your files and the edits you make are processed securely and are deleted from our servers after you have downloaded your document." }
+    ]
+  },
+  "rotate-pdf": {
+    value: "rotate-pdf",
+    label: "Rotate PDF",
+    h1: "Rotate PDF Pages – Free Online Tool",
+    description: "Rotate and flip PDF pages easily. Free, secure, and simple to use online tool.",
+    category: "Edit",
+    icon: 'RotateCw',
+    color: "#F5A623",
+    metaTitle: "Rotate PDF Pages – Free Online Tool",
+    metaDescription: "Rotate and flip PDF pages easily. Free, secure, and simple to use online tool.",
+    metaKeywords: "rotate pdf, fix pdf orientation, pdf rotator",
+    steps: ["Upload your PDF", "Choose to rotate all pages or select specific ones", "Set the rotation angle (90°, 180°, 270°)", "Download your rotated PDF"],
+    isBrowserOnly: true,
+    isMultiFile: false,
+    faqs: [
+        { question: "Can I rotate only one page in a PDF?", answer: "Yes, our tool provides an option to rotate all pages at once or to select and rotate specific pages individually." },
+        { question: "Is the rotation permanent?", answer: "Yes, when you download the file, the rotation is saved permanently in the PDF document." },
+        { question: "What rotation angles are supported?", answer: "You can rotate your PDF pages by 90 degrees clockwise, 90 degrees counter-clockwise (270 degrees), or 180 degrees (upside down)." }
+    ]
+  },
+  "crop-pdf": {
+    value: "crop-pdf",
+    label: "Crop PDF",
+    h1: "Crop PDF Files Online",
+    description: "Visually select and trim the margins of your PDF pages. Fast, simple, and free.",
+    category: "Edit",
+    icon: 'Crop',
+    color: "#E54D2E",
+    metaTitle: "Crop PDF Online – Free PDF Cropping Tool",
+    metaDescription: "Easily crop your PDF files online. Select the area you want to keep and remove the rest. A free, secure, and visual PDF cropping tool.",
+    metaKeywords: "crop pdf, pdf cropper, trim pdf, resize pdf pages",
+    steps: [
+      "Upload your PDF file.",
+      "An adjustable crop box will appear on your page.",
+      "Drag the corners and sides of the box to define the area you want to keep.",
+      "Choose to apply the crop to the current page or all pages.",
+      "Click 'Crop PDF' and download your new file."
+    ],
+    isBrowserOnly: false,
+    isMultiFile: false,
+    faqs: [
+      { question: "Can I crop all pages of my PDF at once?", answer: "Yes, you can choose to apply the same crop area to either the current page or all pages in the document." },
+      { question: "Is the cropping precise?", answer: "Yes, you can drag the crop box to the exact dimensions you need. The tool provides a live preview of the selected area." },
+      { question: "Does cropping reduce the quality of my PDF?", answer: "No, cropping only removes the outer areas of the page content. The quality of the content within the cropped area remains unchanged." }
+    ]
+  },
+  "protect-pdf": {
+    value: "protect-pdf",
+    label: "Protect PDF",
+    h1: "Protect PDF with Password – Free Online",
+    description: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
+    category: "Security",
+    icon: 'Lock',
+    color: "#000000",
+    metaTitle: "Protect PDF with Password – Free Online",
+    metaDescription: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
+    metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
+    steps: ["Upload your PDF", "Set a strong password", "Click 'Protect PDF'", "Download your encrypted file"],
+    isBrowserOnly: false, 
+    isMultiFile: false,
+    faqs: [
+      { question: "How strong is the encryption used to protect my PDF?", answer: "We use strong AES encryption to protect your PDF, which is the industry standard for securing documents." },
+      { question: "Can I remove the password later if I need to?", answer: "Yes, you can use our 'Unlock PDF' tool to remove the password, provided you remember what it is." },
+      { question: "What happens if I forget the password I set?", answer: "We do not store your password, so it cannot be recovered. Please make sure to save your password in a secure place, as you will not be able to open the file without it." }
+    ]
+  },
+  "unlock-pdf": {
+    value: "unlock-pdf",
+    label: "Unlock PDF",
+    h1: "Unlock PDF – Remove Password Online",
+    description: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
+    category: "Security",
+    icon: 'Unlock',
+    color: "#9013FE",
+    metaTitle: "Unlock PDF – Remove Password Online",
+    metaDescription: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
+    metaKeywords: "unlock pdf, remove pdf password, pdf password remover",
+    steps: ["Upload your protected PDF", "Enter the password", "Click 'Unlock PDF'", "Download your password-free PDF"],
+    isBrowserOnly: false,
+    isMultiFile: false,
+    faqs: [
+      { question: "Is it legal to remove a password from a PDF?", answer: "You should only remove passwords from PDFs that you own or have explicit permission to edit. By using our service, you agree that you have the necessary rights to the file." },
+      { question: "What if I don't know the password?", answer: "Our tool requires the correct password to open and unlock the file. We cannot bypass or recover lost passwords." },
+      { question: "Does this remove all restrictions, like printing and copying?", answer: "Yes, the unlocking process aims to remove all permission-based restrictions, allowing you to print, copy, and edit the document freely." }
     ]
   },
   "pdf-to-word": {
@@ -118,6 +244,48 @@ export const tools: ToolMap = {
         { question: "Can I convert scanned PDFs to Word?", answer: "Our standard converter works best with text-based PDFs. For scanned documents, OCR is required, which is a feature we are exploring for a future update." }
     ]
   },
+  "image-to-pdf": {
+    value: "image-to-pdf",
+    label: "Image to PDF",
+    h1: "Image to PDF Converter – JPG/PNG to PDF",
+    description: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
+    category: "Convert",
+    icon: 'Image',
+    color: "#BD10E0",
+    metaTitle: "Image to PDF Converter – JPG/PNG to PDF",
+    metaDescription: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
+    metaKeywords: "image to pdf, jpg to pdf, png to pdf",
+    steps: ["Upload your JPG, PNG, or other image files", "Drag to reorder them if needed", "Click 'Convert to PDF'", "Download your new PDF document"],
+    isBrowserOnly: false,
+    isMultiFile: true,
+    faqs: [
+      { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you arrange them." },
+      { question: "What image formats do you support?", answer: "Our converter supports the most common web image formats, including JPG and PNG." },
+      { question: "Is the conversion process secure?", answer: "Yes. Your images are uploaded over an encrypted connection and are permanently deleted from our servers after a short time." }
+    ]
+  },
+  "pdf-to-image": {
+    value: "pdf-to-image",
+    label: "PDF to Image",
+    h1: "PDF to JPG/PNG – Convert PDF to Images",
+    description: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
+    category: "Convert",
+    icon: 'FileImage',
+    color: "#BD10E0",
+    metaTitle: "PDF to Image – Convert PDF to JPG",
+    metaDescription: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
+    metaKeywords: "pdf to jpg, pdf to image, convert pdf to png",
+    steps: ["Upload your PDF", "Click 'Convert to Images'", "Download your images in a ZIP file"],
+    isBrowserOnly: false,
+    isMultiFile: false,
+    faqs: [
+      { question: "What format will the images be in?", answer: "Our tool converts each page of your PDF into a high-quality JPG image." },
+      { question: "How will I receive the images?", answer: "All the converted images will be packaged together in a single ZIP file for a convenient download." },
+      { question: "Will it convert every page of the PDF?", answer: "Yes, the tool is designed to convert every page of your uploaded PDF into a separate image." }
+    ]
+  },
+
+  // --- NON-WORKING / COMING SOON TOOLS ---
   "word-to-pdf": {
     value: "word-to-pdf",
     label: "Word to PDF",
@@ -218,106 +386,6 @@ export const tools: ToolMap = {
       { question: "Does this tool support both .PPT and .PPTX formats?", answer: "Yes, our converter works with both modern .PPTX files and older .PPT formats." }
     ]
   },
-  "image-to-pdf": {
-    value: "image-to-pdf",
-    label: "Image to PDF",
-    h1: "Image to PDF Converter – JPG/PNG to PDF",
-    description: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
-    category: "Convert",
-    icon: 'Image',
-    color: "#BD10E0",
-    metaTitle: "Image to PDF Converter – JPG/PNG to PDF",
-    metaDescription: "Convert JPG, PNG, and other images into PDF documents easily. Free and secure.",
-    metaKeywords: "image to pdf, jpg to pdf, png to pdf",
-    steps: ["Upload your JPG, PNG, or other image files", "Drag to reorder them if needed", "Click 'Convert to PDF'", "Download your new PDF document"],
-    isBrowserOnly: false,
-    isMultiFile: true,
-    faqs: [
-      { question: "Can I convert multiple images into a single PDF?", answer: "Yes, you can upload multiple images at once. Our tool will combine them into a single PDF document in the order you arrange them." },
-      { question: "What image formats do you support?", answer: "Our converter supports the most common web image formats, including JPG and PNG." },
-      { question: "Is the conversion process secure?", answer: "Yes. Your images are uploaded over an encrypted connection and are permanently deleted from our servers after a short time." }
-    ]
-  },
-  "pdf-to-image": {
-    value: "pdf-to-image",
-    label: "PDF to Image",
-    h1: "PDF to JPG/PNG – Convert PDF to Images",
-    description: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
-    category: "Convert",
-    icon: 'FileImage',
-    color: "#BD10E0",
-    metaTitle: "PDF to Image – Convert PDF to JPG",
-    metaDescription: "Extract pages from PDFs and save them as JPG or PNG images. Free online converter.",
-    metaKeywords: "pdf to jpg, pdf to image, convert pdf to png",
-    steps: ["Upload your PDF", "Click 'Convert to Images'", "Download your images in a ZIP file"],
-    isBrowserOnly: false,
-    isMultiFile: false,
-    faqs: [
-      { question: "What format will the images be in?", answer: "Our tool converts each page of your PDF into a high-quality JPG image." },
-      { question: "How will I receive the images?", answer: "All the converted images will be packaged together in a single ZIP file for a convenient download." },
-      { question: "Will it convert every page of the PDF?", answer: "Yes, the tool is designed to convert every page of your uploaded PDF into a separate image." }
-    ]
-  },
-  "protect-pdf": {
-    value: "protect-pdf",
-    label: "Protect PDF",
-    h1: "Protect PDF with Password – Free Online",
-    description: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
-    category: "Security",
-    icon: 'Lock',
-    color: "#000000",
-    metaTitle: "Protect PDF with Password – Free Online",
-    metaDescription: "Secure your PDF by adding a password. Lock PDFs online safely and for free.",
-    metaKeywords: "protect pdf, password protect pdf, encrypt pdf",
-    steps: ["Upload your PDF", "Set a strong password", "Click 'Protect PDF'", "Download your encrypted file"],
-    isBrowserOnly: false, 
-    isMultiFile: false,
-    faqs: [
-      { question: "How strong is the encryption used to protect my PDF?", answer: "We use strong AES encryption to protect your PDF, which is the industry standard for securing documents." },
-      { question: "Can I remove the password later if I need to?", answer: "Yes, you can use our 'Unlock PDF' tool to remove the password, provided you remember what it is." },
-      { question: "What happens if I forget the password I set?", answer: "We do not store your password, so it cannot be recovered. Please make sure to save your password in a secure place, as you will not be able to open the file without it." }
-    ]
-  },
-  "unlock-pdf": {
-    value: "unlock-pdf",
-    label: "Unlock PDF",
-    h1: "Unlock PDF – Remove Password Online",
-    description: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
-    category: "Security",
-    icon: 'Unlock',
-    color: "#9013FE",
-    metaTitle: "Unlock PDF – Remove Password Online",
-    metaDescription: "Remove passwords from locked PDFs instantly. Free, safe, and quick PDF unlocker.",
-    metaKeywords: "unlock pdf, remove pdf password, pdf password remover",
-    steps: ["Upload your protected PDF", "Enter the password", "Click 'Unlock PDF'", "Download your password-free PDF"],
-    isBrowserOnly: false,
-    isMultiFile: false,
-    faqs: [
-      { question: "Is it legal to remove a password from a PDF?", answer: "You should only remove passwords from PDFs that you own or have explicit permission to edit. By using our service, you agree that you have the necessary rights to the file." },
-      { question: "What if I don't know the password?", answer: "Our tool requires the correct password to open and unlock the file. We cannot bypass or recover lost passwords." },
-      { question: "Does this remove all restrictions, like printing and copying?", answer: "Yes, the unlocking process aims to remove all permission-based restrictions, allowing you to print, copy, and edit the document freely." }
-    ]
-  },
-  "rotate-pdf": {
-    value: "rotate-pdf",
-    label: "Rotate PDF",
-    h1: "Rotate PDF Pages – Free Online Tool",
-    description: "Rotate and flip PDF pages easily. Free, secure, and simple to use online tool.",
-    category: "Edit",
-    icon: 'RotateCw',
-    color: "#F5A623",
-    metaTitle: "Rotate PDF Pages – Free Online Tool",
-    metaDescription: "Rotate and flip PDF pages easily. Free, secure, and simple to use online tool.",
-    metaKeywords: "rotate pdf, fix pdf orientation, pdf rotator",
-    steps: ["Upload your PDF", "Choose to rotate all pages or select specific ones", "Set the rotation angle (90°, 180°, 270°)", "Download your rotated PDF"],
-    isBrowserOnly: true,
-    isMultiFile: false,
-    faqs: [
-        { question: "Can I rotate only one page in a PDF?", answer: "Yes, our tool provides an option to rotate all pages at once or to select and rotate specific pages individually." },
-        { question: "Is the rotation permanent?", answer: "Yes, when you download the file, the rotation is saved permanently in the PDF document." },
-        { question: "What rotation angles are supported?", answer: "You can rotate your PDF pages by 90 degrees clockwise, 90 degrees counter-clockwise (270 degrees), or 180 degrees (upside down)." }
-    ]
-  },
   "esign-pdf": {
     value: "esign-pdf",
     label: "eSign PDF",
@@ -337,77 +405,9 @@ export const tools: ToolMap = {
       { question: "Can I create my own signature?", answer: "Yes, our tool allows you to draw your signature, type it, or upload an image of your signature." },
       { question: "Can others sign the same document?", answer: "Our current tool is designed for a single user to sign a document. Multi-signer workflows are a feature we are considering for the future." }
     ]
-  },
-  "edit-pdf": {
-    value: "edit-pdf",
-    label: "Edit PDF",
-    h1: "Edit PDF Online – Free PDF Editor",
-    description: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.",
-    category: "Edit",
-    icon: 'FileText',
-    color: "#7ED321",
-    metaTitle: "Edit PDF Online – Free PDF Editor",
-    metaDescription: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.",
-    metaKeywords: "edit pdf, pdf editor, annotate pdf, modify pdf",
-    steps: ["Upload your PDF", "Use the toolbar to add text, images, or shapes", "Save your changes", "Download the edited PDF"],
-    isBrowserOnly: true,
-    isMultiFile: false,
-    faqs: [
-      { question: "Can I edit the existing text in a PDF?", answer: "Our editor allows you to add new text, images, and shapes on top of the PDF. Editing the original, underlying text is a more complex feature that we are developing." },
-      { question: "Are my edits saved automatically?", answer: "You will need to click the 'Save' or 'Download' button to process and finalize your edits into a new PDF file." },
-      { question: "Is this online PDF editor secure?", answer: "Yes, your files and the edits you make are processed securely and are deleted from our servers after you have downloaded your document." }
-    ]
-  },
-  "organize-pdf": {
-    value: "organize-pdf",
-    label: "Organize PDF",
-    h1: "Organize PDF Pages – Free Online Tool",
-    description: "Reorder, arrange, and manage PDF pages effortlessly. Free and secure.",
-    category: "Organize",
-    icon: 'Files',
-    color: "#4A90E2",
-    metaTitle: "Organize PDF Pages – Free Online Tool",
-    metaDescription: "Reorder, arrange, and manage PDF pages effortlessly. Free and secure.",
-    metaKeywords: "organize pdf, sort pdf pages, delete pdf pages, reorder pdf",
-    steps: ["Upload your PDF", "Drag pages to reorder them, or use the delete button", "Click 'Organize PDF'", "Download the modified file"],
-    isBrowserOnly: true,
-    isMultiFile: false,
-    faqs: [
-      { question: "Can I move multiple pages at once?", answer: "Yes, our interface allows you to select and drag multiple pages to reorder your document more quickly." },
-      { question: "Is it possible to add a blank page to my PDF?", answer: "Yes, you can insert blank pages at any point in your document using the organization tool." },
-      { question: "Will organizing my PDF affect the file's quality?", answer: "No, reorganizing, deleting, or adding pages will not affect the visual quality of your document's content." }
-    ]
-  },
-  // --- NEW TOOL DEFINITION ---
-  "crop-pdf": {
-    value: "crop-pdf",
-    label: "Crop PDF",
-    h1: "Crop PDF Files Online",
-    description: "Visually select and trim the margins of your PDF pages. Fast, simple, and free.",
-    category: "Edit",
-    icon: 'Crop',
-    color: "#E54D2E",
-    metaTitle: "Crop PDF Online – Free PDF Cropping Tool",
-    metaDescription: "Easily crop your PDF files online. Select the area you want to keep and remove the rest. A free, secure, and visual PDF cropping tool.",
-    metaKeywords: "crop pdf, pdf cropper, trim pdf, resize pdf pages",
-    steps: [
-      "Upload your PDF file.",
-      "An adjustable crop box will appear on your page.",
-      "Drag the corners and sides of the box to define the area you want to keep.",
-      "Choose to apply the crop to the current page or all pages.",
-      "Click 'Crop PDF' and download your new file."
-    ],
-    isBrowserOnly: false,
-    isMultiFile: false,
-    faqs: [
-      { question: "Can I crop all pages of my PDF at once?", answer: "Yes, you can choose to apply the same crop area to either the current page or all pages in the document." },
-      { question: "Is the cropping precise?", answer: "Yes, you can drag the crop box to the exact dimensions you need. The tool provides a live preview of the selected area." },
-      { question: "Does cropping reduce the quality of my PDF?", answer: "No, cropping only removes the outer areas of the page content. The quality of the content within the cropped area remains unchanged." }
-    ]
   }
 };
 
-// Also export the tools as an array for components that need to map over them
 export const toolArray: Tool[] = Object.values(tools);
 
 export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
