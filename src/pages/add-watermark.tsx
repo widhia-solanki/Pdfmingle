@@ -27,7 +27,8 @@ const defaultOptions: WatermarkState = {
     image: null,
     opacity: 0.5,
     rotation: -45,
-    isTiled: true,
+    positioning: 'tiled',
+    position: 'center',
     color: '#ff0000',
     fontSize: 48,
 };
@@ -74,7 +75,8 @@ const AddWatermarkPage: NextPage = () => {
     formData.append('type', options.type);
     formData.append('opacity', options.opacity.toString());
     formData.append('rotation', options.rotation.toString());
-    formData.append('isTiled', String(options.isTiled));
+    formData.append('positioning', options.positioning);
+    formData.append('position', options.position);
     
     if(options.type === 'text') {
         formData.append('text', options.text);
