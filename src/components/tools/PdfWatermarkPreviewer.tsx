@@ -4,11 +4,23 @@ import React, { useState, useLayoutEffect, useRef, useEffect } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { WatermarkState } from './WatermarkOptions';
+import { Position } from './WatermarkPositionSelector';
 
 interface PdfWatermarkPreviewerProps {
   file: File;
   pageIndex: number;
   options: WatermarkState;
+}
+
+const getPositionStyles = (position: Position): React.CSSProperties => {
+    switch (position) {
+        case 'top-left': return { alignItems: 'flex-start', justifyContent: 'flex-start', padding: '20px' };
+        case 'top-right': return { alignItems: 'flex-start', justifyContent: 'flex-end', padding: '20px' };
+        case 'bottom-left': return { alignItems: 'flex-end', justifyContent: 'flex-start', padding: '20px' };
+        case 'bottom-right': return { alignItems: 'flex-end', justifyContent: 'flex-end', padding: '20px' };
+        case 'center':
+        default: return { alignItems: 'center', justifyContent: 'center' };
+    }
 }
 
 export const PdfWatermarkPreviewer = ({ file, pageIndex, options }: PdfWatermarkPreviewerProps) => {
@@ -56,9 +68,10 @@ export const PdfWatermarkPreviewer = ({ file, pageIndex, options }: PdfWatermark
 
   const overlayStyle: React.CSSProperties = {
     position: 'absolute', inset: 0,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    display: 'flex', 
     pointerEvents: 'none',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    ...getPositionStyles(options.position)
   };
 
   const watermarkElement = options.type === 'text'
@@ -73,8 +86,7 @@ export const PdfWatermarkPreviewer = ({ file, pageIndex, options }: PdfWatermark
       }} />
     : null;
 
-  // For tiled text, we create an SVG and use it as a repeating background.
-  const tiledTextSvg = options.isTiled && options.type === 'text' 
+  const tiledTextSvg = options.positioning === 'tiled' && options.type === 'text' 
     ? `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" height="150px" width="150px"><text x="75" y="75" fill="${options.color}" opacity="${options.opacity}" font-size="${options.fontSize}" text-anchor="middle" dominant-baseline="middle" transform="rotate(${options.rotation}, 75, 75)">${options.text}</text></svg>')`
     : undefined;
 
@@ -85,7 +97,7 @@ export const PdfWatermarkPreviewer = ({ file, pageIndex, options }: PdfWatermark
         <canvas ref={canvasRef} />
         {isRendered && (
           <div style={{...overlayStyle, backgroundImage: tiledTextSvg}}>
-            {!options.isTiled && watermarkElement}
+            {options.positioning === 'single' && watermarkElement}
           </div>
         )}
       </div>
