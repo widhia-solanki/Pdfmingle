@@ -1,6 +1,6 @@
 // src/components/tools/PdfWatermarkPreviewer.tsx
 
-import React, { useState, useLayoutEffect, useRef } from 'react';
+import React, { useState, useLayoutEffect, useRef, useEffect } from 'react'; // <-- THIS IS THE FIX
 import * as pdfjsLib from 'pdfjs-dist';
 import { Loader2 } from 'lucide-react';
 import { WatermarkState } from './WatermarkOptions';
