@@ -1,0 +1,29 @@
+# .github/workflows/deploy.yml
+
+name: Deploy Backend to Vercel
+
+on:
+  # Triggers the workflow on push events to the "main" branch
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-to-vercel:
+    runs-on: ubuntu-latest
+    steps:
+      # Step 1: Check out the repository's code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Step 2: Deploy Project to Vercel
+      # This official action handles building and deploying your project.
+      # It automatically detects the vercel.json file and your project settings.
+      - name: Deploy Project
+        uses: vercel/vercel-action@v3.0.0
+        with:
+          # Required secrets for authentication and project linking
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          # This will deploy to production because the trigger is the main branch
+          vercel-prod: true
