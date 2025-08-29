@@ -3,10 +3,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Slider } from "@/components/ui/slider";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { WatermarkPositionSelector, Position } from "./WatermarkPositionSelector";
 import { ImagePlus, Type } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export type WatermarkType = "text" | "image";
 export type Positioning = "single" | "tiled";
@@ -48,14 +47,14 @@ export const WatermarkOptions = ({ options, onOptionChange }: WatermarkOptionsPr
                 <Label htmlFor="watermark-text">Watermark Text</Label>
                 <Input id="watermark-text" value={options.text} onChange={(e) => onOptionChange({ ...options, text: e.target.value })}/>
             </div>
-            <div className="flex items-center gap-4">
-                <div className="flex-1">
+            <div className="grid grid-cols-2 gap-4">
+                <div>
                     <Label htmlFor="font-size">Font Size</Label>
                     <Input id="font-size" type="number" value={options.fontSize} onChange={(e) => onOptionChange({ ...options, fontSize: parseInt(e.target.value) || 48 })}/>
                 </div>
-                 <div>
+                 <div className="flex flex-col items-start">
                     <Label htmlFor="color">Color</Label>
-                    <Input id="color" type="color" value={options.color} onChange={(e) => onOptionChange({ ...options, color: e.target.value })} className="p-1 h-10"/>
+                    <Input id="color" type="color" value={options.color} onChange={(e) => onOptionChange({ ...options, color: e.target.value })} className="p-1 h-10 w-full"/>
                 </div>
             </div>
         </TabsContent>
@@ -68,14 +67,14 @@ export const WatermarkOptions = ({ options, onOptionChange }: WatermarkOptionsPr
         </TabsContent>
       </Tabs>
       
-      <div className="space-y-4">
+      <div className="grid grid-cols-2 gap-4">
         <div>
           <Label>Opacity: {Math.round(options.opacity * 100)}%</Label>
-          <Slider value={[options.opacity]} onValueChange={(v) => onOptionChange({ ...options, opacity: v[0] })} min={0} max={1} step={0.1}/>
+          <Input type="range" value={options.opacity} onChange={(e) => onOptionChange({ ...options, opacity: parseFloat(e.target.value) })} min={0} max={1} step={0.1}/>
         </div>
          <div>
           <Label>Rotation: {options.rotation}°</Label>
-          <Slider value={[options.rotation]} onValueChange={(v) => onOptionChange({ ...options, rotation: v[0] })} min={-180} max={180} step={5}/>
+          <Input type="range" value={options.rotation} onChange={(e) => onOptionChange({ ...options, rotation: parseInt(e.target.value) })} min={-180} max={180} step={5}/>
         </div>
       </div>
       
