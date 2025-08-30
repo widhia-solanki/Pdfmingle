@@ -13,7 +13,6 @@ interface MainLayoutProps {
 export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-bg">
-      <CustomCursor />
       <Header />
       <main className="flex-grow">
         {children}
