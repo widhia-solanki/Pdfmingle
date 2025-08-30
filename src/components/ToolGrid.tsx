@@ -10,7 +10,7 @@ interface ToolGridProps {
 
 export const ToolGrid = ({ tools }: ToolGridProps) => {
   return (
-    <section id="tools" className="w-full bg-gray-50 py-16 md:py-24">
+   <section id="tools" className="w-full bg-gray-50 pb-16 md:pb-24">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tools.map((tool) => {
