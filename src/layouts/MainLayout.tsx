@@ -5,7 +5,6 @@ import { Header } from "@/components/Header";
 import { FeedbackButton } from "@/components/FeedbackButton";
 // --- THIS IS THE FIX ---
 import { InformativePanel } from "@/components/InformativePanel"; 
-import { CustomCursor } from "@/components/CustomCursor";
 
 interface MainLayoutProps {
   children: React.ReactNode;
