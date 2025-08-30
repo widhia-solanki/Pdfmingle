@@ -13,7 +13,13 @@ const config: Config = {
       backgroundImage: {
         'panel-bg': "url('/panel-bg.png')",
       },
-      colors: {
+      colors: { // --- THIS IS THE NEW SECTION ---
+        'dark-bg': '#1a202c',       // A dark blue-gray for backgrounds
+        'dark-card': '#2d3748',    // A slightly lighter card background
+        'dark-text-primary': '#edf2f7', // Off-white for primary text
+        'dark-text-secondary': '#a0aec0', // A lighter gray for secondary text
+        // --- END OF NEW SECTION ---
+        
         // --- NEW COLOR FOR THE HERO ---
         'hero-bg': '#2d3748', // Dark Slate
         'filter-inactive-bg': 'rgba(255, 255, 255, 0.1)',
