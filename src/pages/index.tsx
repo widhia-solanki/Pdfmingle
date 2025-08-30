@@ -1,7 +1,7 @@
 // src/pages/index.tsx
 
-import { useState } from 'react'; // <-- THIS IS THE FIX
-import { toolArray, categories, ToolCategory } from '@/constants/tools';
+import { useState } from 'react';
+import { toolArray, categories, ToolCategory, iconMap } from '@/constants/tools';
 import { Button } from '@/components/ui/button';
 import { ToolGrid } from '@/components/ToolGrid';
 import { FaqSection } from '@/components/FaqSection';
@@ -12,7 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
 
-// --- Mobile Hero ---
+// --- Mobile Hero (Unchanged) ---
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
       <div className="bg-hero-bg text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
@@ -54,10 +54,12 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- Desktop Hero ---
+// --- Desktop Hero (Updated with new spacing) ---
 const DesktopHero = () => {
     return (
-        <section className="w-full py-20 md:py-28 bg-gray-50 overflow-hidden">
+        // --- THIS IS THE FIX ---
+        // Changed py-* (padding top & bottom) to pt-* (padding top only)
+        <section className="w-full pt-20 md:pt-28 bg-gray-50 overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     {/* Left Column: Text Content */}
