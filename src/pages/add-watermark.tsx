@@ -1,9 +1,10 @@
 // src/pages/add-watermark.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import * as pdfjsLib from 'pdfjs-dist';
+import imageCompression from 'browser-image-compression';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -16,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Droplets } from 'lucide-react';
 
 if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
 }
 
 type Status = 'idle' | 'previewing' | 'processing' | 'success' | 'error';
@@ -47,17 +48,23 @@ const AddWatermarkPage: NextPage = () => {
   
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
+  
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleFileSelected = async (selectedFiles: File[]) => {
+    // --- THIS IS THE FIX ---
+    // Clear any previous errors as soon as a new file selection begins.
+    setError(null);
+    
     if (selectedFiles.length > 0) {
       const selectedFile = selectedFiles[0];
-      handleStartOver();
       setFile(selectedFile);
+      setStatus('previewing'); // Optimistically set to previewing
       try {
         const fileBuffer = await selectedFile.arrayBuffer();
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         setPageCount(pdf.numPages);
-        setStatus('previewing');
+        // State is already 'previewing', so we just let the components render
       } catch (e) {
         setError("Could not read PDF. It may be corrupt or password-protected.");
         setStatus('idle'); 
@@ -70,6 +77,12 @@ const AddWatermarkPage: NextPage = () => {
     if (!file) return;
     setStatus('processing');
     
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    timeoutRef.current = setTimeout(() => {
+      setError("The process is taking too long and may have timed out. Please try again with a smaller file or less complex options.");
+      setStatus('error');
+    }, 45000);
+
     const formData = new FormData();
     formData.append('file', file);
     formData.append('type', options.type);
@@ -78,21 +91,29 @@ const AddWatermarkPage: NextPage = () => {
     formData.append('positioning', options.positioning);
     formData.append('position', options.position);
     
-    if(options.type === 'text') {
-        formData.append('text', options.text);
-        formData.append('color', options.color);
-        formData.append('fontSize', options.fontSize.toString());
-    } else if (options.type === 'image' && options.image) {
-        formData.append('watermarkImage', options.image);
-    } else {
-        toast({ title: 'Error', description: 'Please select an image file for the watermark.', variant: 'destructive' });
-        setStatus('previewing');
-        return;
-    }
-
     try {
+      if (options.type === 'text') {
+          formData.append('text', options.text);
+          formData.append('color', options.color);
+          formData.append('fontSize', options.fontSize.toString());
+      } else if (options.type === 'image' && options.image) {
+          const compressionOptions = {
+            maxSizeMB: 0.5,
+            maxWidthOrHeight: 800,
+            useWebWorker: true,
+          };
+          
+          toast({ title: 'Optimizing watermark image...', description: 'This may take a moment.' });
+          const compressedImageFile = await imageCompression(options.image, compressionOptions);
+          formData.append('watermarkImage', compressedImageFile);
+      } else {
+          throw new Error('Please select an image file for the watermark.');
+      }
+
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
       const response = await fetch(`${apiBaseUrl}/api/add-watermark`, { method: 'POST', body: formData });
+
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -106,6 +127,7 @@ const AddWatermarkPage: NextPage = () => {
       setStatus('success');
       toast({ title: 'Success!', description: 'Watermark added successfully.' });
     } catch (err) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(`Processing failed: ${message}`);
       setStatus('error');
@@ -114,6 +136,7 @@ const AddWatermarkPage: NextPage = () => {
   };
 
   const handleStartOver = useCallback(() => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setFile(null);
     setStatus('idle');
     setPageCount(0);
@@ -132,18 +155,8 @@ const AddWatermarkPage: NextPage = () => {
           <div className="container mx-auto px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">{tool.h1}</h1>
             <p className="text-lg text-gray-600 mb-8">{tool.description}</p>
-            <ToolUploader 
-              onFilesSelected={handleFileSelected} 
-              acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} 
-              selectedFiles={file ? [file] : []} 
-              isMultiFile={false} 
-              error={error} 
-              onProcess={() => {}} 
-              actionButtonText={tool.label} 
-            />
-            {status === 'error' && (
-                 <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>
-            )}
+            <ToolUploader onFilesSelected={handleFileSelected} acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} selectedFiles={file ? [file] : []} isMultiFile={false} error={error} onProcess={() => {}} actionButtonText={tool.label} />
+            {status === 'error' && (<Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>)}
           </div>
         ) : status === 'previewing' && file ? (
           <div className="flex w-full h-[calc(100vh-5rem)]">
