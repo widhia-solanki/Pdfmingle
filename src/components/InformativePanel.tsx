@@ -52,7 +52,6 @@ export const InformativePanel = () => {
                 </div>
 
                 <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                    {/* --- THIS IS THE UPDATED SECTION --- */}
                     <p className="text-gray-500 dark:text-gray-400 text-base">
                         Made with <span className="inline-block animate-heartbeat">❤️</span> in India
                     </p>
@@ -61,4 +60,4 @@ export const InformativePanel = () => {
             </div>
         </section>
     );
-};```
+};
