@@ -53,42 +53,44 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- THIS IS THE UPDATED DESKTOP HERO ---
+// --- Desktop Hero (Unchanged) ---
 const DesktopHero = () => {
     const featuredTools = toolArray.slice(0, 8);
     return (
-        <section className="w-full py-20 md:py-28 bg-gray-50">
+        <section className="w-full py-20 md:py-28 bg-gray-50 overflow-hidden">
             <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-                    <div className="text-center lg:text-left">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div className="text-center md:text-left animate-in fade-in slide-in-from-left-12 duration-500">
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900">
                             Every tool you need to work with PDFs in one place
                         </h1>
-                        <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-lg text-gray-600 leading-relaxed">
+                        <p className="mt-6 max-w-xl mx-auto md:mx-0 text-lg text-gray-600 leading-relaxed">
                             Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
                         </p>
-                        <div className="mt-8 flex justify-center lg:justify-start">
+                        <div className="mt-8 flex justify-center md:justify-start">
                             <Button asChild size="lg" className="text-lg px-8 py-6 bg-brand-blue hover:bg-brand-blue-dark text-white">
                                 <Link href="#tools">View All Tools</Link>
                             </Button>
                         </div>
                     </div>
-                    <div className="grid grid-cols-4 gap-4">
-                        {featuredTools.map((tool) => {
-                            const Icon = iconMap[tool.icon];
-                            return (
-                                <Link
-                                    href={`/${tool.value}`}
-                                    key={tool.value} 
-                                    className="flex flex-col items-center justify-center text-center p-4 bg-white rounded-2xl shadow-sm border border-gray-200 hover:border-blue-500 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                                >
-                                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 mb-3">
-                                        <Icon className="h-8 w-8 text-brand-blue" />
-                                    </div>
-                                    <p className="text-sm font-semibold text-gray-800">{tool.label}</p>
-                                </Link>
-                            );
-                        })}
+                    <div className="animate-in fade-in slide-in-from-right-12 duration-500">
+                        <div className="grid grid-cols-4 gap-4">
+                            {featuredTools.map((tool) => {
+                                const Icon = iconMap[tool.icon];
+                                return (
+                                    <Link 
+                                        href={`/${tool.value}`}
+                                        key={tool.value} 
+                                        className="flex flex-col items-center justify-center text-center p-4 bg-white rounded-xl shadow-md border border-gray-100 transition-transform hover:-translate-y-1 hover:shadow-lg"
+                                    >
+                                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100/70 mb-3">
+                                            <Icon className="h-7 w-7 text-brand-blue" />
+                                        </div>
+                                        <p className="text-xs font-semibold text-gray-700">{tool.label}</p>
+                                    </Link>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -96,7 +98,7 @@ const DesktopHero = () => {
     );
 };
 
-// --- HomePage Logic (Unchanged) ---
+// --- HomePage Logic (Corrected) ---
 const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
   const isMobile = useIsMobile();
@@ -106,7 +108,7 @@ const HomePage = () => {
     : toolArray.filter(tool => tool.category === activeCategory);
 
   if (isMobile === undefined) {
-    return <div className="w-full h-[50vh] bg-gray-50" />;
+    return <div className="w-full h-screen bg-gray-50" />;
   }
 
   return (
@@ -130,8 +132,9 @@ const HomePage = () => {
           <DesktopHero />
         )}
         
-        {/* The ToolGrid now only shows on mobile, as the DesktopHero has its own grid */}
-        {isMobile && <ToolGrid tools={filteredTools} />}
+        {/* --- THIS IS THE FIX --- */}
+        {/* The ToolGrid is now rendered for ALL users, after the hero section. */}
+        <ToolGrid tools={filteredTools} />
         
         <FaqSection />
       </div>
