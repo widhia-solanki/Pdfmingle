@@ -2,13 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 
-  1. DEFINITIONS FIRST (All Custom CSS Variables):
-*/
 @layer base {
+  /* 1. DEFINE variables on the root element */
   :root {
-    .custom-cursor-active, .custom-cursor-active * {
-    cursor: none;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -33,9 +29,15 @@
     --ilovepdf-red-dark: #2563EB;
     --ilovepdf-text: #333333;    
   }
+
+  /* --- THIS IS THE FIX --- */
+  /* 2. APPLY base styles using classes */
+  .custom-cursor-active,
+  .custom-cursor-active * {
+    cursor: none;
+  }
 }
 
-/* 2. Animations */
 @keyframes float1 {
   0% { transform: translateY(0px) translateX(0px); }
   50% { transform: translateY(-20px) translateX(10px); }
@@ -54,12 +56,11 @@
   100% { transform: translateY(0px) translateX(0px); }
 }
 
-/* 3. Custom Utility Classes */
 @layer utilities {
   .hero-gradient-background {
     background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
   }
-
+  
   /* Custom Scrollbar Styling */
   ::-webkit-scrollbar {
     width: 8px;
