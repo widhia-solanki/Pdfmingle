@@ -1,85 +1,93 @@
-// src/components/CustomCursor.tsx
+/* src/styles/globals.css */
 
-"use client";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-import React, { useState, useEffect, useRef } from 'react';
-import { cn } from '@/lib/utils';
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --radius: 0.5rem;
+    --ilovepdf-red: #3B82F6;
+    --ilovepdf-red-dark: #2563EB;
+    --ilovepdf-text: #333333;    
+  }
 
-export const CustomCursor = () => {
-  const cursorDotRef = useRef<HTMLDivElement>(null);
-  const cursorOutlineRef = useRef<HTMLDivElement>(null);
+  .custom-cursor-active,
+  .custom-cursor-active * {
+    cursor: none;
+  }
+}
 
-  useEffect(() => {
-    // Add a class to the body to hide the default cursor
-    document.body.classList.add('custom-cursor-active');
+/* --- THIS IS THE NEW SECTION --- */
+@layer components {
+  /* Hide the inner dot on hover */
+  .cursor-container-hover .cursor-dot {
+    transform: scale(0);
+  }
 
-    const cursorDot = cursorDotRef.current;
-    const cursorOutline = cursorOutlineRef.current;
+  /* Expand the outer ring into a spotlight on hover */
+  .cursor-container-hover .cursor-outline {
+    transform: scale(1.5);
+    background-color: rgba(59, 130, 246, 0.2); /* semi-transparent blue */
+    border-color: rgba(59, 130, 246, 0.4); /* slightly darker border */
+  }
+}
 
-    if (!cursorDot || !cursorOutline) return;
+@keyframes float1 {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-20px) translateX(10px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
 
-    let mouseX = 0;
-    let mouseY = 0;
-    let outlineX = 0;
-    let outlineY = 0;
-    let animationFrameId: number;
+@keyframes float2 {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(15px) translateX(-15px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
 
-    const mouseMoveHandler = (e: MouseEvent) => {
-      mouseX = e.clientX;
-      mouseY = e.clientY;
-      cursorDot.style.left = `${mouseX}px`;
-      cursorDot.style.top = `${mouseY}px`;
-    };
+@keyframes float3 {
+  0% { transform: translateY(0px) translateX(0px); }
+  50% { transform: translateY(-10px) translateX(20px); }
+  100% { transform: translateY(0px) translateX(0px); }
+}
 
-    const animateOutline = () => {
-      // Linear interpolation for smooth trailing effect
-      outlineX += (mouseX - outlineX) * 0.1;
-      outlineY += (mouseY - outlineY) * 0.1;
-
-      cursorOutline.style.left = `${outlineX}px`;
-      cursorOutline.style.top = `${outlineY}px`;
-      
-      animationFrameId = requestAnimationFrame(animateOutline);
-    };
-
-    const addHoverEffect = () => cursorOutline.classList.add('cursor-hover');
-    const removeHoverEffect = () => cursorOutline.classList.remove('cursor-hover');
-
-    // Add listeners to interactive elements
-    const interactiveElements = document.querySelectorAll('a, button, input, [role="button"], [role="tab"], [role="checkbox"], select, textarea');
-    interactiveElements.forEach(el => {
-      el.addEventListener('mouseenter', addHoverEffect);
-      el.addEventListener('mouseleave', removeHoverEffect);
-    });
-
-    window.addEventListener('mousemove', mouseMoveHandler);
-    animationFrameId = requestAnimationFrame(animateOutline);
-
-    // Cleanup function
-    return () => {
-      document.body.classList.remove('custom-cursor-active');
-      window.removeEventListener('mousemove', mouseMoveHandler);
-      cancelAnimationFrame(animationFrameId);
-      interactiveElements.forEach(el => {
-        el.removeEventListener('mouseenter', addHoverEffect);
-        el.removeEventListener('mouseleave', removeHoverEffect);
-      });
-    };
-  }, []);
-
-  return (
-    <>
-      <div
-        ref={cursorDotRef}
-        className="fixed top-0 left-0 w-2 h-2 bg-blue-600 rounded-full z-[9999] pointer-events-none -translate-x-1/2 -translate-y-1/2"
-      />
-      <div
-        ref={cursorOutlineRef}
-        className={cn(
-          "fixed top-0 left-0 w-10 h-10 border-2 border-blue-600 rounded-full z-[9999] pointer-events-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 ease-in-out",
-          "cursor-hover:scale-150 cursor-hover:border-blue-400"
-        )}
-      />
-    </>
-  );
-};
+@layer utilities {
+  .hero-gradient-background {
+    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
+  }
+  
+  /* Custom Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+  }
+}
