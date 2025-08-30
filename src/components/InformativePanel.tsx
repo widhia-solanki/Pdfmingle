@@ -10,32 +10,32 @@ const RedditIcon = () => (
 
 export const InformativePanel = () => {
     return (
-        <section className="w-full py-16 md:py-24 border-t bg-white dark:bg-gray-900 dark:border-gray-800">
+        <section className="w-full py-16 md:py-24 border-t bg-white dark:bg-dark-bg dark:border-gray-800">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-left">
                     <div className="space-y-3">
-                        <h4 className="font-bold text-lg text-gray-800 dark:text-gray-200">PDFMingle</h4>
+                        <h4 className="font-bold text-lg text-gray-800 dark:text-dark-text-primary">PDFMingle</h4>
                         <ul className="space-y-2">
-                            <li><Link href="/" className="hover:underline text-gray-600 dark:text-gray-400 hover:text-brand-blue">Home</Link></li>
-                            <li><Link href="/about" className="hover:underline text-gray-600 dark:text-gray-400 hover:text-brand-blue">About Us</Link></li>
-                            <li><Link href="/blog" className="hover:underline text-gray-600 dark:text-gray-400 hover:text-brand-blue">Blog</Link></li>
+                            <li><Link href="/" className="hover:underline text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue">Home</Link></li>
+                            <li><Link href="/about" className="hover:underline text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue">About Us</Link></li>
+                            <li><Link href="/blog" className="hover:underline text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue">Blog</Link></li>
                         </ul>
                     </div>
                     <div className="space-y-3">
-                        <h4 className="font-bold text-lg text-gray-800 dark:text-gray-200">LEGAL</h4>
+                        <h4 className="font-bold text-lg text-gray-800 dark:text-dark-text-primary">LEGAL</h4>
                         <ul className="space-y-2">
-                            <li><Link href="/privacy" className="hover:underline text-gray-600 dark:text-gray-400 hover:text-brand-blue">Privacy Policy</Link></li>
-                            <li><Link href="/terms" className="hover:underline text-gray-600 dark:text-gray-400 hover:text-brand-blue">Terms & Conditions</Link></li>
+                            <li><Link href="/privacy" className="hover:underline text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue">Privacy Policy</Link></li>
+                            <li><Link href="/terms" className="hover:underline text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue">Terms & Conditions</Link></li>
                         </ul>
                     </div>
                     <div className="space-y-3">
-                        <h4 className="font-bold text-lg text-gray-800 dark:text-gray-200">HELP</h4>
+                        <h4 className="font-bold text-lg text-gray-800 dark:text-dark-text-primary">HELP</h4>
                         <ul className="space-y-2">
-                            <li><Link href="/contact" className="hover:underline text-gray-600 dark:text-gray-400 hover:text-brand-blue">Contact Us</Link></li>
+                            <li><Link href="/contact" className="hover:underline text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue">Contact Us</Link></li>
                         </ul>
                     </div>
                     <div className="space-y-3">
-                        <h4 className="font-bold text-lg text-gray-800 dark:text-gray-200">Follow Us</h4>
+                        <h4 className="font-bold text-lg text-gray-800 dark:text-dark-text-primary">Follow Us</h4>
                         <ul className="space-y-2 flex">
                            <li>
                                 <a 
@@ -43,7 +43,7 @@ export const InformativePanel = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   aria-label="Follow us on Reddit"
-                                  className="text-gray-600 dark:text-gray-400 hover:text-brand-blue transition-colors"
+                                  className="text-gray-600 dark:text-dark-text-secondary hover:text-brand-blue transition-colors"
                                 >
                                   <RedditIcon />
                                 </a>
@@ -52,8 +52,8 @@ export const InformativePanel = () => {
                     </div>
                 </div>
 
-                <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
-                    <p className="text-gray-500 dark:text-gray-400 text-lg font-medium group">
+                <div className="mt-16 pt-8 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <p className="text-gray-500 dark:text-dark-text-secondary text-lg font-medium group">
                         Made with <button className="inline-block text-red-500 transition-transform group-hover:scale-125 animate-heartbeat">❤️</button> in India
                     </p>
                     <ThemeSwitcher />
