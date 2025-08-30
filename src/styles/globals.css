@@ -1,9 +1,10 @@
+/* src/styles/globals.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  /* 1. DEFINE variables on the root element */
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -30,11 +31,23 @@
     --ilovepdf-text: #333333;    
   }
 
-  /* --- THIS IS THE FIX --- */
-  /* 2. APPLY base styles using classes */
   .custom-cursor-active,
   .custom-cursor-active * {
     cursor: none;
+  }
+}
+
+@layer components {
+  /* Hide the inner dot on hover */
+  .cursor-container-hover .cursor-dot {
+    transform: scale(0);
+  }
+
+  /* Expand the outer ring into a spotlight on hover */
+  .cursor-container-hover .cursor-outline {
+    transform: scale(1.5) translate(-33%, -33%);
+    background-color: rgba(59, 130, 246, 0.2); /* semi-transparent blue */
+    border-color: rgba(59, 130, 246, 0.4); /* slightly darker border */
   }
 }
 
