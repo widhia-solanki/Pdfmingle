@@ -7,6 +7,8 @@
 */
 @layer base {
   :root {
+    .custom-cursor-active, .custom-cursor-active * {
+    cursor: none;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
