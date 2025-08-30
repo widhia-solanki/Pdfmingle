@@ -12,8 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
 
-// --- Mobile Hero ---
-// This is the original, functional mobile hero with category filtering.
+// --- Mobile Hero (Unchanged) ---
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
       <div className="bg-hero-bg text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
@@ -55,11 +54,12 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- Desktop Hero ---
-// This is the new desktop hero with the illustration.
+// --- Desktop Hero (Updated with negative margin) ---
 const DesktopHero = () => {
     return (
-        <section className="w-full pt-20 md:pt-28 bg-gray-50 overflow-hidden">
+        // --- THIS IS THE FIX ---
+        // Apply a negative top margin of -80px (the height of the header) to pull this section up
+        <section className="w-full pt-20 md:pt-28 bg-gray-50 overflow-hidden -mt-20">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
@@ -91,11 +91,11 @@ const DesktopHero = () => {
     );
 };
 
+
 const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
   const isMobile = useIsMobile();
 
-  // This logic is now correct for both mobile and desktop
   const filteredTools = (isMobile && activeCategory !== 'All')
     ? toolArray.filter(tool => tool.category === activeCategory)
     : toolArray;
@@ -133,4 +133,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomePage;```
