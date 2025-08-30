@@ -8,14 +8,13 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
-import { CookieConsent } from '@/components/CookieConsent'; // Updated import
-import { ThemeProvider } from 'next-themes';
+import { CookieConsent } from '@/components/CookieConsent';
+import { ThemeProvider } from 'next-themes'; // <-- IMPORT THE PROVIDER
 
 export default function App({ Component, pageProps }: AppProps) {
-  // All splash screen logic has been removed.
-  // The app now renders the main layout directly for all users.
   return (
-    <>
+    // --- WRAP YOUR APP IN THE THEME PROVIDER ---
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" sizes="any" />
@@ -34,6 +33,6 @@ export default function App({ Component, pageProps }: AppProps) {
       <Analytics />
 
       <CookieConsent />
-    </>
+    </ThemeProvider>
   );
 }
