@@ -9,6 +9,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
 import { CookieConsent } from '@/components/CookieConsent'; // Updated import
+import { ThemeProvider } from 'next-themes';
 
 export default function App({ Component, pageProps }: AppProps) {
   // All splash screen logic has been removed.
