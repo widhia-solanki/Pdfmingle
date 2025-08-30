@@ -2,6 +2,7 @@ import React from "react";
 import { Header } from "@/components/Header";
 import { cn } from "@/lib/utils";
 import { FeedbackButton } from "@/components/FeedbackButton";
+import { CustomCursor } from "@/components/CustomCursor"; // <-- Import the new component
 
 interface MainLayoutProps {
   children: React.ReactNode;
