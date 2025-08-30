@@ -1,7 +1,7 @@
 // src/pages/index.tsx
 
 import { useState } from 'react';
-import { toolArray, categories, ToolCategory, iconMap } from '@/constants/tools';
+import { toolArray, categories, ToolCategory } from '@/constants/tools';
 import { Button } from '@/components/ui/button';
 import { ToolGrid } from '@/components/ToolGrid';
 import { FaqSection } from '@/components/FaqSection';
@@ -12,7 +12,8 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
 
-// --- Mobile Hero (Unchanged) ---
+// --- Mobile Hero ---
+// This is the original, functional mobile hero with category filtering.
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
       <div className="bg-hero-bg text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
@@ -54,15 +55,13 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- Desktop Hero (Updated with new spacing) ---
+// --- Desktop Hero ---
+// This is the new desktop hero with the illustration.
 const DesktopHero = () => {
     return (
-        // --- THIS IS THE FIX ---
-        // Changed py-* (padding top & bottom) to pt-* (padding top only)
         <section className="w-full pt-20 md:pt-28 bg-gray-50 overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    {/* Left Column: Text Content */}
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900">
                             Every tool you need to work with PDFs in one place
@@ -76,8 +75,6 @@ const DesktopHero = () => {
                             </Button>
                         </div>
                     </div>
-
-                    {/* Right Column: Illustration */}
                     <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
                         <Image
                           src="/hero-illustration-v2.png"
@@ -94,14 +91,14 @@ const DesktopHero = () => {
     );
 };
 
-
 const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
   const isMobile = useIsMobile();
 
-  const filteredTools = activeCategory === 'All'
-    ? toolArray
-    : toolArray.filter(tool => tool.category === activeCategory);
+  // This logic is now correct for both mobile and desktop
+  const filteredTools = (isMobile && activeCategory !== 'All')
+    ? toolArray.filter(tool => tool.category === activeCategory)
+    : toolArray;
 
   if (isMobile === undefined) {
     return <div className="w-full h-screen bg-gray-50" />;
