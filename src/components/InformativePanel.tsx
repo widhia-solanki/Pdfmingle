@@ -1,3 +1,5 @@
+// src/components/InformativePanel.tsx
+
 import Link from 'next/link';
 
 const RedditIcon = () => (
@@ -14,7 +16,6 @@ export const InformativePanel = () => {
                         <ul className="space-y-2">
                             <li><Link href="/" className="hover:underline text-gray-600 hover:text-red-500">Home</Link></li>
                             <li><Link href="/about" className="hover:underline text-gray-600 hover:text-red-500">About Us</Link></li>
-                            {/* --- THIS IS THE FIX --- */}
                             <li><Link href="/blog" className="hover:underline text-gray-600 hover:text-red-500">Blog</Link></li>
                         </ul>
                     </div>
@@ -47,6 +48,13 @@ export const InformativePanel = () => {
                            </li>
                         </ul>
                     </div>
+                </div>
+                
+                {/* --- THIS IS THE NEW SECTION --- */}
+                <div className="mt-16 pt-8 border-t border-gray-200">
+                    <p className="text-gray-500 text-sm">
+                        Made with ❤️ in India
+                    </p>
                 </div>
             </div>
         </section>
