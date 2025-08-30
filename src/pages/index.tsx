@@ -1,6 +1,6 @@
 // src/pages/index.tsx
 
-import React from 'react';
+import { useState } from 'react'; // <-- THIS IS THE FIX
 import { toolArray, categories, ToolCategory } from '@/constants/tools';
 import { Button } from '@/components/ui/button';
 import { ToolGrid } from '@/components/ToolGrid';
@@ -9,10 +9,10 @@ import { cn } from '@/lib/utils';
 import { NextSeo, WebPageJsonLd } from 'next-seo';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
+import React from 'react';
 import Image from 'next/image';
 
 // --- Mobile Hero ---
-// A simple, centered, single-column layout for smaller screens.
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
       <div className="bg-hero-bg text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
@@ -54,7 +54,7 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- Desktop Hero (Updated with new illustration) ---
+// --- Desktop Hero ---
 const DesktopHero = () => {
     return (
         <section className="w-full py-20 md:py-28 bg-gray-50 overflow-hidden">
@@ -134,4 +134,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default HomePage;```
