@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
+import { useParallax } from '@/hooks/useParallax'; // <-- IMPORT THE NEW HOOK
 
 // --- Mobile Hero (Unchanged) ---
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
@@ -54,36 +55,43 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- Desktop Hero (Updated with negative margin) ---
+// --- Desktop Hero (Updated with Parallax Effect) ---
 const DesktopHero = () => {
+    // Call the hook to get the dynamic style object. The value (e.g., 0.03) controls the effect's strength.
+    const parallaxStyle = useParallax(0.03);
+
     return (
-        // --- THIS IS THE FIX ---
-        // Apply a negative top margin of -80px (the height of the header) to pull this section up
-        <section className="w-full pt-20 md:pt-28 bg-gray-50 overflow-hidden -mt-20">
+        <section className="w-full pt-20 md:pt-28 bg-white dark:bg-dark-bg">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900">
+                        <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
                             Every tool you need to work with PDFs in one place
                         </h1>
-                        <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-lg text-gray-600 leading-relaxed">
+                        <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-lg text-gray-600 dark:text-dark-text-secondary leading-relaxed">
                             Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
                         </p>
-                        <div className="mt-8 flex justify-center lg:justify-start">
-                            <Button asChild size="lg" className="text-lg px-8 py-6 bg-brand-blue hover:bg-brand-blue-dark text-white">
+                        <div className="mt-10 flex justify-center lg:justify-start">
+                            <Button asChild size="lg" className="text-lg px-8 py-7 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl">
                                 <Link href="#tools">View All Tools</Link>
                             </Button>
                         </div>
                     </div>
+
+                    {/* --- THIS IS THE UPDATED ILLUSTRATION SECTION --- */}
                     <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
-                        <Image
-                          src="/hero-illustration-v2.png"
-                          alt="Illustration of PDF document management tools"
-                          width={600}
-                          height={500}
-                          priority
-                          className="rounded-lg"
-                        />
+                        {/* 1. A container to create a "window" for the parallax effect */}
+                        <div className="relative w-[600px] h-[500px] rounded-lg overflow-hidden">
+                            {/* 2. Apply the dynamic style to the Image component */}
+                            <Image
+                              src="/hero-illustration-v2.png"
+                              alt="Illustration of PDF document management tools"
+                              fill
+                              priority
+                              className="object-cover scale-125" // 3. Scale the image up so the movement is visible
+                              style={parallaxStyle}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -101,7 +109,7 @@ const HomePage = () => {
     : toolArray;
 
   if (isMobile === undefined) {
-    return <div className="w-full h-screen bg-gray-50" />;
+    return <div className="w-full h-screen bg-gray-50 dark:bg-dark-bg" />;
   }
 
   return (
@@ -118,7 +126,7 @@ const HomePage = () => {
         url="https://pdfmingle.com"
       />
       
-      <div className="w-full">
+      <div className="w-full bg-white dark:bg-dark-bg">
         {isMobile ? (
           <MobileHero activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
         ) : (
