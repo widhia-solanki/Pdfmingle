@@ -29,10 +29,8 @@
     --ilovepdf-text: #333333;    
   }
 
-  .custom-cursor-active,
-  .custom-cursor-active * {
-    cursor: none;
-  }
+
+
 }
 
 @layer components {
