@@ -6,16 +6,23 @@ import Script from 'next/script';
 // Your existing Google Tag Manager ID
 const GTM_ID = 'GTM-5F5T8VBP';
 
-// Your new Google Analytics 4 ID from the screenshot
+// Your existing Google Analytics 4 ID
 const GA_MEASUREMENT_ID = 'G-RPZJ7ZGCQG';
 
 export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* --- SCRIPT SECTION --- */}
+        {/* --- THIS IS THE NEW ADSENSE SCRIPT --- */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9837860640878429"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
+        {/* --- END OF ADSENSE SCRIPT --- */}
 
-        {/* 1. Your existing Google Tag Manager Script */}
+        {/* Your existing Google Tag Manager Script */}
         <Script
           id="gtm-script"
           strategy="afterInteractive"
@@ -24,17 +31,16 @@ export default function Document() {
             (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
             new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
             j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-            'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            'https://www.googlesyndication.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
             })(window,document,'script','dataLayer','${GTM_ID}');
             `,
           }}
         />
-        {/* End Google Tag Manager */}
 
-        {/* 2. The new Google Analytics 4 Tag */}
+        {/* Your existing Google Analytics 4 Tag */}
         <Script
           strategy="afterInteractive"
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          src={`https://www.googlesagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         />
         <Script
           id="google-analytics"
@@ -48,8 +54,6 @@ export default function Document() {
             `,
           }}
         />
-        {/* End Google Analytics 4 Tag */}
-
       </Head>
       <body>
         {/* Your existing Google Tag Manager (noscript) - Body */}
@@ -61,7 +65,6 @@ export default function Document() {
             `,
           }}
         />
-        {/* End Google Tag Manager (noscript) */}
         <Main />
         <NextScript />
       </body>
