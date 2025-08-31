@@ -1,4 +1,5 @@
-import { Zap, Users, Shield, Lightbulb, Mail, Globe } from 'lucide-react';
+import { Zap, Users, Shield, Lightbulb, Mail, Globe, Linkedin } from 'lucide-react'; // 1. Import Linkedin icon
+import Link from 'next/link';
 
 const AboutPage = () => {
   return (
@@ -22,7 +23,7 @@ const AboutPage = () => {
             Who We Are
           </h2>
           <p className="text-base md:text-lg leading-relaxed text-gray-600">
-            DAFDA Products is a forward-thinking technology company committed to creating simple, powerful, and accessible digital solutions for people and businesses worldwide. We believe that technology should empower everyone — making daily tasks faster, easier, and smarter. Our flagship product, <strong className="font-semibold text-red-500">PDFMingle</strong>, is designed to give you a seamless, efficient, and secure way to work with PDF files — whether you need to merge, split, compress, or convert them.
+            DAFDA Products is a forward-thinking technology company committed to creating simple, powerful, and accessible digital solutions for people and businesses worldwide. We believe that technology should empower everyone — making daily tasks faster, easier, and smarter. Our flagship product, <strong className="font-semibold text-blue-500">PDF</strong>Mingle, is designed to give you a seamless, efficient, and secure way to work with PDF files — whether you need to merge, split, compress, or convert them.
           </p>
         </div>
       </section>
@@ -45,7 +46,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* 4. Meet Our Team Section (UPDATED) */}
+      {/* 4. Meet Our Team Section */}
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4 max-w-5xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-gray-800">
@@ -61,13 +62,14 @@ const AboutPage = () => {
                 </p>
             </div>
             {/* Founder */}
-            <div className="space-y-3">
+            <div className="space-y-3 flex flex-col items-center">
                 <h3 className="text-2xl font-bold text-gray-800">Widhia Solanki</h3>
                 <p className="font-semibold text-red-500">Founder</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Widhia Solanki founded PDFMingle at the age of 18. With strong technical skills, she aims to help students, professionals, and businesses manage documents more efficiently, believing that age doesn't limit the ability to create impactful technology.
+                  As the founder, Widhia established the core mission of creating user-centric technology. Her passion for simplifying complex problems is the driving force behind the intuitive design of PDFMingle.
                 </p>
- <a 
+                {/* --- THIS IS THE NEW LINK --- */}
+                <a 
                   href="https://www.linkedin.com/in/widhia-solanki-69a901336/"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -82,9 +84,8 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Eshan Solanki</h3>
                 <p className="font-semibold text-red-500">Developer</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Eshan Solanki, a 15-year-old high school student, is passionate about coding and has made significant contributions to the development of PDFMingle, shaping its user experience early in his journey.
-
-</p>
+                  Eshan is the architect and lead developer of PDFMingle. With a strong background in technology and a drive for excellence, he leads the development with innovation, precision, and a customer-first approach.
+                </p>
             </div>
           </div>
         </div>
