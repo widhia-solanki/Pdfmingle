@@ -65,7 +65,8 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Widhia Solanki</h3>
                 <p className="font-semibold text-red-500">Founder</p>
                 <p className="text-gray-600 leading-relaxed">
-                  As the founder, Widhia established the core mission of creating user-centric technology. Her passion for simplifying complex problems is the driving force behind the intuitive design of PDFMingle.
+                  PDFMingle was founded by Widhia Solanki, an 18-year-old innovator and first-year B.Tech Mechanical Engineering student. With strong technical, theoretical, and practical skills, Widhia set out to create tools that help students, professionals, and businesses manage documents with ease. She believes that age is never a barrier to building impactful technology.
+👉 Connect with Widhia on LinkedIn: https://www.linkedin.com/in/widhia-solanki-69a901336/
                 </p>
             </div>
             {/* Developer */}
@@ -73,8 +74,11 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Eshan Solanki</h3>
                 <p className="font-semibold text-red-500">Developer</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Eshan is the architect and lead developer of PDFMingle. With a strong background in technology and a drive for excellence, he leads the development with innovation, precision, and a customer-first approach.
-                </p>
+                  The development of PDFMingle has been strongly supported by Eshan Solanki, a 15-year-old high school student with a growing interest in coding. Despite being early in his journey, Eshan has contributed significantly to the web development process and plays an important role in shaping PDFMingle’s user experience.
+</p>
+<p>
+Together, this sibling duo is building PDFMingle with passion, innovation, and the vision of making document management effortless for everyone.
+              </p>
             </div>
           </div>
         </div>
