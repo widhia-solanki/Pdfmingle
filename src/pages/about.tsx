@@ -65,8 +65,7 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Widhia Solanki</h3>
                 <p className="font-semibold text-red-500">Founder</p>
                 <p className="text-gray-600 leading-relaxed">
-                  PDFMingle was founded by Widhia Solanki, an 18-year-old innovator and first-year B.Tech Mechanical Engineering student. With strong technical, theoretical, and practical skills, Widhia set out to create tools that help students, professionals, and businesses manage documents with ease. She believes that age is never a barrier to building impactful technology.
-👉 Connect with Widhia on LinkedIn: https://www.linkedin.com/in/widhia-solanki-69a901336/
+                  Widhia Solanki founded PDFMingle at the age of 18. With strong technical skills, she aims to help students, professionals, and businesses manage documents more efficiently, believing that age doesn't limit the ability to create impactful technology.
                 </p>
             </div>
             {/* Developer */}
@@ -74,11 +73,9 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Eshan Solanki</h3>
                 <p className="font-semibold text-red-500">Developer</p>
                 <p className="text-gray-600 leading-relaxed">
-                  The development of PDFMingle has been strongly supported by Eshan Solanki, a 15-year-old high school student with a growing interest in coding. Despite being early in his journey, Eshan has contributed significantly to the web development process and plays an important role in shaping PDFMingle’s user experience.
+                  Eshan Solanki, a 15-year-old high school student, is passionate about coding and has made significant contributions to the development of PDFMingle, shaping its user experience early in his journey.
+
 </p>
-<p>
-Together, this sibling duo is building PDFMingle with passion, innovation, and the vision of making document management effortless for everyone.
-              </p>
             </div>
           </div>
         </div>
