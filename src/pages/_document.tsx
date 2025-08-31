@@ -13,14 +13,7 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
-        {/* --- THIS IS THE NEW ADSENSE SCRIPT --- */}
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9837860640878429"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-        {/* --- END OF ADSENSE SCRIPT --- */}
+        {/* --- The AdSense <Script> tag has been REMOVED from this file --- */}
 
         {/* Your existing Google Tag Manager Script */}
         <Script
@@ -40,7 +33,7 @@ export default function Document() {
         {/* Your existing Google Analytics 4 Tag */}
         <Script
           strategy="afterInteractive"
-          src={`https://www.googlesagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
         />
         <Script
           id="google-analytics"
