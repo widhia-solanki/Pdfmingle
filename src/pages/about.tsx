@@ -67,6 +67,15 @@ const AboutPage = () => {
                 <p className="text-gray-600 leading-relaxed">
                   Widhia Solanki founded PDFMingle at the age of 18. With strong technical skills, she aims to help students, professionals, and businesses manage documents more efficiently, believing that age doesn't limit the ability to create impactful technology.
                 </p>
+ <a 
+                  href="https://www.linkedin.com/in/widhia-solanki-69a901336/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 mt-4 text-brand-blue hover:text-brand-blue-dark font-semibold transition-colors"
+                >
+                    <Linkedin className="h-5 w-5" />
+                    Connect with our Founder
+                </a>
             </div>
             {/* Developer */}
             <div className="space-y-3">
