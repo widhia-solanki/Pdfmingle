@@ -9,16 +9,20 @@ import { Analytics } from "@vercel/analytics/react";
 import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
 import { CookieConsent } from '@/components/CookieConsent';
-import { ThemeProvider } from 'next-themes'; // <-- IMPORT THE PROVIDER
+import { ThemeProvider } from 'next-themes';
+import { useRouter } from 'next/router'; // 1. Import the router
 
 export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter(); // 2. Get the router instance
+
+  // 3. Check if the current page is the homepage
+  const isHomePage = router.pathname === '/';
+
   return (
-    // --- WRAP YOUR APP IN THE THEME PROVIDER ---
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
-        
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -27,7 +31,9 @@ export default function App({ Component, pageProps }: AppProps) {
 
       <DefaultSeo {...SEO} />
       
-      <MainLayout>
+      {/* --- THIS IS THE FIX --- */}
+      {/* 4. Pass the 'flush' prop only on the homepage */}
+      <MainLayout flush={isHomePage}>
         <Component {...pageProps} />
       </MainLayout>
       
