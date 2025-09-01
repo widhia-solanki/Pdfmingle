@@ -13,6 +13,14 @@ if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
 
+// --- THIS IS THE FIX ---
+// The missing interface is re-added here.
+interface PageArrangerProps {
+  file: File;
+  pages: PageObject[];
+  onPagesChange: (pages: PageObject[]) => void;
+}
+
 export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPagesChange }) => {
   const [pageCanvases, setPageCanvases] = useState<Map<number, string>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
@@ -22,7 +30,6 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
   const [isDialogLoading, setIsDialogLoading] = useState(false);
 
   useEffect(() => {
-    // This effect renders all page thumbnails when the component loads.
     const renderAllPages = async () => {
       if (!file) return;
       setIsLoading(true);
@@ -56,7 +63,6 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
   }, [file]);
 
   useEffect(() => {
-    // This effect renders a single high-resolution page when the dialog is opened.
     const renderHighResPage = async () => {
       if (viewingPage === null || !file) return;
 
@@ -68,7 +74,7 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
         const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
         const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
         
-        const page = await pdf.getPage(viewingPage.originalIndex + 1); // pdf.js is 1-based
+        const page = await pdf.getPage(viewingPage.originalIndex + 1);
         const viewport = page.getViewport({ scale: 1.5 });
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
@@ -110,10 +116,10 @@ export const PageArranger: React.FC<PageArrangerProps> = ({ file, pages, onPages
   
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center p-12 gap-4 h-64">
-        <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
-        <p className="text-lg font-semibold text-gray-700">Loading all pages...</p>
-      </div>
+        <div className="flex flex-col items-center justify-center p-12 gap-4 h-64">
+            <div className="w-12 h-12 border-4 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+            <p className="text-lg font-semibold text-gray-700">Loading all pages...</p>
+        </div>
     );
   }
 
