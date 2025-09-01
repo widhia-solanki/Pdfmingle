@@ -41,7 +41,6 @@ export const InformativePanel = () => {
                     </div>
                     <div className="space-y-3">
                         <h4 className="font-bold text-lg text-gray-800 dark:text-dark-text-primary">Follow Us</h4>
-                        {/* --- THIS IS THE UPDATED SECTION --- */}
                         <ul className="flex items-center space-x-4">
                            <li>
                                 <a 
