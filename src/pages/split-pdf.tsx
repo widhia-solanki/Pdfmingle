@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { splitPDF } from '@/lib/pdf/split';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// FINAL, GUARANTEED FIX: Point to the local copy of the worker.
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
@@ -39,6 +38,7 @@ const SplitPdfPage = () => {
   }, [downloadUrl]);
 
   const handleFileSelected = async (files: File[]) => {
+    setError(null); // Clear previous errors
     if (files.length === 0) {
       handleStartOver();
       return;
@@ -46,7 +46,6 @@ const SplitPdfPage = () => {
     
     const selectedFile = files[0];
     setFile(selectedFile);
-    setError(null);
 
     try {
       const fileBuffer = await selectedFile.arrayBuffer();
@@ -57,7 +56,8 @@ const SplitPdfPage = () => {
       setStatus('options');
     } catch (err: any) {
       setError("Could not read the PDF. It may be corrupt or password-protected.");
-      setStatus('error');
+      setStatus('idle'); // Revert to idle to show the uploader with the error
+      setFile(null);
     }
   };
 
@@ -84,20 +84,25 @@ const SplitPdfPage = () => {
         title="Split PDF Online – Extract Pages Free"
         description="Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter."
       />
-      <div className="flex flex-col items-center text-center pt-8 md:pt-12">
+      <div className="flex flex-col items-center text-center pt-20">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Split PDF Online</h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter.</p>
         <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
-            {status === 'idle' && (
-                <ToolUploader 
-                    onFilesSelected={handleFileSelected}
-                    acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-                    selectedFiles={file ? [file] : []}
-                    isMultiFile={false}
-                    error={error}
-                    onProcess={() => {}}
-                    actionButtonText=""
-                />
+            {/* --- THIS IS THE FIX --- */}
+            {/* Uploader is now shown for both 'idle' and 'error' states */}
+            {(status === 'idle' || status === 'error') && (
+                <div className="flex flex-col items-center gap-4">
+                    <ToolUploader 
+                        onFilesSelected={handleFileSelected}
+                        acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                        selectedFiles={file ? [file] : []}
+                        isMultiFile={false}
+                        error={error}
+                        onProcess={() => {}}
+                        actionButtonText=""
+                    />
+                    {status === 'error' && <Button onClick={handleStartOver} variant="outline">Try Again</Button>}
+                </div>
             )}
             {status === 'options' && file && (
                 <div className="w-full grid md:grid-cols-2 gap-8 items-start">
@@ -114,8 +119,7 @@ const SplitPdfPage = () => {
                             onModeChange={setSplitMode}
                         />
                         <div className="mt-6 flex flex-col items-center gap-4">
-                            {/* FINAL FIX: Added styling to the button */}
-                            <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 text-white">Split PDF</Button>
+                            <Button size="lg" onClick={handleProcess} className="w-full bg-brand-blue hover:bg-brand-blue-dark text-white">Split PDF</Button>
                             <Button variant="outline" onClick={handleStartOver}>Choose a different file</Button>
                         </div>
                     </div>
@@ -124,12 +128,6 @@ const SplitPdfPage = () => {
             {status === 'processing' && <ToolProcessor />}
             {status === 'success' && (
                 <ToolDownloader downloadUrl={downloadUrl} onStartOver={handleStartOver} filename={processedFileName} />
-            )}
-            {status === 'error' && (
-                <div className="text-center p-8">
-                    <p className="text-red-500 font-semibold mb-4">{error}</p>
-                    <Button onClick={handleStartOver} variant="outline">Try Again</Button>
-                </div>
             )}
         </div>
       </div>
