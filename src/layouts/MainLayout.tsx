@@ -4,20 +4,18 @@ import React from "react";
 import { Header } from "@/components/Header";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { InformativePanel } from "@/components/InformativePanel";
-import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
   children: React.ReactNode;
-  flush?: boolean; // 1. Add the optional 'flush' property
 }
 
-export const MainLayout = ({ children, flush }: MainLayoutProps) => {
+export const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-bg">
       <Header />
       {/* --- THIS IS THE FIX --- */}
-      {/* 2. Conditionally apply the padding class */}
-      <main className={cn("flex-grow", !flush && "pt-20")}>
+      {/* All padding is removed. Pages are now responsible for their own spacing. */}
+      <main className="flex-grow">
         {children}
       </main>
       
