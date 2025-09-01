@@ -14,8 +14,8 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-bg">
       <Header />
       {/* --- THIS IS THE FIX --- */}
-      {/* All padding is removed. Pages are now responsible for their own spacing. */}
-      <main className="flex-grow">
+      {/* Restore the global top padding to fix all tool pages. */}
+      <main className="flex-grow pt-20">
         {children}
       </main>
       
