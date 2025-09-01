@@ -1,135 +1,42 @@
-// src/pages/index.tsx
+// src/pages/_app.tsx
 
-import { useState } from 'react';
-import { toolArray, categories, ToolCategory } from '@/constants/tools';
-import { Button } from '@/components/ui/button';
-import { ToolGrid } from '@/components/ToolGrid';
-import { FaqSection } from '@/components/FaqSection';
-import { cn } from '@/lib/utils';
-import { NextSeo, WebPageJsonLd } from 'next-seo';
-import Link from 'next/link';
-import { useIsMobile } from '@/hooks/use-mobile';
-import React from 'react';
-import Image from 'next/image';
+import '@/styles/globals.css';
+import type { AppProps } from 'next/app';
+import Head from 'next/head';
+import { MainLayout } from '@/layouts/MainLayout';
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
+import { DefaultSeo } from 'next-seo';
+import SEO from '../../next-seo.config';
+import { CookieConsent } from '@/components/CookieConsent';
+import { ThemeProvider } from 'next-themes';
+import { useRouter } from 'next/router';
 
-// --- Mobile Hero (Now includes its own padding) ---
-const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
-    <section className="container mx-auto px-4 pt-8 md:pt-12">
-      <div className="bg-hero-bg text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
-        <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-          Every tool you need to work with PDFs in one place
-        </h1>
-        <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-300">
-          Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
-        </p>
-        
-        <div className="flex flex-wrap items-center justify-center gap-3 mt-10">
-          <Button
-            onClick={() => setActiveCategory('All')}
-            className={cn(
-              "rounded-full px-6 py-3 text-base font-semibold transition-colors",
-              activeCategory === 'All' 
-                ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' 
-                : 'bg-filter-inactive-bg text-white hover:bg-white/20'
-            )}
-          >
-            All
-          </Button>
-          {categories.map((category) => (
-            <Button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={cn(
-                "rounded-full px-6 py-3 text-base font-semibold transition-colors",
-                activeCategory === category 
-                  ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' 
-                  : 'bg-filter-inactive-bg text-white hover:bg-white/20'
-              )}
-            >
-              {category}
-            </Button>
-          ))}
-        </div>
-      </div>
-    </section>
-);
-
-// --- Desktop Hero (Sits flush at the top) ---
-const DesktopHero = () => {
-    return (
-        <section className="w-full bg-white dark:bg-dark-bg">
-            <div className="container mx-auto px-4 pt-20 md:pt-28">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
-                        <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-                            Every tool you need to work with PDFs in one place
-                        </h1>
-                        <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-lg text-gray-600 dark:text-dark-text-secondary leading-relaxed">
-                            Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
-                        </p>
-                        <div className="mt-10 flex justify-center lg:justify-start">
-                            <Button asChild size="lg" className="text-lg px-8 py-7 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl">
-                                <Link href="#tools">View All Tools</Link>
-                            </Button>
-                        </div>
-                    </div>
-                    <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
-                        <Image
-                          src="/hero-illustration-v2.png"
-                          alt="Illustration of PDF document management tools"
-                          width={600}
-                          height={500}
-                          priority
-                          className="rounded-lg"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
-    );
-};
-
-const HomePage = () => {
-  const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
-  const isMobile = useIsMobile();
-
-  const filteredTools = (isMobile && activeCategory !== 'All')
-    ? toolArray.filter(tool => tool.category === activeCategory)
-    : toolArray;
-
-  if (isMobile === undefined) {
-    return <div className="w-full h-screen bg-gray-50 dark:bg-dark-bg" />;
-  }
+export default function App({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+  const isHomePage = router.pathname === '/';
 
   return (
-    <>
-      <NextSeo
-        title="Free & Secure Online PDF Tools"
-        description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs."
-        canonical="https://pdfmingle.com"
-      />
-      <WebPageJsonLd
-        name="PDFMingle"
-        description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs."
-        id="https://pdfmingle.com/#webpage"
-        url="https://pdfmingle.com"
-      />
-      
-      <div className="w-full bg-white dark:bg-dark-bg">
-        {isMobile ? (
-          <div className="pt-20"> {/* Add wrapper for mobile spacing */}
-            <MobileHero activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-          </div>
-        ) : (
-          <DesktopHero />
-        )}
-        
-        <ToolGrid tools={filteredTools} />
-        
-        <FaqSection />
-      </div>
-    </>
-  );
-};
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+      </Head>
 
-export default HomePage;
+      <DefaultSeo {...SEO} />
+      
+      <MainLayout flush={isHomePage}>
+        <Component {...pageProps} />
+      </MainLayout>
+      
+      <SpeedInsights />
+      <Analytics />
+
+      <CookieConsent />
+    </ThemeProvider>
+  );
+}
