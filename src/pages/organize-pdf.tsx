@@ -1,6 +1,6 @@
 // src/pages/organize-pdf.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { NextPage } from 'next';
 import Head from 'next/head';
 import * as pdfjsLib from 'pdfjs-dist';
@@ -25,27 +25,34 @@ const OrganizePdfPage: NextPage = () => {
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
 
-  const loadInitialPages = async (selectedFile: File) => {
-    setStatus('arranging'); // Show loading state immediately
-    try {
-      const fileBuffer = await selectedFile.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
-      const initialPages: PageObject[] = Array.from({ length: pdf.numPages }, (_, i) => ({
-        id: `page-${i}`,
-        originalIndex: i,
-        rotation: 0,
-      }));
-      setPages(initialPages);
-    } catch (err) {
-      setError("Could not read the PDF. It may be corrupt or password-protected.");
-      setStatus('error');
+  useEffect(() => {
+    if (file && status === 'arranging') {
+      const loadInitialPages = async (selectedFile: File) => {
+        try {
+          const fileBuffer = await selectedFile.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
+          const initialPages: PageObject[] = Array.from({ length: pdf.numPages }, (_, i) => ({
+            id: `page-${i}`,
+            originalIndex: i,
+            rotation: 0,
+          }));
+          setPages(initialPages);
+        } catch (err) {
+          setError("Could not read the PDF. It may be corrupt or password-protected.");
+          setStatus('idle');
+          setFile(null);
+        }
+      };
+      loadInitialPages(file);
     }
-  };
+  }, [file, status]);
+
 
   const handleFilesSelected = (selectedFiles: File[]) => {
+    setError(null);
     if (selectedFiles.length > 0) {
       setFile(selectedFiles[0]);
-      loadInitialPages(selectedFiles[0]);
+      setStatus('arranging');
     } else {
       setFile(null);
       setStatus('idle');
@@ -88,14 +95,14 @@ const OrganizePdfPage: NextPage = () => {
         <title>Organize PDF Pages - Free Online Tool</title>
         <meta name="description" content="Reorder, arrange, rotate, and delete PDF pages effortlessly. Free and secure." />
       </Head>
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pt-20">
         <h1 className="text-4xl font-bold text-center mb-4">Organize PDF Pages</h1>
         <p className="text-lg text-gray-600 text-center mb-8">
           Drag and drop to reorder pages. Use the buttons on each page to rotate or delete.
         </p>
         
-        {status === 'idle' && (
-            <div className="max-w-4xl mx-auto">
+        {(status === 'idle' || status === 'error') && (
+            <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
                 <ToolUploader 
                     onFilesSelected={handleFilesSelected}
                     acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
@@ -105,6 +112,7 @@ const OrganizePdfPage: NextPage = () => {
                     onProcess={() => {}}
                     actionButtonText=""
                 />
+                 {status === 'error' && <Button onClick={handleStartOver} variant="outline">Try Again</Button>}
             </div>
         )}
 
@@ -112,7 +120,7 @@ const OrganizePdfPage: NextPage = () => {
              <div className="w-full max-w-7xl mx-auto space-y-6 flex flex-col items-center">
                 <PageArranger file={file} pages={pages} onPagesChange={setPages} />
                 <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
-                    <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600 text-white px-12 py-6">
+                    <Button size="lg" onClick={handleProcess} className="w-full sm:w-auto bg-brand-blue hover:bg-brand-blue-dark text-white font-bold px-12 py-6">
                         Organize PDF
                     </Button>
                     <Button variant="outline" size="lg" onClick={handleStartOver}>
@@ -130,13 +138,6 @@ const OrganizePdfPage: NextPage = () => {
             filename={processedFileName}
             onStartOver={handleStartOver}
           />
-        )}
-
-        {status === 'error' && (
-            <div className="text-center p-8">
-              <p className="text-red-500 font-semibold mb-4">{error}</p>
-              <Button onClick={handleStartOver} variant="outline">Try Again</Button>
-            </div>
         )}
       </div>
     </>
