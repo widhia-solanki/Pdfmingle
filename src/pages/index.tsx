@@ -11,7 +11,6 @@ import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
-import { useParallax } from '@/hooks/useParallax'; // <-- IMPORT THE NEW HOOK
 
 // --- Mobile Hero (Unchanged) ---
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
@@ -55,13 +54,12 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// --- Desktop Hero (Updated with Parallax Effect) ---
+// --- Desktop Hero (Updated with negative margin) ---
 const DesktopHero = () => {
-    // Call the hook to get the dynamic style object. The value (e.g., 0.03) controls the effect's strength.
-    const parallaxStyle = useParallax(0.03);
-
     return (
-        <section className="w-full pt-20 md:pt-28 bg-white dark:bg-dark-bg">
+        // --- THIS IS THE FIX ---
+        // The negative margin cancels out the layout's padding ONLY for this component.
+        <section className="w-full pt-20 md:pt-28 bg-white dark:bg-dark-bg -mt-20">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
@@ -77,28 +75,21 @@ const DesktopHero = () => {
                             </Button>
                         </div>
                     </div>
-
-                    {/* --- THIS IS THE UPDATED ILLUSTRATION SECTION --- */}
                     <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
-                        {/* 1. A container to create a "window" for the parallax effect */}
-                        <div className="relative w-[600px] h-[500px] rounded-lg overflow-hidden">
-                            {/* 2. Apply the dynamic style to the Image component */}
-                            <Image
-                              src="/hero-illustration-v2.png"
-                              alt="Illustration of PDF document management tools"
-                              fill
-                              priority
-                              className="object-cover scale-125" // 3. Scale the image up so the movement is visible
-                              style={parallaxStyle}
-                            />
-                        </div>
+                        <Image
+                          src="/hero-illustration-v2.png"
+                          alt="Illustration of PDF document management tools"
+                          width={600}
+                          height={500}
+                          priority
+                          className="rounded-lg"
+                        />
                     </div>
                 </div>
             </div>
         </section>
     );
 };
-
 
 const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
