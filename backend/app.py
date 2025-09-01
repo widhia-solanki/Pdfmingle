@@ -19,13 +19,16 @@ import webcolors
 
 app = Flask(__name__)
 
-# Allow all origins for Vercel preview deployments and local development
+# --- THIS IS THE FIX ---
+# Allow all origins by using "*". This is the most robust setting for a public API
+# that needs to be accessed from Vercel's dynamic preview URLs and your main domain.
+# It is safe for your use case as your API doesn't handle sensitive user login data.
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ... (all other routes remain the same) ...
-@app.route('/api/pdf-to-word', methods=['POST'])
-def handle_pdf_to_word():
-    # ... existing code ...
+# ... (all your other existing routes remain the same) ...
+@app.route('/api/ping', methods=['GET'])
+def ping():
+    return jsonify({"message": "pong"}), 200
 
 @app.route('/api/compress-pdf', methods=['POST'])
 def handle_compress_pdf():
@@ -41,8 +44,6 @@ def handle_compress_pdf():
     input_path = os.path.join(temp_dir, str(uuid.uuid4()) + '_input.pdf')
     output_path = os.path.join(temp_dir, str(uuid.uuid4()) + '_output.pdf')
     
-    # --- THIS IS THE FIX ---
-    # Find the absolute path to the Ghostscript executable. This is robust for server environments.
     gs_path = shutil.which('gs')
     if not gs_path:
         return jsonify({"error": "Ghostscript executable not found on the server."}), 500
@@ -50,7 +51,7 @@ def handle_compress_pdf():
     try:
         file.save(input_path)
         command = [
-            gs_path,  # Use the absolute path
+            gs_path,
             '-sDEVICE=pdfwrite',
             '-dCompatibilityLevel=1.4',
             f'-dPDFSETTINGS={quality}',
@@ -67,7 +68,6 @@ def handle_compress_pdf():
             download_name=f"compressed_{file.filename}", mimetype='application/pdf'
         )
     except subprocess.CalledProcessError as e:
-        # Log the actual error from Ghostscript for better debugging
         print("Ghostscript stderr:", e.stderr)
         return jsonify({"error": "Failed to process PDF with Ghostscript.", "details": e.stderr}), 500
     except Exception as e:
@@ -77,7 +77,7 @@ def handle_compress_pdf():
         if os.path.exists(input_path): os.remove(input_path)
         if os.path.exists(output_path): os.remove(output_path)
 
-# ... (all other routes remain the same) ...
+# ... (all other routes, like word-to-pdf, protect-pdf, etc.) ...
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
