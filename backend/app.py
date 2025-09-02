@@ -21,15 +21,11 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-@app.route('/api/ping', methods=['GET'])
-def ping():
-    return jsonify({"message": "pong"}), 200
-
 # ... (all other working routes) ...
 
-# --- THIS IS THE FIX ---
 @app.route('/api/protect-pdf', methods=['POST'])
 def handle_protect_pdf():
+    # ... (protect logic) ...
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
@@ -53,9 +49,9 @@ def handle_protect_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to protect the PDF."}), 500
 
+# --- THIS IS THE FIX ---
 @app.route('/api/unlock-pdf', methods=['POST'])
 def handle_unlock_pdf():
-    # ... (unlock logic) ...
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
