@@ -11,7 +11,7 @@ import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
-import { Lock } from 'lucide-react'; // Import the Lock icon
+import { Lock } from 'lucide-react';
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
@@ -56,7 +56,7 @@ const UnlockPDFPage: NextPage = () => {
     formData.append('file', files[0]);
     formData.append('password', password);
 
-    try:
+    try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
       const response = await fetch(`${apiBaseUrl}/api/unlock-pdf`, {
         method: 'POST',
@@ -130,8 +130,7 @@ const UnlockPDFPage: NextPage = () => {
                      index={index}
                      onRemove={handleFileRemove}
                    />
-                   {/* --- THIS IS THE NEW OVERLAY --- */}
-                   <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
+                   <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center pointer-events-none">
                       <Lock className="h-12 w-12 text-white/70" />
                    </div>
                  </div>
