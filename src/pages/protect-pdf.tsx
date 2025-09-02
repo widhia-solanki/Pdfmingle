@@ -8,7 +8,6 @@ import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { ProtectOptions } from '@/components/tools/ProtectOptions';
 import PDFPreviewer from '@/components/PDFPreviewer';
-// --- THIS IS THE FIX: The unused import is removed ---
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
@@ -16,15 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
 const ProtectPDFPage: NextPage = () => {
-  // The 'protect-pdf' key will cause an error until we add it to tools.ts
-  // We will assume it exists for now and add it in the next step.
-  const tool = tools['protect-pdf'] || {
-    metaTitle: 'Protect PDF',
-    metaDescription: 'Add a password to your PDF.',
-    value: 'protect-pdf',
-    h1: 'Protect PDF',
-    description: 'Add a password to encrypt and secure your PDF file.'
-  };
+  const tool = tools['protect-pdf'];
   const { toast } = useToast();
 
   const [files, setFiles] = useState<File[]>([]);
@@ -34,6 +25,7 @@ const ProtectPDFPage: NextPage = () => {
   const [processedFileName, setProcessedFileName] = useState('');
 
   const handleFilesSelected = (selectedFiles: File[]) => {
+    setError(null);
     setFiles(selectedFiles);
     if (selectedFiles.length > 0) {
       setStatus('options');
@@ -50,7 +42,6 @@ const ProtectPDFPage: NextPage = () => {
     }
   };
 
-  // --- THIS IS THE FIX: This function now calls the backend API ---
   const handleProcess = async (password: string) => {
     if (files.length === 0) {
       setError('Please upload a PDF file.');
@@ -65,8 +56,9 @@ const ProtectPDFPage: NextPage = () => {
     formData.append('password', password);
 
     try {
+      // --- THIS IS THE FIX ---
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
-      const response = await fetch(`${apiBaseUrl}/protect-pdf`, {
+      const response = await fetch(`${apiBaseUrl}/api/protect-pdf`, {
         method: 'POST',
         body: formData,
       });
@@ -105,16 +97,18 @@ const ProtectPDFPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
+        canonical={`https://pdfmingle.com/${tool.value}`}
       />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pt-20">
         <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
         <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">
           {tool.description}
         </p>
-
-        {status === 'idle' && (
-           <div className="max-w-4xl mx-auto">
+        
+        {/* --- THIS IS THE FIX --- */}
+        {/* Consolidate idle and error states to reuse the ToolUploader for error display */}
+        {(status === 'idle' || status === 'error') && (
+           <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
             <ToolUploader
                 onFilesSelected={handleFilesSelected}
                 acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
@@ -124,6 +118,7 @@ const ProtectPDFPage: NextPage = () => {
                 onProcess={() => {}}
                 actionButtonText=""
             />
+             {status === 'error' && <Button onClick={handleStartOver} variant="outline">Try Again</Button>}
            </div>
         )}
 
@@ -152,16 +147,9 @@ const ProtectPDFPage: NextPage = () => {
             onStartOver={handleStartOver}
           />
         )}
-        
-        {status === 'error' && (
-            <div className="text-center p-8">
-              <p className="text-red-500 font-semibold mb-4">{error}</p>
-              <Button onClick={handleStartOver} variant="outline">Try Again</Button>
-            </div>
-        )}
       </div>
     </>
   );
 };
 
-export default ProtectPDFPage;
+export default ProtectPDFPage;```
