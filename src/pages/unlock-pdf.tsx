@@ -11,6 +11,7 @@ import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+import { Lock } from 'lucide-react'; // Import the Lock icon
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
@@ -25,6 +26,7 @@ const UnlockPDFPage: NextPage = () => {
   const [processedFileName, setProcessedFileName] = useState('');
 
   const handleFilesSelected = (selectedFiles: File[]) => {
+    setError(null);
     setFiles(selectedFiles);
     if (selectedFiles.length > 0) {
       setStatus('options');
@@ -54,9 +56,9 @@ const UnlockPDFPage: NextPage = () => {
     formData.append('file', files[0]);
     formData.append('password', password);
 
-    try {
+    try:
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
-      const response = await fetch(`${apiBaseUrl}/unlock-pdf`, {
+      const response = await fetch(`${apiBaseUrl}/api/unlock-pdf`, {
         method: 'POST',
         body: formData,
       });
@@ -95,16 +97,16 @@ const UnlockPDFPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
+        canonical={`https://pdfmingle.com/${tool.value}`}
       />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 pt-20">
         <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
         <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">
           {tool.description}
         </p>
 
-        {status === 'idle' && (
-           <div className="max-w-4xl mx-auto">
+        {(status === 'idle' || status === 'error') && (
+           <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
             <ToolUploader
                 onFilesSelected={handleFilesSelected}
                 acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
@@ -114,6 +116,7 @@ const UnlockPDFPage: NextPage = () => {
                 onProcess={() => {}}
                 actionButtonText=""
             />
+             {status === 'error' && <Button onClick={handleStartOver} variant="outline">Try Again</Button>}
            </div>
         )}
 
@@ -121,12 +124,17 @@ const UnlockPDFPage: NextPage = () => {
           <div className="space-y-6 max-w-4xl mx-auto flex flex-col items-center">
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                {files.map((file, index) => (
-                 <PDFPreviewer
-                   key={index}
-                   file={file}
-                   index={index}
-                   onRemove={handleFileRemove}
-                 />
+                 <div key={index} className="relative">
+                   <PDFPreviewer
+                     file={file}
+                     index={index}
+                     onRemove={handleFileRemove}
+                   />
+                   {/* --- THIS IS THE NEW OVERLAY --- */}
+                   <div className="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
+                      <Lock className="h-12 w-12 text-white/70" />
+                   </div>
+                 </div>
                ))}
              </div>
              <UnlockOptions onUnlock={handleProcess} />
@@ -141,13 +149,6 @@ const UnlockPDFPage: NextPage = () => {
             filename={processedFileName}
             onStartOver={handleStartOver}
           />
-        )}
-        
-        {status === 'error' && (
-            <div className="text-center p-8">
-              <p className="text-red-500 font-semibold mb-4">{error}</p>
-              <Button onClick={handleStartOver} variant="outline">Try Again</Button>
-            </div>
         )}
       </div>
     </>
