@@ -1,9 +1,9 @@
 // src/lib/pdf/watermark.ts
 
-import { PDFDocument, rgb, StandardFonts, degrees, PageSizes } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
 import { WatermarkState } from '@/components/tools/WatermarkOptions';
 
-// Helper to convert HEX color to RGB
+// Helper to convert HEX color to RGB components (0-1 range)
 const hexToRgb = (hex: string): { r: number; g: number; b: number } => {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
@@ -35,6 +35,11 @@ export const addWatermarkToPdf = async (
     }
   }
 
+  // --- THIS IS THE FIX ---
+  // We get the RGB components once to use with the `rgb` function
+  const textColorComponents = hexToRgb(options.color);
+  const textColor = rgb(textColorComponents.r, textColorComponents.g, textColorComponents.b);
+
   for (const page of pages) {
     const { width, height } = page.getSize();
     const rotationDegrees = options.rotation;
@@ -49,12 +54,12 @@ export const addWatermarkToPdf = async (
               y,
               font,
               size: options.fontSize,
-              color: hexToRgb(options.color),
+              color: textColor, // Use the corrected color object
               opacity: options.opacity,
               rotate: degrees(rotationDegrees),
             });
           } else if (watermarkImage) {
-            const imgDims = watermarkImage.scale(0.5); // Example scaling
+            const imgDims = watermarkImage.scale(0.5);
             page.drawImage(watermarkImage, {
               x,
               y,
@@ -72,10 +77,10 @@ export const addWatermarkToPdf = async (
 
       const elementWidth = options.type === 'text' 
         ? font.widthOfTextAtSize(options.text, options.fontSize)
-        : watermarkImage.scale(0.5).width; // Use a consistent scale for preview
+        : watermarkImage ? watermarkImage.scale(0.5).width : 100;
       const elementHeight = options.type === 'text'
         ? font.heightAtSize(options.fontSize)
-        : watermarkImage.scale(0.5).height;
+        : watermarkImage ? watermarkImage.scale(0.5).height : 20;
 
       switch (options.position) {
         case 'top-left':
@@ -107,7 +112,7 @@ export const addWatermarkToPdf = async (
           y,
           font,
           size: options.fontSize,
-          color: hexToRgb(options.color),
+          color: textColor, // Use the corrected color object
           opacity: options.opacity,
           rotate: degrees(rotationDegrees),
         });
