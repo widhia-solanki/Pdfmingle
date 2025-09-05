@@ -58,11 +58,14 @@ const MergePdfPage = () => {
         title="Merge PDF Online – Free & Secure"
         description="Combine multiple PDF files into one instantly. Fast, free, and secure online PDF merger."
       />
-      <div className="flex flex-col items-center text-center pt-8 md:pt-12">
+      {/* MODIFICATION: Reduced vertical padding for a tighter mobile view */}
+      <div className="flex flex-col items-center text-center pt-6 md:pt-10">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Merge PDF Online</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Combine multiple PDF files into one instantly. Fast, free, and secure online PDF merger.</p>
         
-        <div className="mt-8 md:mt-12 w-full max-w-3xl px-4">
+        {/* REMOVED: The descriptive paragraph "informative panel" */}
+        
+        {/* MODIFICATION: Reduced top margin for a tighter mobile view */}
+        <div className="mt-6 md:mt-10 w-full max-w-3xl px-4">
           {status === 'idle' && (
             <ToolUploader
                 onFilesSelected={handleFilesSelected}
@@ -82,7 +85,6 @@ const MergePdfPage = () => {
               <FileArranger files={files} onFilesChange={setFiles} />
               <div className="mt-8 flex justify-center gap-4">
                 <Button variant="outline" size="lg" onClick={() => setStatus('idle')}>Add More Files</Button>
-                {/* FIX: Added className to style the primary button */}
                 <Button size="lg" onClick={handleProcess} className="bg-red-500 hover:bg-red-600 text-white">Merge PDFs</Button>
               </div>
             </div>
