@@ -5,6 +5,7 @@ import { useRouter } from 'next/router';
 import { Header } from "@/components/Header";
 import { FeedbackButton } from "@/components/FeedbackButton";
 import { InformativePanel } from "@/components/InformativePanel";
+import { AdPlaceholder } from "@/components/AdPlaceholder"; // IMPORT: The new ad component
 import { cn } from "@/lib/utils";
 import { toolArray } from "@/constants/tools"; // IMPORT: Get the list of tools
 
