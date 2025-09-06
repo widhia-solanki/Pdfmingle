@@ -3,7 +3,11 @@
 import React, { useState, useCallback } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
+// --- FIX START ---
 import * as pdfjsLib from 'pdfjs-dist';
+// Import the worker entrypoint
+import 'pdfjs-dist/build/pdf.worker.entry';
+// --- FIX END ---
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -14,11 +18,12 @@ import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Droplets } from 'lucide-react';
-import { addWatermarkToPdf } from '@/lib/pdf/watermark'; // IMPORT our new client-side function
+import { addWatermarkToPdf } from '@/lib/pdf/watermark';
 
-if (typeof window !== 'undefined') {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-}
+// REMOVED: The manual workerSrc setting is no longer needed
+// if (typeof window !== 'undefined') {
+//   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
+// }
 
 type Status = 'idle' | 'previewing' | 'processing' | 'success' | 'error';
 
@@ -60,6 +65,7 @@ const AddWatermarkPage: NextPage = () => {
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         setPageCount(pdf.numPages);
       } catch (e) {
+        console.error("PDF.js Error:", e); // Add a console log for better debugging
         setError("Could not read PDF. It may be corrupt or password-protected.");
         setStatus('idle'); 
         setFile(null);
@@ -67,7 +73,6 @@ const AddWatermarkPage: NextPage = () => {
     }
   };
   
-  // --- REPLACED HANDLEPROCESS FUNCTION ---
   const handleProcess = async () => {
     if (!file) return;
 
@@ -80,7 +85,6 @@ const AddWatermarkPage: NextPage = () => {
     setError(null);
 
     try {
-      // Call the client-side processing function
       const watermarkedPdfBytes = await addWatermarkToPdf(file, options);
       
       const blob = new Blob([watermarkedPdfBytes], { type: 'application/pdf' });
@@ -121,7 +125,7 @@ const AddWatermarkPage: NextPage = () => {
             {status === 'error' && (<Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>)}
           </div>
         ) : status === 'previewing' && file ? (
-          <div className="flex flex-col md:flex-row w-full h-[calc(100vh-5rem)]">
+           <div className="flex flex-col md:flex-row w-full h-[calc(100vh-5rem)]">
             <div className="w-full md:w-64 flex-shrink-0 h-48 md:h-full border-r bg-gray-50 shadow-md">
               <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
             </div>
