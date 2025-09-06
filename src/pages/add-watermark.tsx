@@ -1,13 +1,11 @@
 // src/pages/add-watermark.tsx
 
-import React, { useState, useCallback } from 'react';
+import React, 'react'; // No need for useState/useCallback here in the imports if not used at the top level
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
-// --- FIX START ---
 import * as pdfjsLib from 'pdfjs-dist';
-// Import the worker entrypoint
-import 'pdfjs-dist/build/pdf.worker.entry';
-// --- FIX END ---
+// REMOVED: The incorrect import that caused the build to fail.
+// import 'pdfjs-dist/build/pdf.worker.entry';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
@@ -20,10 +18,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Droplets } from 'lucide-react';
 import { addWatermarkToPdf } from '@/lib/pdf/watermark';
 
-// REMOVED: The manual workerSrc setting is no longer needed
-// if (typeof window !== 'undefined') {
-//   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
-// }
+// --- THIS IS THE FIX ---
+// We restore the original logic but point to the correct .mjs file extension.
+if (typeof window !== 'undefined') {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
+}
+// --- END OF FIX ---
 
 type Status = 'idle' | 'previewing' | 'processing' | 'success' | 'error';
 
@@ -43,16 +43,16 @@ const AddWatermarkPage: NextPage = () => {
   const tool = tools['add-watermark'];
   const { toast } = useToast();
 
-  const [file, setFile] = useState<File | null>(null);
-  const [status, setStatus] = useState<Status>('idle');
-  const [error, setError] = useState<string | null>(null);
+  const [file, setFile] = React.useState<File | null>(null);
+  const [status, setStatus] = React.useState<Status>('idle');
+  const [error, setError] = React.useState<string | null>(null);
 
-  const [pageCount, setPageCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [options, setOptions] = useState<WatermarkState>(defaultOptions);
+  const [pageCount, setPageCount] = React.useState(0);
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [options, setOptions] = React.useState<WatermarkState>(defaultOptions);
   
-  const [downloadUrl, setDownloadUrl] = useState<string>('');
-  const [processedFileName, setProcessedFileName] = useState('');
+  const [downloadUrl, setDownloadUrl] = React.useState<string>('');
+  const [processedFileName, setProcessedFileName] = React.useState('');
 
   const handleFileSelected = async (selectedFiles: File[]) => {
     setError(null);
@@ -65,7 +65,7 @@ const AddWatermarkPage: NextPage = () => {
         const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         setPageCount(pdf.numPages);
       } catch (e) {
-        console.error("PDF.js Error:", e); // Add a console log for better debugging
+        console.error("PDF.js Error:", e);
         setError("Could not read PDF. It may be corrupt or password-protected.");
         setStatus('idle'); 
         setFile(null);
@@ -102,7 +102,7 @@ const AddWatermarkPage: NextPage = () => {
     }
   };
 
-  const handleStartOver = useCallback(() => {
+  const handleStartOver = React.useCallback(() => {
     setFile(null);
     setStatus('idle');
     setPageCount(0);
