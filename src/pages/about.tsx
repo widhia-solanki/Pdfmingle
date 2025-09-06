@@ -66,8 +66,8 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Widhia Solanki</h3>
                 <p className="font-semibold text-red-500">Founder</p>
                 <p className="text-gray-600 leading-relaxed">
-                  As the founder, Widhia established the core mission of creating user-centric technology. Her passion for simplifying complex problems is the driving force behind the intuitive design of PDFMingle.
-                </p>
+                 Widhia Solanki founded PDFMingle at the age of 18. With strong technical skills, she aims to help students, professionals, and businesses manage documents more efficiently, believing that age doesn't limit the ability to create impactful technology.
+</p>
                 {/* --- THIS IS THE NEW LINK --- */}
                 <a 
                   href="https://www.linkedin.com/in/widhia-solanki-69a901336/"
@@ -84,8 +84,8 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-gray-800">Eshan Solanki</h3>
                 <p className="font-semibold text-red-500">Developer</p>
                 <p className="text-gray-600 leading-relaxed">
-                  Eshan is the architect and lead developer of PDFMingle. With a strong background in technology and a drive for excellence, he leads the development with innovation, precision, and a customer-first approach.
-                </p>
+                  Eshan Solanki, a 15-year-old high school student, is passionate about coding and has made significant contributions to the development of PDFMingle, shaping its user experience early in his journey.
+</p>
             </div>
           </div>
         </div>
