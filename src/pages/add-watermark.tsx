@@ -149,7 +149,7 @@ const AddWatermarkPage: NextPage = () => {
   );
 };
 
-export default AddWatermarkPage;```
+export default AddWatermarkPage;
 
 ### Summary of the Fix:
 
