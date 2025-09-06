@@ -150,10 +150,3 @@ const AddWatermarkPage: NextPage = () => {
 };
 
 export default AddWatermarkPage;
-
-### Summary of the Fix:
-
-1.  **Corrected React Import:** I replaced the invalid `import React, 'react';` with the correct syntax: `import React, { useState, useCallback } from 'react';`.
-2.  **Cleaned Up Hook Usage:** I removed the unnecessary `React.` prefix from `useState` and `useCallback` calls, as they are now directly imported. This is standard practice and improves readability.
-
-This code is now syntactically correct and will resolve the build error.
