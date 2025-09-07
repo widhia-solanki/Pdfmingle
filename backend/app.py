@@ -13,8 +13,7 @@ import io
 import os
 import uuid
 import traceback
-import subprocess
-import zipfile
+import subprocess # <-- Required for calling qpdf
 import shutil
 import webcolors
 
@@ -22,10 +21,11 @@ app = Flask(__name__)
 
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
-# ... (assuming all other routes are here and working correctly) ...
+# ... (all other working routes) ...
 
 @app.route('/api/protect-pdf', methods=['POST'])
 def handle_protect_pdf():
+    # ... (this function remains the same)
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
@@ -51,47 +51,60 @@ def handle_protect_pdf():
 
 @app.route('/api/unlock-pdf', methods=['POST'])
 def handle_unlock_pdf():
-    if 'file' not in request.files:
-        return jsonify({"error": "No file part"}), 400
+    if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
-    if not file or not file.filename:
-        return jsonify({"error": "No selected file"}), 400
-    if not password:
-        return jsonify({"error": "Password is required"}), 400
+    if not file or not file.filename: return jsonify({"error": "No selected file"}), 400
+    # A blank password is valid for some PDFs, so we check for None
+    if password is None: return jsonify({"error": "Password must be provided"}), 400
+
+    # Create a unique temporary directory for this request
+    temp_dir = f"/tmp/{uuid.uuid4()}"
+    os.makedirs(temp_dir, exist_ok=True)
+    input_path = os.path.join(temp_dir, file.filename)
+    output_path = os.path.join(temp_dir, f"unlocked_{file.filename}")
 
     try:
-        pdf_stream = io.BytesIO(file.read())
-        reader = PdfReader(pdf_stream)
+        file.save(input_path)
 
-        if reader.is_encrypted:
-            # Specifically handle incorrect password errors
-            try:
-                reader.decrypt(password)
-            except WrongPasswordError:
+        # Construct and run the qpdf command
+        command = [
+            'qpdf',
+            '--password=' + password,
+            '--decrypt',
+            input_path,
+            output_path
+        ]
+        
+        # Execute the command
+        result = subprocess.run(command, capture_output=True, text=True)
+
+        # Check for errors from qpdf
+        if result.returncode != 0:
+            if 'invalid password' in result.stderr.lower():
                 return jsonify({"error": "Incorrect password."}), 403
+            else:
+                # Provide a more detailed error for debugging if available
+                error_details = result.stderr.strip()
+                print(f"qpdf error: {error_details}")
+                return jsonify({"error": f"Failed to process the PDF. It may be corrupted or unsupported."}), 500
 
-        # If decryption is successful or file is not encrypted, proceed
-        writer = PdfWriter()
-        for page in reader.pages:
-            writer.add_page(page)
-
-        unlocked_stream = io.BytesIO()
-        writer.write(unlocked_stream)
-        unlocked_stream.seek(0)
-
+        # If successful, send the unlocked file back
         return send_file(
-            unlocked_stream,
+            output_path,
             as_attachment=True,
             download_name=f"unlocked_{file.filename}",
             mimetype='application/pdf'
         )
     except Exception as e:
         traceback.print_exc()
-        # This more descriptive error now correctly fires for non-password related issues
-        return jsonify({"error": "Failed to process the PDF. It may be corrupted or use an unsupported format."}), 500
+        return jsonify({"error": "An unexpected server error occurred."}), 500
+    finally:
+        # IMPORTANT: Clean up the temporary directory and files
+        if os.path.exists(temp_dir):
+            shutil.rmtree(temp_dir)
 
-# ... (assuming all other routes are here and working correctly) ...
+# ... (all other working routes) ...
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
