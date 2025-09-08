@@ -39,7 +39,7 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
         NOTE: I noticed your code was missing the AdPlaceholder logic we added.
         I have restored it here based on our last conversation.
       */}
-      {isToolPage ? <InformativePanel />}
+      {isToolPage ? : <InformativePanel />}
       
       <FeedbackButton />
     </div>
