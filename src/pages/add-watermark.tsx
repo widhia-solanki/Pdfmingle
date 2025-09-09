@@ -1,4 +1,5 @@
 // src/pages/add-watermark.tsx
+
 import React, { useState, useCallback } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
@@ -15,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Droplets } from 'lucide-react';
 import { addWatermarkToPdf } from '@/lib/pdf/watermark';
 
-// Dynamically import the heavy components
 const PdfThumbnailViewer = dynamic(() => import('@/components/tools/PdfThumbnailViewer').then(mod => mod.PdfThumbnailViewer), {
   ssr: false,
   loading: () => <Skeleton className="w-full h-full" />,
@@ -25,7 +25,6 @@ const PdfWatermarkPreviewer = dynamic(() => import('@/components/tools/PdfWaterm
   loading: () => <Skeleton className="w-full h-full" />,
 });
 
-// Configure the PDF.js worker
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `/pdf.worker.min.mjs`;
 }
@@ -50,14 +49,14 @@ const AddWatermarkPage: NextPage = () => {
 
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<Status>('idle');
+  // ... (rest of state declarations are the same)
   const [error, setError] = useState<string | null>(null);
-
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
   const [options, setOptions] = useState<WatermarkState>(defaultOptions);
-  
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
+
 
   const handleFileSelected = async (selectedFiles: File[]) => {
     setError(null);
@@ -88,7 +87,7 @@ const AddWatermarkPage: NextPage = () => {
     setError(null);
     try {
       const watermarkedPdfBytes = await addWatermarkToPdf(file, options);
-      const blob = new Blob([watermarkedPdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([watermarkedPdfBytes], { type: 'application/podf' });
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProcessedFileName(`watermarked_${file.name}`);
@@ -125,7 +124,11 @@ const AddWatermarkPage: NextPage = () => {
             {status === 'error' && (<Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>)}
           </div>
         ) : status === 'previewing' && file ? (
-           <div className="flex flex-col md:flex-row w-full h-[calc(100vh-5rem)]">
+           // THIS IS THE FIX:
+           // `fixed top-20` anchors the editor below the header (which is 5rem/20 tailwind units tall).
+           // `left-0 right-0 bottom-0` makes it fill the rest of the screen.
+           // This takes the element out of the normal flow, so it no longer creates a gap at the bottom.
+           <div className="fixed top-20 left-0 right-0 bottom-0 flex flex-col md:flex-row w-full bg-background z-10">
             <div className="w-full md:w-64 flex-shrink-0 h-48 md:h-full border-r bg-gray-50 shadow-md">
               <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
             </div>
