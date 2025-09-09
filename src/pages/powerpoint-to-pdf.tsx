@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { tools } from '@/constants/tools';
-import { FileSliders, Wrench, Mail, Merge, Compress, Edit } from 'lucide-react';
+import { FileSliders, Wrench, Mail, Merge, split, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const popularTools = [
