@@ -1,21 +1,28 @@
 // src/pages/edit-pdf.tsx
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import * as pdfjsLib from 'pdfjs-dist';
+import dynamic from 'next/dynamic';
 import { ToolUploader } from '@/components/ToolUploader';
 import { ToolProcessor } from '@/components/ToolProcessor';
 import { ToolDownloader } from '@/components/ToolDownloader';
 import { AdvancedEditorToolbar, ToolMode } from '@/components/tools/AdvancedEditorToolbar';
-import { PdfThumbnailViewer } from '@/components/tools/PdfThumbnailViewer';
 import { PdfEditor, RENDER_SCALE } from '@/components/tools/PdfEditor';
 import { BottomControls } from '@/components/tools/BottomControls';
-import { applyEditsToPdf, EditableObject, TextObject, ImageObject } from '@/lib/pdf/edit';
+import { applyEditsToPdf, EditableObject, ImageObject } from '@/lib/pdf/edit';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, Edit } from 'lucide-react';
+
+// Dynamically import the heavy thumbnail viewer
+const PdfThumbnailViewer = dynamic(() => import('@/components/tools/PdfThumbnailViewer').then(mod => mod.PdfThumbnailViewer), {
+  ssr: false,
+  loading: () => <Skeleton className="w-full h-full" />,
+});
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -115,30 +122,32 @@ const EditPdfPage: NextPage = () => {
   return (
     <>
       <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.com/${tool.value}`} />
-      <main className="w-full">
+      
         {status === 'idle' && (
           <div className="container mx-auto px-4 py-12 text-center">
             <h1 className="text-4xl font-bold mb-4">{tool.h1}</h1>
             <p className="text-lg text-gray-600 mb-8">{tool.description}</p>
-            <ToolUploader onFilesSelected={handleFileSelected} acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} selectedFiles={file ? [file] : []} isMultiFile={false} error={error} onProcess={() => {}} actionButtonText="Edit PDF" />
+            <ToolUploader onFilesSelected={handleFileSelected} acceptedFileTypes={{ 'application/pdf': ['.pdf'] }} selectedFiles={file ? [file] : []} isMultiFile={false} error={error} onProcess={() => {}} actionButtonText="Select PDF" />
           </div>
         )}
 
         {status === 'editing' && file && (
-          <div className="fixed inset-0 top-20 flex flex-col bg-gray-200">
+          <div className="fixed top-20 left-0 right-0 bottom-0 flex flex-col bg-gray-200">
             {pageCount > 0 ? (
               <div className="flex w-full h-full">
                 <div className="w-64 flex-shrink-0 h-full border-r bg-gray-50 shadow-md">
                   <PdfThumbnailViewer file={file} currentPage={currentPage} onPageChange={setCurrentPage} pageCount={pageCount} />
                 </div>
 
-                <div className="flex-grow h-full flex flex-col bg-gray-300 relative overflow-hidden">
-                  <header className="flex-shrink-0 w-full flex justify-center p-2 bg-white shadow-sm z-10">
+                {/* --- THIS IS THE UPDATED SECTION --- */}
+                <div className="flex-grow h-full flex flex-col bg-gray-400 relative">
+                  <header className="flex-shrink-0 w-full flex justify-center p-2 bg-white/80 backdrop-blur-sm shadow-sm z-10">
                     <AdvancedEditorToolbar toolMode={toolMode} onToolModeChange={setToolMode} selectedObject={selectedObject} onObjectChange={handleObjectChange} onObjectDelete={() => handleObjectDelete()} onImageAdd={handleImageAdd} />
                   </header>
                   
-                  <div className="flex-grow overflow-auto flex p-8">
-                    <div className="m-auto shadow-xl" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
+                  {/* The main preview area now centers the content */}
+                  <div className="flex-grow w-full h-full overflow-auto flex items-center justify-center p-4">
+                    <div className="m-auto" style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}>
                       <PdfEditor 
                         file={file} pageIndex={currentPage} objects={objects}
                         onObjectsChange={setObjects} mode={toolMode} onObjectSelect={setSelectedObject}
@@ -150,6 +159,7 @@ const EditPdfPage: NextPage = () => {
                      <BottomControls zoom={zoom} onZoomChange={setZoom} currentPage={currentPage} pageCount={pageCount} onPageChange={setCurrentPage} />
                   </footer>
                 </div>
+                {/* --- END OF UPDATED SECTION --- */}
 
                 <div className="w-80 flex-shrink-0 bg-gray-50 p-6 flex flex-col shadow-lg border-l">
                   <h2 className="text-2xl font-bold mb-4 text-gray-800">Edit PDF</h2>
@@ -158,8 +168,8 @@ const EditPdfPage: NextPage = () => {
                   </div>
                   <div className="mt-auto">
                     <Button size="lg" onClick={handleProcess} className="w-full bg-red-500 hover:bg-red-600 font-bold py-6 text-lg">
-                      Edit PDF
-                      <MessageSquare className="ml-2 h-5 w-5" />
+                      Apply Changes
+                      <Edit className="ml-2 h-5 w-5" />
                     </Button>
                   </div>
                 </div>
@@ -176,7 +186,7 @@ const EditPdfPage: NextPage = () => {
         {status === 'processing' && (<div className="flex items-center justify-center h-[70vh]"><ToolProcessor /></div>)}
         {status === 'success' && (<div className="container mx-auto p-8"><ToolDownloader downloadUrl={downloadUrl} onStartOver={() => handleStartOver(true)} filename={processedFileName} /></div>)}
         {status === 'error' && (<div className="text-center p-8"><p className="text-red-500 font-semibold mb-4">{error}</p><Button onClick={() => handleStartOver(true)} variant="outline">Try Again</Button></div>)}
-      </main>
+      
     </>
   );
 };
