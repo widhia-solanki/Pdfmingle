@@ -7,15 +7,15 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { tools } from '@/constants/tools';
-import { FileSliders, Mail, Merge, Compress, Edit } from 'lucide-react';
+// --- THIS IS THE FIX ---
+// 'Compress' has been replaced with the correct icon name, 'Shrink'.
+import { FileSliders, Mail, Merge, Shrink, Edit } from 'lucide-react'; 
 import { useToast } from '@/hooks/use-toast';
 
-// --- THIS IS THE FIX ---
-// This new structure avoids the property name collision.
-// We explicitly map the tool data to the new icon components.
+// The IconComponent for 'compress' is now correctly set to 'Shrink'.
 const popularToolsConfig = [
   { tool: tools.merge, IconComponent: Merge },
-  { tool: tools.compress, IconComponent: Compress },
+  { tool: tools.compress, IconComponent: Shrink },
   { tool: tools['edit-pdf'], IconComponent: Edit },
 ];
 
@@ -95,11 +95,4 @@ const PptToPdfPage: NextPage = () => {
   );
 };
 
-export default PptToPdfPage;```
-
-### Summary of the Fix:
-
-1.  **Restructured `popularToolsConfig`:** I've created a new array that contains objects with two properties: `tool` (the original data from your `tools` config) and `IconComponent` (the new icon). This eliminates the name collision.
-2.  **Updated `.map()`:** The `map` function that renders the clickable tool cards is updated to use this new data structure, destructuring `{ tool: popularTool, IconComponent }` to correctly render the data.
-
-My apologies for the error. This version is correct, will pass the build, and will deliver the interactive placeholder page as intended.
+export default PptToPdfPage;
