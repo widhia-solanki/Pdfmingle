@@ -14,31 +14,25 @@ interface MainLayoutProps {
   flush?: boolean;
 }
 
-// Create a Set of tool paths for efficient lookup
 const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
-
-  // LOGIC: Check if the current page path is one of the tool pages
   const isToolPage = toolPaths.has(router.pathname);
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-bg">
       <Header />
-      {/* 
-        This is the only line that has changed.
-        I've added `pb-20` (padding-bottom: 5rem) to create the extra 
-        space at the bottom of the main content area.
+      {/*
+        THIS IS THE FIX:
+        - `pb-20`: Adds bottom padding on mobile screens.
+        - `md:pb-0`: Removes the bottom padding on medium screens (tablets) and larger.
+        This rule is also conditional on the `flush` prop.
       */}
-      <main className={cn("flex-grow pb-20", !flush && "pt-20")}>
+      <main className={cn("flex-grow", !flush && "pt-20 pb-20 md:pb-0")}>
         {children}
       </main>
       
-      {/* 
-        NOTE: I noticed your code was missing the AdPlaceholder logic we added.
-        I have restored it here based on our last conversation.
-      */}
       {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
       <FeedbackButton />
