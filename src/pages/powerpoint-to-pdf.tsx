@@ -6,23 +6,43 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { tools } from '@/constants/tools';
-// --- THIS IS THE FIX ---
-// 'Compress' has been replaced with the correct icon name, 'Shrink'.
-import { FileSliders, Mail, Merge, Shrink, Edit } from 'lucide-react'; 
+import { FileSliders, Mail, Merge, Shrink, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { tools } from '@/constants/tools'; // We still need this for the main tool info
 
-// The IconComponent for 'compress' is now correctly set to 'Shrink'.
-const popularToolsConfig = [
-  { tool: tools.merge, IconComponent: Merge },
-  { tool: tools.compress, IconComponent: Shrink },
-  { tool: tools['edit-pdf'], IconComponent: Edit },
+// --- THIS IS THE FIX ---
+// We are now defining the data for popular tools directly.
+// This is 100% safe and removes the dependency that was causing the build to crash.
+const popularTools = [
+  {
+    value: 'merge-pdf',
+    label: 'Merge PDF',
+    description: 'Combine multiple PDFs into a single document.',
+    IconComponent: Merge,
+  },
+  {
+    value: 'compress-pdf',
+    label: 'Compress PDF',
+    description: 'Reduce the file size of your PDFs online.',
+    IconComponent: Shrink,
+  },
+  {
+    value: 'edit-pdf',
+    label: 'Edit PDF',
+    description: 'Add text, images, and shapes to your PDF.',
+    IconComponent: Edit,
+  },
 ];
 
 const PptToPdfPage: NextPage = () => {
-  const tool = tools['powerpoint-to-pdf'];
-  const { toast } = useToast();
+  // We will keep the safety check for the main tool object for robustness.
+  const tool = tools['powerpoint-to-pdf'] || {
+    metaTitle: "PowerPoint to PDF - Coming Soon",
+    metaDescription: "This tool is currently under construction.",
+    h1: "PowerPoint to PDF",
+  };
   
+  const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [formStatus, setFormStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
 
@@ -69,11 +89,7 @@ const PptToPdfPage: NextPage = () => {
                 required
               />
               <Button type="submit" size="lg" className="h-12" disabled={formStatus === 'submitting'}>
-                {formStatus === 'submitting' ? 'Submitting...' : (
-                  <>
-                    <Mail className="mr-2 h-5 w-5" /> Notify Me
-                  </>
-                )}
+                {formStatus === 'submitting' ? 'Submitting...' : (<><Mail className="mr-2 h-5 w-5" /> Notify Me</>)}
               </Button>
             </form>
           )}
@@ -81,11 +97,11 @@ const PptToPdfPage: NextPage = () => {
         <div className="mt-16 sm:mt-24 w-full max-w-4xl text-left">
           <h2 className="text-xl font-bold text-center text-gray-700 dark:text-gray-300">In the meantime, try our popular tools:</h2>
           <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {popularToolsConfig.map(({ tool: popularTool, IconComponent }) => (
+            {popularTools.map(popularTool => (
               <Link key={popularTool.value} href={`/${popularTool.value}`} className="group p-6 bg-white dark:bg-gray-800/50 border rounded-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                <IconComponent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                <popularTool.IconComponent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
                 <h3 className="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">{popularTool.label}</h3>
-                <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm">{popularTool.description.split('.')[0]}.</p>
+                <p className="mt-1 text-gray-500 dark:text-gray-400 text-sm">{popularTool.description}</p>
               </Link>
             ))}
           </div>
