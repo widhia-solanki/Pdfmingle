@@ -12,9 +12,18 @@ import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
 import { useRouter } from 'next/router';
 
+// Define a set of routes that require a full-screen, edge-to-edge layout
+const flushLayoutRoutes = new Set([
+  '/add-watermark',
+  '/edit-pdf', // Add other full-screen tools here in the future
+]);
+
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isHomePage = router.pathname === '/';
+
+  // The layout should be flush if it's the homepage OR if it's one of our special tool pages
+  const shouldUseFlushLayout = isHomePage || flushLayoutRoutes.has(router.pathname);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -29,7 +38,8 @@ export default function App({ Component, pageProps }: AppProps) {
 
       <DefaultSeo {...SEO} />
       
-      <MainLayout flush={isHomePage}>
+      {/* Pass the updated logic to the MainLayout */}
+      <MainLayout flush={shouldUseFlushLayout}>
         <Component {...pageProps} />
       </MainLayout>
       
