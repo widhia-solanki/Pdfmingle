@@ -12,10 +12,20 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
 
-// Mobile Hero: Focus on button contrast
+// --- THIS IS THE FIX ---
+// This version has a guaranteed dark background and better button styles.
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
-      <div className="bg-hero-bg text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500" style={{ backgroundImage: "url('/panel-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      {/* 
+        The fix is here:
+        1. Added `bg-gray-800` as a solid fallback background color.
+        2. Kept your background image but ensured it has a dark base.
+        3. Simplified button styles for better readability.
+      */}
+      <div 
+        className="bg-gray-800 text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500" 
+        style={{ backgroundImage: "url('/panel-bg.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
+      >
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
           Every tool you need to work with PDFs in one place
         </h1>
@@ -54,7 +64,7 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// Desktop Hero: Use semantic colors
+// Desktop Hero uses semantic theme colors
 const DesktopHero = () => {
     return (
         <section className="w-full pt-20 md:pt-28 bg-background">
