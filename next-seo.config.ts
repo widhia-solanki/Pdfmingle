@@ -28,6 +28,29 @@ const config: DefaultSeoProps = {
     site: '@yourtwitterhandle',
     cardType: 'summary_large_image',
   },
+  // --- THIS IS THE FIX ---
+  // Add all your favicon links here.
+  additionalLinkTags: [
+    {
+      rel: 'icon',
+      href: '/favicon.ico',
+      sizes: 'any',
+    },
+    {
+      rel: 'icon',
+      href: '/favicon.svg',
+      type: 'image/svg+xml',
+    },
+    {
+      rel: 'apple-touch-icon',
+      href: '/apple-touch-icon.png',
+    },
+    {
+      rel: 'manifest',
+      href: '/site.webmanifest',
+    },
+  ],
+  // --- END OF FIX ---
 };
 
 export default config;
