@@ -1,43 +1,87 @@
-import type { Config } from "tailwindcss";
+// src/tailwind.config.ts
 
-const config: Config = {
-  darkMode: "class",
+import type { Config } from "tailwindcss"
+
+const config = {
+  darkMode: ["class"],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/layouts/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/constants/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  prefix: "",
   theme: {
-    extend: {
-      backgroundImage: {
-        'panel-bg': "url('/panel-bg.png')",
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
       },
-      colors: { // --- THIS IS THE NEW SECTION ---
-        'dark-bg': '#1a202c',       // A dark blue-gray for backgrounds
-        'dark-card': '#2d3748',    // A slightly lighter card background
-        'dark-text-primary': '#edf2f7', // Off-white for primary text
-        'dark-text-secondary': '#a0aec0', // A lighter gray for secondary text
-        // --- END OF NEW SECTION ---
-        
-        // --- NEW COLOR FOR THE HERO ---
-        'hero-bg': '#2d3748', // Dark Slate
-        'filter-inactive-bg': 'rgba(255, 255, 255, 0.1)',
+    },
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        // Custom brand color
         'brand-blue': '#3B82F6',
         'brand-blue-dark': '#2563EB',
-        'ilovepdf-text': '#333333',
-        // --- END OF NEW COLORS ---
-        
-        'ilovepdf-red': '#3B82F6', 
-        'ilovepdf-red-dark': '#2563EB',
-        
-        border: "hsl(var(--border))",
-        // ... rest of your shadcn colors
       },
-      // ... rest of your theme
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      backgroundImage: {
+        'hero-bg': "url('/hero-bg.jpg')", // Assuming you have a hero background image
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
-};
+} satisfies Config
 
-export default config;
+export default config
