@@ -21,15 +21,18 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const isToolPage = toolPaths.has(router.pathname);
 
   return (
-    // THIS IS THE FIX:
-    // Replaced hardcoded colors with `bg-background` to respect the theme.
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className={cn("flex-grow", !flush && "pt-20 pb-20 md:pb-0")}>
         {children}
       </main>
       
-      {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
+      {/* --- THIS IS THE FIX --- */}
+      {/* We wrap the conditional rendering in a React Fragment */}
+      {/* to ensure a valid component is always returned. */}
+      <>
+        {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
+      </>
       
       <FeedbackButton />
     </div>
