@@ -85,8 +85,9 @@ const SplitPdfPage = () => {
         description="Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter."
       />
       <div className="flex flex-col items-center text-center pt-20">
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-800">Split PDF Online</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Separate PDF pages or extract sections easily. Free, secure, and fast PDF splitter.</p>
+        // AFTER
+<h1 className="text-4xl font-bold text-foreground">Split PDF</h1>
+<p className="mt-4 text-lg text-muted-foreground">Separate PDF pages...</p>
         <div className="mt-8 md:mt-12 w-full max-w-4xl px-4">
             {/* --- THIS IS THE FIX --- */}
             {/* Uploader is now shown for both 'idle' and 'error' states */}
