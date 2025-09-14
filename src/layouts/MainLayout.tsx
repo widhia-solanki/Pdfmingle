@@ -14,7 +14,7 @@ interface MainLayoutProps {
   flush?: boolean;
 }
 
-const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
+const toolPaths = new Set(toolArray.map(tool => tool && tool.value ? `/${tool.value}` : '').filter(Boolean));
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
@@ -27,12 +27,7 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
         {children}
       </main>
       
-      {/* --- THIS IS THE FIX --- */}
-      {/* We wrap the conditional rendering in a React Fragment */}
-      {/* to ensure a valid component is always returned. */}
-      <>
-        {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
-      </>
+      {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
       <FeedbackButton />
     </div>
