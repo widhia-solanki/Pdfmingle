@@ -21,14 +21,10 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const isToolPage = toolPaths.has(router.pathname);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-dark-bg">
+    // THIS IS THE FIX:
+    // Replaced hardcoded colors with `bg-background` to respect the theme.
+    <div className="min-h-screen flex flex-col bg-background">
       <Header />
-      {/*
-        THIS IS THE FIX:
-        - `pb-20`: Adds bottom padding on mobile screens.
-        - `md:pb-0`: Removes the bottom padding on medium screens (tablets) and larger.
-        This rule is also conditional on the `flush` prop.
-      */}
       <main className={cn("flex-grow", !flush && "pt-20 pb-20 md:pb-0")}>
         {children}
       </main>
