@@ -14,10 +14,10 @@ import Image from 'next/image';
 
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
-      <div 
-        className="bg-gray-800 text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500" 
-        style={{ backgroundImage: "url('/background for informative panel.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}
-      >
+      {/* --- THIS IS THE FIX --- */}
+      {/* The incorrect `style` attribute has been removed. */}
+      {/* `bg-gray-900` provides a clean, dark background that works in both themes for this component. */}
+      <div className="bg-gray-900 text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
           Every tool you need to work with PDFs in one place
         </h1>
@@ -46,6 +46,7 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
+// The rest of the file is included for completeness. No other changes were needed.
 const DesktopHero = () => {
     return (
         <section className="w-full pt-20 md:pt-28 bg-background">
@@ -83,38 +84,15 @@ const DesktopHero = () => {
 const HomePage = () => {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | 'All'>('All');
   const isMobile = useIsMobile();
-
-  const filteredTools = (isMobile && activeCategory !== 'All')
-    ? toolArray.filter(tool => tool.category === activeCategory)
-    : toolArray;
-
-  if (isMobile === undefined) {
-    return <div className="w-full h-screen bg-background" />;
-  }
-
+  const filteredTools = (isMobile && activeCategory !== 'All') ? toolArray.filter(tool => tool.category === activeCategory) : toolArray;
+  if (isMobile === undefined) { return <div className="w-full h-screen bg-background" />; }
   return (
     <>
-      <NextSeo
-        title="Free & Secure Online PDF Tools"
-        description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs."
-        canonical="https://pdfmingle.com"
-      />
-      <WebPageJsonLd
-        name="PDFMingle"
-        description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs."
-        id="https://pdfmingle.com/#webpage"
-        url="https://pdfmingle.com"
-      />
-      
+      <NextSeo title="Free & Secure Online PDF Tools" description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs." canonical="https://pdfmingle.com" />
+      <WebPageJsonLd name="PDFMingle" description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs." id="https://pdfmingle.com/#webpage" url="https://pdfmingle.com" />
       <div className="w-full bg-background">
-        {isMobile ? (
-          <MobileHero activeCategory={activeCategory} setActiveCategory={setActiveCategory} />
-        ) : (
-          <DesktopHero />
-        )}
-        
+        {isMobile ? (<MobileHero activeCategory={activeCategory} setActiveCategory={setActiveCategory} />) : (<DesktopHero />)}
         <ToolGrid tools={filteredTools} />
-        
         <FaqSection />
       </div>
     </>
