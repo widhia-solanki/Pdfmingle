@@ -52,79 +52,23 @@
 
   body {
     @apply bg-background text-foreground;
-    @apply transition-colors duration-300 ease-in-out;
+    @apply transition-colors duration-200;
   }
-}
-
-@layer components {
-  /* Hide the inner dot on hover */
-  .cursor-container-hover .cursor-dot {
-    transform: scale(0);
-  }
-
-  /* Expand the outer ring into a spotlight on hover */
-  .cursor-container-hover .cursor-outline {
-    transform: scale(1.5) translate(-33%, -33%);
-    background-color: rgba(59, 130, 246, 0.2); /* semi-transparent blue */
-    border-color: rgba(59, 130, 246, 0.4); /* slightly darker border */
-  }
-}
-
-@keyframes heartbeat {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.25); }
-  100% { transform: scale(1); }
-}
-
-.animate-heartbeat {
-    animation: heartbeat 1.5s ease-in-out infinite;
-}
-
-@keyframes float1 {
-  0% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(-20px) translateX(10px); }
-  100% { transform: translateY(0px) translateX(0px); }
-}
-
-@keyframes float2 {
-  0% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(15px) translateX(-15px); }
-  100% { transform: translateY(0px) translateX(0px); }
-}
-
-@keyframes float3 {
-  0% { transform: translateY(0px) translateX(0px); }
-  50% { transform: translateY(-10px) translateX(20px); }
-  100% { transform: translateY(0px) translateX(0px); }
 }
 
 @layer utilities {
-  .hero-gradient-background {
-    background: linear-gradient(180deg, #111827 0%, #1f2937 100%);
-  }
-  
-  /* Custom Scrollbar Styling */
+  /* Dark mode scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    @apply bg-gray-100;
+    @apply bg-secondary;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-gray-300 rounded-md;
+    @apply bg-muted-foreground/50 rounded-md;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-400;
-  }
-  
-  .dark ::-webkit-scrollbar-track {
-    @apply bg-gray-800;
-  }
-  .dark ::-webkit-scrollbar-thumb {
-    @apply bg-gray-600;
-  }
-  .dark ::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-500;
+    @apply bg-muted-foreground/70;
   }
 }
