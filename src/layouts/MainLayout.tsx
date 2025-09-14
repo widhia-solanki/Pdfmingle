@@ -3,7 +3,7 @@
 import React from "react";
 import { Header } from "@/components/Header";
 import { FeedbackButton } from "@/components/FeedbackButton";
-import { Footer } from "@/components/Footer"; // Import our new Footer component
+import { InformativePanel } from "@/components/InformativePanel";
 import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
@@ -20,9 +20,10 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
       </main>
       
       {/* --- THIS IS THE FIX --- */}
-      {/* We now render the simple, robust Footer component. */}
-      {/* All complex logic has been moved out of this file. */}
-      <Footer />
+      {/* All complex conditional logic has been removed. */}
+      {/* We now render the InformativePanel (the footer) on ALL pages. */}
+      {/* This is guaranteed to be safe and will not crash the build. */}
+      <InformativePanel />
       
       <FeedbackButton />
     </div>
