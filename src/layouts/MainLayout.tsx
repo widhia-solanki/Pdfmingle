@@ -14,7 +14,8 @@ interface MainLayoutProps {
   flush?: boolean;
 }
 
-const toolPaths = new Set(toolArray.map(tool => tool && tool.value ? `/${tool.value}` : '').filter(Boolean));
+// Create a Set of tool paths for efficient lookup
+const toolPaths = new Set(toolArray.map(tool => tool ? `/${tool.value}` : null).filter(Boolean));
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
@@ -27,7 +28,12 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
         {children}
       </main>
       
-      {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
+      {/* --- THIS IS THE FIX --- */}
+      {/* We render the footer/ad placeholder in a separate div outside of the main flex container */}
+      {/* This prevents complex conditional rendering from breaking the build */}
+      <div>
+        {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
+      </div>
       
       <FeedbackButton />
     </div>
