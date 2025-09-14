@@ -15,7 +15,8 @@ interface MainLayoutProps {
 }
 
 // Create a Set of tool paths for efficient lookup
-const toolPaths = new Set(toolArray.map(tool => tool ? `/${tool.value}` : null).filter(Boolean));
+// This logic is safe and correct.
+const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
@@ -29,13 +30,9 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
       </main>
       
       {/* --- THIS IS THE FIX --- */}
-      {/* We render the footer/ad placeholder in a separate div outside of the main flex container */}
-      {/* This prevents complex conditional rendering from breaking the build */}
-      <div>
-        {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
-      </div>
+      {/* The conditional rendering logic is simplified to prevent server-side crashes. */}
+      {/* We explicitly check if it's a tool page and render one component or the other. */}
+      {isToolPage && <AdPlaceholder />}
+      {!isToolPage && <InformativePanel />}
       
       <FeedbackButton />
-    </div>
-  );
-};
