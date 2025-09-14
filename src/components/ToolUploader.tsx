@@ -41,25 +41,25 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
         {...getRootProps()} 
         className={cn(
           'w-full border-2 border-dashed rounded-xl p-8 text-center transition-colors flex flex-col items-center justify-center min-h-[250px]', 
-          isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300', 
-          error && 'border-red-500 bg-red-50'
+          // THE FIX: Use theme variables for border and background colors
+          isDragActive ? 'border-primary bg-primary/10' : 'border-border bg-card', 
+          error && 'border-destructive bg-destructive/10'
         )}
       >
         <input {...getInputProps()} />
         
         {error ? (
-          // --- THIS IS THE FIX: Error message is now inside the uploader ---
-          <div className="flex flex-col items-center gap-4 text-red-600">
+          <div className="flex flex-col items-center gap-4 text-destructive-foreground">
             <AlertTriangle className="w-16 h-16" />
             <p className="text-lg font-semibold">Upload Failed</p>
             <p className="text-base">{error}</p>
           </div>
         ) : (
-          // --- Default uploader content ---
-          <div className="flex flex-col items-center gap-4 text-gray-500">
+          // THE FIX: Use `text-muted-foreground` for better contrast
+          <div className="flex flex-col items-center gap-4 text-muted-foreground">
             <UploadCloud className="w-16 h-16" />
             <p className="text-lg font-semibold">Drag & drop files here</p>
-            <p className="text-gray-400">- or -</p>
+            <p className="text-sm">- or -</p>
             <Button type="button" onClick={open} className="bg-brand-blue hover:bg-brand-blue-dark text-white font-bold py-3 px-6 rounded-lg">Select Files</Button>
           </div>
         )}
@@ -67,20 +67,21 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
 
       {selectedFiles.length > 0 && !error && (
         <div className="w-full space-y-2">
-          <h3 className="font-semibold text-lg text-left">Selected Files:</h3>
+          <h3 className="font-semibold text-lg text-left text-foreground">Selected Files:</h3>
           {selectedFiles.map((file, index) => (
-            <div key={file.name + index} className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg">
+            // THE FIX: Use `bg-secondary` and `text-foreground` for the file list items
+            <div key={file.name + index} className="w-full flex items-center justify-between p-3 bg-secondary rounded-lg">
               <div className="flex items-center gap-3 overflow-hidden">
-                <FileIcon className="w-6 h-6 text-gray-600 flex-shrink-0" />
-                <span className="font-medium truncate">{file.name}</span>
+                <FileIcon className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+                <span className="font-medium truncate text-foreground">{file.name}</span>
               </div>
-              <Button variant="ghost" size="icon" onClick={() => removeFile(index)} className="h-8 w-8"><X className="h-5 w-5" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => removeFile(index)} className="h-8 w-8 text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></Button>
             </div>
           ))}
         </div>
       )}
 
-      {selectedFiles.length > 0 && !error && (
+      {selectedFiles.length > 0 && !error && actionButtonText && (
           <Button size="lg" onClick={onProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold bg-red-500 hover:bg-red-600 mt-4">
             {actionButtonText}
           </Button>
