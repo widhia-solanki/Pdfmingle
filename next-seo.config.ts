@@ -29,25 +29,20 @@ const config: DefaultSeoProps = {
     cardType: 'summary_large_image',
   },
   // --- THIS IS THE FIX ---
-  // Add all your favicon links here.
   additionalLinkTags: [
     {
       rel: 'icon',
-      href: '/favicon.ico',
+      href: '/favicon.ico', // This file exists, so we keep it.
       sizes: 'any',
     },
-    {
-      rel: 'icon',
-      href: '/favicon.svg',
-      type: 'image/svg+xml',
-    },
+    // The link to 'favicon.svg' has been REMOVED because the file does not exist.
     {
       rel: 'apple-touch-icon',
-      href: '/apple-touch-icon.png',
+      href: '/bglogo.jpg', // We now point to your existing logo file.
     },
     {
       rel: 'manifest',
-      href: '/site.webmanifest',
+      href: '/site.webmanifest', // This file exists, so we keep it.
     },
   ],
   // --- END OF FIX ---
