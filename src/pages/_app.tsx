@@ -12,40 +12,34 @@ import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
 import { useRouter } from 'next/router';
 
-// Define a set of routes that require a full-screen, edge-to-edge layout
 const flushLayoutRoutes = new Set([
   '/add-watermark',
-  '/edit-pdf', // Add other full-screen tools here in the future
+  '/edit-pdf',
 ]);
 
 export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const isHomePage = router.pathname === '/';
-
-  // The layout should be flush if it's the homepage OR if it's one of our special tool pages
   const shouldUseFlushLayout = isHomePage || flushLayoutRoutes.has(router.pathname);
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Head>
+        {/* --- THIS IS THE FIX --- */}
+        {/* The duplicate favicon links have been REMOVED from here. */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="manifest" href="/site.webmanifest" />
       </Head>
 
+      {/* DefaultSeo will now handle the favicons correctly. */}
       <DefaultSeo {...SEO} />
       
-      {/* Pass the updated logic to the MainLayout */}
       <MainLayout flush={shouldUseFlushLayout}>
         <Component {...pageProps} />
       </MainLayout>
       
       <SpeedInsights />
       <Analytics />
-
       <CookieConsent />
     </ThemeProvider>
   );
