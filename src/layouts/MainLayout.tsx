@@ -15,7 +15,6 @@ interface MainLayoutProps {
 }
 
 // Create a Set of tool paths for efficient lookup
-// This logic is safe and correct.
 const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
@@ -29,10 +28,9 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
         {children}
       </main>
       
-      {/* --- THIS IS THE FIX --- */}
-      {/* The conditional rendering logic is simplified to prevent server-side crashes. */}
-      {/* We explicitly check if it's a tool page and render one component or the other. */}
-      {isToolPage && <AdPlaceholder />}
-      {!isToolPage && <InformativePanel />}
+      {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
       <FeedbackButton />
+    </div> // --- THIS IS THE FIX: The missing closing div tag has been restored. ---
+  );
+};
