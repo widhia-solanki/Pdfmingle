@@ -54,19 +54,6 @@
     @apply bg-background text-foreground;
     @apply transition-colors duration-300 ease-in-out;
   }
-
-  /* Dark mode scrollbar */
-  .dark ::-webkit-scrollbar-track {
-    background: #2d3748; /* A dark gray */
-  }
-  .dark ::-webkit-scrollbar-thumb {
-    background: #4a5568; /* A lighter gray */
-  }
-  .dark ::-webkit-scrollbar-thumb:hover {
-    background: #718096; /* A hover gray */
-  }
-}
-
 }
 
 @layer components {
@@ -84,15 +71,9 @@
 }
 
 @keyframes heartbeat {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.25);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.25); }
+  100% { transform: scale(1); }
 }
 
 .animate-heartbeat {
@@ -128,13 +109,22 @@
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    @apply bg-gray-100;
   }
   ::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 4px;
+    @apply bg-gray-300 rounded-md;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
+    @apply bg-gray-400;
+  }
+  
+  .dark ::-webkit-scrollbar-track {
+    @apply bg-gray-800;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    @apply bg-gray-600;
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
   }
 }
