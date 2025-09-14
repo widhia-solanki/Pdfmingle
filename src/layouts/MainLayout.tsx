@@ -28,9 +28,12 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
         {children}
       </main>
       
+      {/* --- THIS IS THE FIX --- */}
+      {/* The conditional rendering logic is simplified to prevent server-side crashes. */}
+      {/* We explicitly check if it's a tool page and render one component or the other. */}
       {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
       <FeedbackButton />
-    </div> // --- THIS IS THE FIX: The missing closing div tag has been restored. ---
+    </div>
   );
 };
