@@ -3,18 +3,13 @@
 import React from "react";
 import { useRouter } from 'next/router';
 import { Header } from "@/components/Header";
-// import { FeedbackButton } from "@/components/FeedbackButton"; // Temporarily commented out
+import { FeedbackButton } from "@/components/FeedbackButton"; // Re-enable this import
 import { InformativePanel } from "@/components/InformativePanel";
 import { AdPlaceholder } from "@/components/AdPlaceholder";
 import { cn } from "@/lib/utils";
 import { toolArray } from "@/constants/tools";
 
-interface MainLayoutProps {
-  children: React.ReactNode;
-  flush?: boolean;
-}
-
-const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
+// ... (rest of the file is the same)
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
@@ -29,9 +24,8 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
       
       {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
-      {/* --- THIS IS THE FIX --- */}
-      {/* The broken FeedbackButton component has been removed to allow the build to pass. */}
-      {/* <FeedbackButton /> */}
+      {/* Re-enable the button */}
+      <FeedbackButton />
     </div>
   );
 };
