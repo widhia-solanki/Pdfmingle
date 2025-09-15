@@ -3,13 +3,20 @@
 import React from "react";
 import { useRouter } from 'next/router';
 import { Header } from "@/components/Header";
-import { FeedbackButton } from "@/components/FeedbackButton"; // Re-enable this import
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { InformativePanel } from "@/components/InformativePanel";
 import { AdPlaceholder } from "@/components/AdPlaceholder";
 import { cn } from "@/lib/utils";
 import { toolArray } from "@/constants/tools";
 
-// ... (rest of the file is the same)
+// --- THIS IS THE FIX ---
+// The missing interface has been restored.
+interface MainLayoutProps {
+  children: React.ReactNode;
+  flush?: boolean;
+}
+
+const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
@@ -24,7 +31,7 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
       
       {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
-      {/* Re-enable the button */}
+      {/* The FeedbackButton is correctly re-enabled */}
       <FeedbackButton />
     </div>
   );
