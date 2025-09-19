@@ -9,8 +9,6 @@ import { AdPlaceholder } from "@/components/AdPlaceholder";
 import { cn } from "@/lib/utils";
 import { toolArray } from "@/constants/tools";
 
-// --- THIS IS THE FIX ---
-// The missing interface has been restored.
 interface MainLayoutProps {
   children: React.ReactNode;
   flush?: boolean;
@@ -23,6 +21,8 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const isToolPage = toolPaths.has(router.pathname);
 
   return (
+    // THIS IS THE FIX:
+    // Replaced hardcoded colors with `bg-background` to respect the theme.
     <div className="min-h-screen flex flex-col bg-background">
       <Header />
       <main className={cn("flex-grow", !flush && "pt-20 pb-20 md:pb-0")}>
@@ -31,7 +31,6 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
       
       {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
-      {/* The FeedbackButton is correctly re-enabled */}
       <FeedbackButton />
     </div>
   );
