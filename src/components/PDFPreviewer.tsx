@@ -2,12 +2,10 @@
 
 import React, { useEffect, useRef } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
-// FINAL, GUARANTEED FIX: Corrected the CSS import path from /build/ to /web/
 import 'pdfjs-dist/web/pdf_viewer.css';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 
-// Point to the local copy of the worker.
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs';
 }
@@ -30,48 +28,47 @@ const PDFPreviewer: React.FC<PDFPreviewerProps> = ({
   useEffect(() => {
     const renderPdf = async () => {
       if (!canvasRef.current) return;
-
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
       if (!context) return;
 
-      const fileReader = new FileReader();
-      fileReader.onload = async (e) => {
-        if (!e.target?.result) return;
-
-        const typedarray = new Uint8Array(e.target.result as ArrayBuffer);
-        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise;
+      try {
+        const fileBuffer = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: fileBuffer }).promise;
         const page = await pdf.getPage(1);
-
-        const viewport = page.getViewport({ scale: 0.5 });
+        
+        // Use a consistent scale for previews
+        const scale = 0.4;
+        const viewport = page.getViewport({ scale });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        const renderContext = {
-          canvasContext: context,
-          viewport: viewport,
-        };
-        await page.render(renderContext).promise;
-      };
-      fileReader.readAsArrayBuffer(file);
+        await page.render({ canvasContext: context, viewport }).promise;
+      } catch (error) {
+        console.error("Failed to render PDF preview:", error);
+        // Optional: Draw an error message on the canvas
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = '#FF0000';
+        context.font = '16px sans-serif';
+        context.fillText('Error loading preview', 10, 20);
+      }
     };
-
     renderPdf();
   }, [file]);
 
   return (
-    <div className="relative group border rounded-lg p-2 shadow-sm bg-gray-50 flex flex-col items-center">
+    // THE FIX: Use semantic theme variables for background, border, etc.
+    <div className="relative group border border-border rounded-lg p-2 shadow-sm bg-card flex flex-col items-center">
       <div
         className="transition-transform duration-300 ease-in-out"
         style={{ transform: `rotate(${rotationAngle}deg)` }}
       >
-        <canvas ref={canvasRef} className="rounded-md border" />
+        <canvas ref={canvasRef} className="rounded-md border border-border" />
       </div>
-      <p className="mt-2 text-xs text-gray-600 truncate w-full text-center">
+      <p className="mt-2 text-xs text-muted-foreground truncate w-full text-center">
         {file.name}
       </p>
 
-      {/* Remove Button */}
       <Button
         variant="destructive"
         size="icon"
