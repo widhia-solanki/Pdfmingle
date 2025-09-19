@@ -56,7 +56,6 @@ const ProtectPDFPage: NextPage = () => {
     formData.append('password', password);
 
     try {
-      // --- THIS IS THE FIX ---
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
       const response = await fetch(`${apiBaseUrl}/api/protect-pdf`, {
         method: 'POST',
@@ -99,53 +98,59 @@ const ProtectPDFPage: NextPage = () => {
         description={tool.metaDescription}
         canonical={`https://pdfmingle.com/${tool.value}`}
       />
-      <div className="container mx-auto px-4 py-8 pt-20">
-        <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>
-        <p className="text-lg text-gray-600 text-center mb-8 max-w-2xl mx-auto">
-          {tool.description}
-        </p>
+      <div className="container mx-auto px-4 py-8">
+        {/* Render content based on status */}
         
-        {/* --- THIS IS THE FIX --- */}
-        {/* Consolidate idle and error states to reuse the ToolUploader for error display */}
-        {(status === 'idle' || status === 'error') && (
-           <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
-            <ToolUploader
-                onFilesSelected={handleFilesSelected}
-                acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-                selectedFiles={files}
-                isMultiFile={false}
-                error={error}
-                onProcess={() => {}}
-                actionButtonText=""
-            />
-             {status === 'error' && <Button onClick={handleStartOver} variant="outline">Try Again</Button>}
-           </div>
-        )}
+        {status === 'processing' ? <ToolProcessor /> :
+         status === 'success' ? <ToolDownloader downloadUrl={downloadUrl} filename={processedFileName} onStartOver={handleStartOver} /> :
+         (
+          <>
+            {/* Page Header */}
+            <div className="text-center mb-8">
+              <h1 className="text-4xl font-bold text-foreground">{tool.h1}</h1>
+              <p className="text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">{tool.description}</p>
+            </div>
 
-        {status === 'options' && (
-          <div className="space-y-6 max-w-4xl mx-auto flex flex-col items-center">
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {files.map((file, index) => (
-                 <PDFPreviewer
-                   key={index}
-                   file={file}
-                   index={index}
-                   onRemove={handleFileRemove}
-                 />
-               ))}
-             </div>
-             <ProtectOptions onPasswordSet={handleProcess} />
-          </div>
-        )}
-
-        {status === 'processing' && <ToolProcessor />}
-
-        {status === 'success' && (
-          <ToolDownloader
-            downloadUrl={downloadUrl}
-            filename={processedFileName}
-            onStartOver={handleStartOver}
-          />
+            {/* Main Content: Uploader or Editor */}
+            {files.length === 0 ? (
+              <div className="max-w-2xl mx-auto">
+                <ToolUploader
+                  onFilesSelected={handleFilesSelected}
+                  acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                  selectedFiles={files}
+                  isMultiFile={false}
+                  error={error}
+                  onProcess={() => {}}
+                  actionButtonText=""
+                />
+                {status === 'error' && <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>}
+              </div>
+            ) : (
+              // --- THIS IS THE NEW SIDE-BY-SIDE LAYOUT ---
+              <div className="grid grid-cols-1 md:grid-cols-12 md:gap-8 lg:gap-12">
+                
+                {/* Left Column: PDF Preview */}
+                <div className="md:col-span-7 lg:col-span-8 flex justify-center items-start">
+                  {files.map((file, index) => (
+                    <PDFPreviewer
+                      key={index}
+                      file={file}
+                      index={index}
+                      onRemove={handleFileRemove}
+                    />
+                  ))}
+                </div>
+                
+                {/* Right Column: Password Options */}
+                <div className="md:col-span-5 lg:col-span-4 mt-6 md:mt-0">
+                  <div className="bg-card border border-border rounded-lg shadow-md p-6 sticky top-24">
+                    <ProtectOptions onPasswordSet={handleProcess} />
+                  </div>
+                </div>
+                
+              </div>
+            )}
+          </>
         )}
       </div>
     </>
