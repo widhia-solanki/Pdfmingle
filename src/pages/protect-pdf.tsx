@@ -11,6 +11,7 @@ import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+import { Lock } from 'lucide-react';
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
@@ -43,37 +44,28 @@ const ProtectPDFPage: NextPage = () => {
   };
 
   const handleProcess = async (password: string) => {
-    if (files.length === 0) {
-      setError('Please upload a PDF file.');
-      return;
-    }
-
+    if (files.length === 0) return;
     setStatus('processing');
     setError(null);
-
     const formData = new FormData();
     formData.append('file', files[0]);
     formData.append('password', password);
-
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
       const response = await fetch(`${apiBaseUrl}/api/protect-pdf`, {
         method: 'POST',
         body: formData,
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'A server error occurred.');
       }
-
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setDownloadUrl(url);
       setProcessedFileName(`protected_${files[0]?.name || 'document.pdf'}`);
       setStatus('success');
       toast({ title: 'Success!', description: 'Your PDF has been protected.' });
-
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(`Protection failed: ${message}`);
@@ -96,41 +88,40 @@ const ProtectPDFPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.com/${tool.value}`}
       />
-      <div className="container mx-auto px-4 py-8">
+      
+      {/* --- THIS IS THE NEW REDESIGNED LAYOUT --- */}
+      <div className="w-full bg-secondary">
         {/* Render content based on status */}
         
-        {status === 'processing' ? <ToolProcessor /> :
-         status === 'success' ? <ToolDownloader downloadUrl={downloadUrl} filename={processedFileName} onStartOver={handleStartOver} /> :
+        {status === 'processing' ? <div className="min-h-[70vh] flex items-center"><ToolProcessor /></div> :
+         status === 'success' ? <div className="min-h-[70vh] flex items-center justify-center"><ToolDownloader downloadUrl={downloadUrl} filename={processedFileName} onStartOver={handleStartOver} /></div> :
          (
-          <>
-            {/* Page Header */}
-            <div className="text-center mb-8">
-              <h1 className="text-4xl font-bold text-foreground">{tool.h1}</h1>
-              <p className="text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">{tool.description}</p>
-            </div>
-
-            {/* Main Content: Uploader or Editor */}
+          <div className="container mx-auto px-4 py-8">
             {files.length === 0 ? (
-              <div className="max-w-2xl mx-auto">
-                <ToolUploader
-                  onFilesSelected={handleFilesSelected}
-                  acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
-                  selectedFiles={files}
-                  isMultiFile={false}
-                  error={error}
-                  onProcess={() => {}}
-                  actionButtonText=""
-                />
-                {status === 'error' && <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>}
+              // Initial Uploader View
+              <div className="text-center">
+                <h1 className="text-4xl font-bold text-foreground">{tool.h1}</h1>
+                <p className="text-lg text-muted-foreground mt-2 max-w-2xl mx-auto">{tool.description}</p>
+                <div className="max-w-2xl mx-auto mt-8">
+                  <ToolUploader
+                    onFilesSelected={handleFilesSelected}
+                    acceptedFileTypes={{ 'application/pdf': ['.pdf'] }}
+                    selectedFiles={files}
+                    isMultiFile={false}
+                    error={error}
+                    onProcess={() => {}}
+                    actionButtonText=""
+                  />
+                  {status === 'error' && <Button onClick={handleStartOver} variant="outline" className="mt-4">Try Again</Button>}
+                </div>
               </div>
             ) : (
-              // --- THIS IS THE NEW SIDE-BY-SIDE LAYOUT ---
-              <div className="grid grid-cols-1 md:grid-cols-12 md:gap-8 lg:gap-12">
+              // Side-by-Side Editor View
+              <div className="grid grid-cols-1 md:grid-cols-12 md:gap-8 lg:gap-12 min-h-[calc(100vh-15rem)] items-center">
                 
-                {/* Left Column: PDF Preview */}
-                <div className="md:col-span-7 lg:col-span-8 flex justify-center items-start">
+                {/* Left Column: PDF Preview on a white "canvas" */}
+                <div className="md:col-span-7 lg:col-span-8 flex justify-center items-center h-full bg-background p-8 rounded-lg shadow-inner">
                   {files.map((file, index) => (
                     <PDFPreviewer
                       key={index}
@@ -143,14 +134,21 @@ const ProtectPDFPage: NextPage = () => {
                 
                 {/* Right Column: Password Options */}
                 <div className="md:col-span-5 lg:col-span-4 mt-6 md:mt-0">
-                  <div className="bg-card border border-border rounded-lg shadow-md p-6 sticky top-24">
-                    <ProtectOptions onPasswordSet={handleProcess} />
+                  <div className="bg-card border border-border rounded-lg shadow-md p-8">
+                     <div className="text-center mb-6">
+                        <div className="w-16 h-16 mx-auto bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                            <Lock className="w-8 h-8 text-red-500" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-foreground">Set a Password</h2>
+                        <p className="text-muted-foreground mt-1">This password will be required to open the PDF.</p>
+                     </div>
+                     <ProtectOptions onPasswordSet={handleProcess} />
                   </div>
                 </div>
                 
               </div>
             )}
-          </>
+          </div>
         )}
       </div>
     </>
