@@ -1,51 +1,66 @@
-// next-seo.config.ts
+// src/pages/_document.tsx
 
-import { DefaultSeoProps } from 'next-seo';
+import { Html, Head, Main, NextScript } from 'next/document';
+import Script from 'next/script';
 
-const config: DefaultSeoProps = {
-  titleTemplate: '%s | PDFMingle',
-  defaultTitle: 'PDFMingle | Free & Secure Online PDF Tools',
-  description: 'Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs, with a focus on security and simplicity.',
-  canonical: 'https://pdfmingle.net',
-  openGraph: {
-    type: 'website',
-    locale: 'en_IE',
-    url: 'https://pdfmingle.net',
-    siteName: 'PDFMingle',
-    title: 'PDFMingle | Free & Secure Online PDF Tools',
-    description: 'The ultimate online suite of tools for all your PDF needs. Merge, split, compress, and more—for free.',
-    images: [
-      {
-        url: 'https://pdfmingle.net/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'PDFMingle - Free Online PDF Tools',
-      },
-    ],
-  },
-  twitter: {
-    handle: '@yourtwitterhandle',
-    site: '@yourtwitterhandle',
-    cardType: 'summary_large_image',
-  },
-  // --- THIS IS THE GUARANTEED FIX ---
-  // Adding a version query string (?v=2) to each href forces all caches to be bypassed.
-  additionalLinkTags: [
-    {
-      rel: 'icon',
-      href: '/favicon.ico?v=2',
-      sizes: 'any',
-    },
-    {
-      rel: 'apple-touch-icon',
-      href: '/bglogo.jpg?v=2', 
-    },
-    {
-      rel: 'manifest',
-      href: '/site.webmanifest?v=2',
-    },
-  ],
-  // --- END OF FIX ---
-};
+// Your existing Google Tag Manager ID
+const GTM_ID = 'GTM-5F5T8VBP';
 
-export default config;
+// Your existing Google Analytics 4 ID
+const GA_MEASUREMENT_ID = 'G-RPZJ7ZGCQG';
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head>
+        {/* --- The AdSense <Script> tag has been REMOVED from this file --- */}
+
+        {/* Your existing Google Tag Manager Script */}
+        <Script
+          id="gtm-script"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+            (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+            new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+            j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+            'https://www.googlesyndication.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+            })(window,document,'script','dataLayer','${GTM_ID}');
+            `,
+          }}
+        />
+
+        {/* Your existing Google Analytics 4 Tag */}
+        <Script
+          strategy="afterInteractive"
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
+        />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', '${GA_MEASUREMENT_ID}');
+            `,
+          }}
+        />
+      </Head>
+      <body>
+        {/* Your existing Google Tag Manager (noscript) - Body */}
+        <noscript
+          dangerouslySetInnerHTML={{
+            __html: `
+            <iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+            `,
+          }}
+        />
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
+}
