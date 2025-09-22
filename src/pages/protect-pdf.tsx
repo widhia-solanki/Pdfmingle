@@ -11,6 +11,7 @@ import PDFPreviewer from '@/components/PDFPreviewer';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+import { Lock } from 'lucide-react';
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
@@ -23,13 +24,13 @@ const ProtectPDFPage: NextPage = () => {
   const [status, setStatus] = useState<Status>('idle');
   const [downloadUrl, setDownloadUrl] = useState<string>('');
   const [processedFileName, setProcessedFileName] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false); // Add processing state
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleFilesSelected = (selectedFiles: File[]) => {
     setError(null);
-    setFiles(selectedFiles);
     if (selectedFiles.length > 0) setStatus('options');
     else setStatus('idle');
+    setFiles(selectedFiles);
   };
 
   const handleFileRemove = (indexToRemove: number) => {
@@ -41,16 +42,14 @@ const ProtectPDFPage: NextPage = () => {
   const handleProcess = async (password: string) => {
     if (files.length === 0) return;
     setStatus('processing');
-    setIsProcessing(true); // Set processing to true
+    setIsProcessing(true);
     setError(null);
     const formData = new FormData();
     formData.append('file', files[0]);
     formData.append('password', password);
     try {
       const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://pdfmingle-backend.onrender.com';
-      const response = await fetch(`${apiBaseUrl}/api/protect-pdf`, {
-        method: 'POST', body: formData,
-      });
+      const response = await fetch(`${apiBaseUrl}/api/protect-pdf`, { method: 'POST', body: formData });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'A server error occurred.');
@@ -67,7 +66,7 @@ const ProtectPDFPage: NextPage = () => {
       setStatus('error');
       toast({ title: 'Error', description: message, variant: 'destructive' });
     } finally {
-      setIsProcessing(false); // Reset processing state
+      setIsProcessing(false);
     }
   };
 
@@ -84,8 +83,10 @@ const ProtectPDFPage: NextPage = () => {
     <>
       <NextSeo title={tool.metaTitle} description={tool.metaDescription} />
       <div className="w-full bg-secondary">
-        {status === 'processing' ? <div className="min-h-[70vh] flex items-center"><ToolProcessor /></div> :
-         status === 'success' ? <div className="min-h-[70vh] flex items-center justify-center p-4"><ToolDownloader downloadUrl={downloadUrl} filename={processedFileName} onStartOver={handleStartOver} /></div> :
+        {/* --- THIS IS THE FIX --- */}
+        {/* The container for the processor and downloader now has the correct classes to center it. */}
+        {status === 'processing' ? <div className="min-h-[70vh] flex items-center justify-center w-full"><ToolProcessor /></div> :
+         status === 'success' ? <div className="min-h-[70vh] flex items-center justify-center w-full p-4"><ToolDownloader downloadUrl={downloadUrl} filename={processedFileName} onStartOver={handleStartOver} /></div> :
          (
           <div className="container mx-auto px-4 py-8">
             {files.length === 0 ? (
@@ -104,9 +105,6 @@ const ProtectPDFPage: NextPage = () => {
                     <PDFPreviewer key={index} file={file} index={index} onRemove={handleFileRemove} />
                   ))}
                 </div>
-                {/* --- THIS IS THE FIX --- */}
-                {/* The redundant wrapper div has been removed. */}
-                {/* `ProtectOptions` is now placed directly in the grid. */}
                 <div className="md:col-span-5 lg:col-span-4 mt-6 md:mt-0">
                   <ProtectOptions onPasswordSet={handleProcess} isProcessing={isProcessing} />
                 </div>
