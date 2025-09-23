@@ -59,8 +59,7 @@ const AboutPage = () => {
                 <h3 className="text-2xl font-bold text-foreground">Dr. Bhagirathchand Solanki</h3>
                 <p className="font-semibold text-red-500">Owner</p>
                 <p className="text-muted-foreground leading-relaxed">
-                  With a profound background in strategic leadership and business development, Dr. Solanki provides the foundational vision and resources that empower DAFDA Products to thrive and innovate.
-                </p>
+                  Dr. Solanki takes care of the expenses and resources required to keep the website running. He ensures that the platform remains active, reliable, and accessible for users. His support helps maintain smooth operations, regular updates, and continued improvements for PDFMingle.
             </div>
             <div className="space-y-3 flex flex-col items-center">
                 <h3 className="text-2xl font-bold text-foreground">Widhia Solanki</h3>
