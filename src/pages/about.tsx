@@ -10,7 +10,7 @@ const AboutPage = () => {
       <section className="bg-gray-900 text-white text-center py-20 md:py-32">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-            About DAFDA Products
+            About Pdfmingle
           </h1>
           <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
             Innovating for a simpler, smarter digital world.
