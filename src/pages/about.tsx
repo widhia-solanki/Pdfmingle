@@ -6,7 +6,7 @@ import Link from 'next/link';
 const AboutPage = () => {
   return (
     <div className="animate-in fade-in duration-500 bg-background">
-      {/* Hero Section - Dark by design, text is already light */}
+      {/* Hero Section */}
       <section className="bg-gray-900 text-white text-center py-20 md:py-32">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
@@ -18,7 +18,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Who We Are Section - Use semantic colors */}
+      {/* Who We Are Section */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
@@ -30,7 +30,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Vision & Mission Section - Use semantic colors */}
+      {/* Vision & Mission Section */}
       <section className="bg-secondary py-16 md:py-24">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 max-w-5xl">
           <div className="text-center md:text-left">
@@ -48,7 +48,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Meet Our Team Section - Use semantic colors */}
+      {/* Meet Our Team Section */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 max-w-5xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-12 text-foreground">
@@ -58,8 +58,9 @@ const AboutPage = () => {
             <div className="space-y-3">
                 <h3 className="text-2xl font-bold text-foreground">Dr. Bhagirathchand Solanki</h3>
                 <p className="font-semibold text-red-500">Owner</p>
-                <p className="text-muted-foreground leading-relaxed">
-                  Dr. Solanki takes care of the expenses and resources required to keep the website running. He ensures that the platform remains active, reliable, and accessible for users. His support helps maintain smooth operations, regular updates, and continued improvements for PDFMingle.
+                {/* --- THIS IS THE FIX --- */}
+                <p className="text-muted-foreground leading-relaxed Dr. Solanki takes care of the expenses and resources required to keep the website running. He ensures that the platform remains active, reliable, and accessible for users. His support helps maintain smooth operations, regular updates, and continued improvements for PDFMingle.
+                </p>
             </div>
             <div className="space-y-3 flex flex-col items-center">
                 <h3 className="text-2xl font-bold text-foreground">Widhia Solanki</h3>
@@ -88,7 +89,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Why Choose Us Section - Use semantic colors */}
+      {/* Why Choose Us Section */}
       <section className="bg-secondary py-16 md:py-24">
         <div className="container mx-auto px-4 max-w-5xl">
           <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-foreground">
@@ -123,7 +124,7 @@ const AboutPage = () => {
         </div>
       </section>
 
-      {/* Contact Us Section - Use semantic colors */}
+      {/* Contact Us Section */}
       <section className="py-16 md:py-24 bg-background">
         <div className="container mx-auto px-4 max-w-4xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-foreground">
