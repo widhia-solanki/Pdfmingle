@@ -10,7 +10,7 @@ const AboutPage = () => {
       <section className="bg-gray-900 text-white text-center py-20 md:py-32">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight">
-            About DAFDA Products
+            About Pdfmingle
           </h1>
           <p className="mt-4 text-lg md:text-xl text-gray-300 max-w-3xl mx-auto">
             Innovating for a simpler, smarter digital world.
@@ -60,7 +60,7 @@ const AboutPage = () => {
                 <p className="font-semibold text-red-500">Owner</p>
                 {/* --- THIS IS THE FIX --- */}
                 <p className="text-muted-foreground leading-relaxed">
-                  With a profound background in strategic leadership and business development, Dr. Solanki provides the foundational vision and resources that empower DAFDA Products to thrive and innovate.
+                  Dr. Solanki takes care of the expenses and resources required to keep the website running. He ensures that the platform remains active, reliable, and accessible for users. His support helps maintain smooth operations, regular updates, and continued improvements for PDFMingle.
                 </p>
             </div>
             <div className="space-y-3 flex flex-col items-center">
