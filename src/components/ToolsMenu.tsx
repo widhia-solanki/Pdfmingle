@@ -20,11 +20,9 @@ export const ToolsMenu = () => {
   return (
     <NavigationMenu>
       <NavigationMenuList>
-        {/* All PDF Tools Dropdown */}
         <NavigationMenuItem>
           <NavigationMenuTrigger>All PDF Tools</NavigationMenuTrigger>
           <NavigationMenuContent>
-            {/* We create a two-column grid for the tools inside the dropdown */}
             <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
               {toolArray.map((tool) => {
                 const Icon = iconMap[tool.icon] || FileQuestion;
@@ -43,7 +41,6 @@ export const ToolsMenu = () => {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
-        {/* About Us Link */}
         <NavigationMenuItem>
           <Link href="/about" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -52,7 +49,6 @@ export const ToolsMenu = () => {
           </Link>
         </NavigationMenuItem>
         
-        {/* Login Button */}
         <NavigationMenuItem>
            <Button variant="outline" className="ml-4">
              <LogIn className="mr-2 h-4 w-4" />
@@ -65,7 +61,6 @@ export const ToolsMenu = () => {
   );
 };
 
-// Helper component for styling list items inside the dropdown
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
