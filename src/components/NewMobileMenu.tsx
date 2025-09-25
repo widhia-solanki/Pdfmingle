@@ -50,7 +50,6 @@ export const NewMobileMenu = () => {
         </div>
 
         <nav className="flex-grow overflow-y-auto p-4 space-y-4">
-          {/* Static Links Section */}
           <div className="flex flex-col gap-1">
              <Link href="/about" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors">
                 <Info className="h-6 w-6 text-muted-foreground" />
@@ -64,7 +63,6 @@ export const NewMobileMenu = () => {
           
           <Separator />
 
-          {/* Tools Section */}
           <div>
             <h2 className="text-lg font-semibold mb-2 text-foreground">All PDF Tools</h2>
             <div className="flex flex-col gap-1">
@@ -95,15 +93,3 @@ export const NewMobileMenu = () => {
     </Sheet>
   );
 };
-
-### Summary of Changes:
-
-1.  **Desktop Menu (`ToolsMenu.tsx`):**
-    *   I've implemented a full-featured `NavigationMenu` with a trigger labeled "All PDF Tools."
-    *   Inside the dropdown, all your tools are listed in a two-column grid for easy scanning.
-    *   The "About Us" and "Login" links are added as separate items in the main navigation list.
-2.  **Mobile Menu (`NewMobileMenu.tsx`):**
-    *   I've added a new section at the top of the menu for the "About Us" link and the "Login" button.
-    *   A `<Separator />` is used to create a clean visual distinction between the static links and the main list of tools.
-
-These changes will bring your site's navigation up to a professional standard, making it more user-friendly and feature-complete on both desktop and mobile.
