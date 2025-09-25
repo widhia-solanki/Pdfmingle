@@ -5,8 +5,6 @@ import { NextSeo } from 'next-seo';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 
-// This is our central "database" for blog posts.
-// To add a new post, just add its info here.
 const allPosts = [
   {
     slug: 'how-to-compress-a-pdf',
@@ -25,7 +23,6 @@ const allPosts = [
   },
 ];
 
-// Define the type for our post data
 interface Post {
   slug: string;
   title: string;
@@ -36,7 +33,6 @@ interface BlogIndexPageProps {
   posts: Post[];
 }
 
-// The page component now receives the list of posts as a prop
 const BlogIndexPage: NextPage<BlogIndexPageProps> = ({ posts }) => {
     const canonicalUrl = "https://pdfmingle.net/blog";
 
@@ -52,14 +48,16 @@ const BlogIndexPage: NextPage<BlogIndexPageProps> = ({ posts }) => {
                     description: "Explore our articles for the best tips on managing your PDF files for free.",
                 }}
             />
-
-            <div className="bg-white py-16 sm:py-24">
+            
+            {/* --- THIS IS THE FIX --- */}
+            {/* Using theme variables for background and text colors */}
+            <div className="bg-background py-16 sm:py-24">
                 <div className="container mx-auto px-4 max-w-3xl">
                     <header className="mb-16 text-center">
-                        <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
                             The PDFMingle Blog
                         </h1>
-                        <p className="mt-6 text-xl text-gray-600">
+                        <p className="mt-6 text-xl text-muted-foreground">
                             Your resource for PDF tips, tutorials, and productivity hacks.
                         </p>
                     </header>
@@ -71,14 +69,15 @@ const BlogIndexPage: NextPage<BlogIndexPageProps> = ({ posts }) => {
                                 href={`/blog/${post.slug}`} 
                                 className="group block"
                             >
-                                <article className="p-8 border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
-                                    <h2 className="text-2xl font-bold tracking-tight text-gray-900 group-hover:text-blue-600 transition-colors">
+                                {/* Use theme variables for the article card */}
+                                <article className="p-8 border border-border bg-card rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300">
+                                    <h2 className="text-2xl font-bold tracking-tight text-foreground group-hover:text-primary transition-colors">
                                         {post.title}
                                     </h2>
-                                    <p className="mt-4 text-lg text-gray-600">
+                                    <p className="mt-4 text-lg text-muted-foreground">
                                         {post.description}
                                     </p>
-                                    <div className="mt-6 font-semibold text-blue-600 flex items-center">
+                                    <div className="mt-6 font-semibold text-primary flex items-center">
                                         Read article
                                         <ArrowRight className="ml-2 h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
                                     </div>
@@ -92,7 +91,6 @@ const BlogIndexPage: NextPage<BlogIndexPageProps> = ({ posts }) => {
     );
 };
 
-// This function runs at build time and passes the list of posts to the page
 export const getStaticProps: GetStaticProps = async () => {
   return {
     props: {
@@ -101,4 +99,4 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-export default BlogIndexPage;
+export default BlogIndexPage; compatible with your site's dark mode, creating a seamless experience for your readers.
