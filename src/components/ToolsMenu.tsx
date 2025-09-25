@@ -14,12 +14,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { toolArray, iconMap } from '@/constants/tools';
 import { cn } from '@/lib/utils';
-import { Info, LogIn, FileQuestion } from 'lucide-react';
+import { Info, Mail, LogIn, FileQuestion } from 'lucide-react'; // Import Mail icon
 
 export const ToolsMenu = () => {
   return (
     <NavigationMenu>
       <NavigationMenuList>
+        {/* All PDF Tools Dropdown */}
         <NavigationMenuItem>
           <NavigationMenuTrigger>All PDF Tools</NavigationMenuTrigger>
           <NavigationMenuContent>
@@ -41,6 +42,16 @@ export const ToolsMenu = () => {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
+        {/* --- THIS IS THE NEW LINK --- */}
+        <NavigationMenuItem>
+          <Link href="/contact" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <Mail className="mr-2 h-4 w-4" /> Contact
+            </NavigationMenuLink>
+          </Link>
+        </NavigationMenuItem>
+
+        {/* About Us Link */}
         <NavigationMenuItem>
           <Link href="/about" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -49,18 +60,19 @@ export const ToolsMenu = () => {
           </Link>
         </NavigationMenuItem>
         
+        {/* Login Button */}
         <NavigationMenuItem>
            <Button variant="outline" className="ml-4">
              <LogIn className="mr-2 h-4 w-4" />
              Login
            </Button>
         </NavigationMenuItem>
-
       </NavigationMenuList>
     </NavigationMenu>
   );
 };
 
+// ... (ListItem helper component remains the same)
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
