@@ -99,4 +99,4 @@ export const getStaticProps: GetStaticProps = async () => {
   };
 };
 
-export default BlogIndexPage; compatible with your site's dark mode, creating a seamless experience for your readers.
+export default BlogIndexPage;
