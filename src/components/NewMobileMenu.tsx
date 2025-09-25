@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, X, FileQuestion, Info, LogIn, Grid2X2 } from "lucide-react";
+import { Menu, X, FileQuestion, Info, LogIn, Grid2X2, Mail } from "lucide-react"; // Import Mail icon
 import { toolArray, iconMap } from "@/constants/tools";
 import Link from "next/link";
 import { useRouter } from 'next/router';
@@ -25,8 +25,6 @@ const PDFMingleLogo = () => (
   </Link>
 );
 
-// --- THIS IS THE FIX ---
-// Create a curated list of the top 5 tools to display directly
 const featuredTools = toolArray.filter(tool => 
   ['merge-pdf', 'split-pdf', 'compress-pdf', 'edit-pdf', 'image-to-pdf'].includes(tool.value)
 );
@@ -59,7 +57,6 @@ export const NewMobileMenu = () => {
           <div>
             <h2 className="px-3 text-lg font-semibold mb-2 text-foreground">Popular Tools</h2>
             <div className="flex flex-col gap-1">
-              {/* Map over the FEATURED tools */}
               {featuredTools.map((tool) => {
                 const Icon = iconMap[tool.icon] || FileQuestion;
                 const isActive = router.pathname === `/${tool.value}`;
@@ -75,22 +72,26 @@ export const NewMobileMenu = () => {
                   </Link>
                 );
               })}
-              {/* "View All Tools" link below the featured list */}
-              <Link href="/#tools" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-primary hover:bg-secondary/80 font-semibold transition-colors mt-2">
-                <Grid2X2 className="h-6 w-6" />
-                <span>View All Tools</span>
+              <Link href="/#tools" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-brand-blue hover:bg-secondary/80 font-semibold transition-colors mt-2">
+                 <Grid2X2 className="h-6 w-6" />
+                 <span>View All Tools</span>
               </Link>
             </div>
           </div>
           
           <Separator />
 
-          {/* Static Links Section - REORDERED */}
+          {/* Static Links Section */}
           <div className="flex flex-col gap-1 p-3 pt-0">
              <Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground hover:text-foreground">
                 <LogIn className="h-6 w-6" />
                 <span className="font-medium">Login</span>
              </Button>
+             {/* --- THIS IS THE NEW LINK --- */}
+             <Link href="/contact" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors">
+                <Mail className="h-6 w-6 text-muted-foreground" />
+                <span className="font-medium">Contact Us</span>
+             </Link>
              <Link href="/about" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors">
                 <Info className="h-6 w-6 text-muted-foreground" />
                 <span className="font-medium">About Us</span>
