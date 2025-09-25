@@ -2,9 +2,8 @@
 
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Import Accordion
 import { Button } from "@/components/ui/button";
-import { Menu, X, FileQuestion, Info, LogIn } from "lucide-react";
+import { Menu, X, FileQuestion, Info, LogIn, Grid2X2 } from "lucide-react";
 import { toolArray, iconMap } from "@/constants/tools";
 import Link from "next/link";
 import { useRouter } from 'next/router';
@@ -24,6 +23,12 @@ const PDFMingleLogo = () => (
       <span className="text-foreground">Mingle</span>
     </div>
   </Link>
+);
+
+// --- THIS IS THE FIX ---
+// Create a curated list of the top 5 tools to display directly
+const featuredTools = toolArray.filter(tool => 
+  ['merge-pdf', 'split-pdf', 'compress-pdf', 'edit-pdf', 'image-to-pdf'].includes(tool.value)
 );
 
 export const NewMobileMenu = () => {
@@ -50,39 +55,38 @@ export const NewMobileMenu = () => {
           </SheetClose>
         </div>
 
-        <nav className="flex-grow overflow-y-auto p-4 space-y-2">
-          {/* Collapsible "All PDF Tools" Section */}
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1" className="border-b-0">
-              <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline p-3">
-                All PDF Tools
-              </AccordionTrigger>
-              <AccordionContent className="pb-1">
-                <div className="flex flex-col gap-1 pl-4 border-l ml-3">
-                  {toolArray.map((tool) => {
-                    const Icon = iconMap[tool.icon] || FileQuestion;
-                    const isActive = router.pathname === `/${tool.value}`;
-                    return (
-                      <Link
-                        key={tool.value}
-                        href={`/${tool.value}`}
-                        onClick={() => setIsOpen(false)}
-                        className={cn( "flex items-center gap-3 p-3 rounded-md transition-colors", isActive ? "bg-secondary text-primary font-semibold" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground")}
-                      >
-                        <Icon className="h-6 w-6" style={{ color: isActive ? 'hsl(var(--primary))' : tool.color }} />
-                        <span>{tool.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-
-          <Separator />
+        <nav className="flex-grow overflow-y-auto p-4 space-y-4">
+          <div>
+            <h2 className="px-3 text-lg font-semibold mb-2 text-foreground">Popular Tools</h2>
+            <div className="flex flex-col gap-1">
+              {/* Map over the FEATURED tools */}
+              {featuredTools.map((tool) => {
+                const Icon = iconMap[tool.icon] || FileQuestion;
+                const isActive = router.pathname === `/${tool.value}`;
+                return (
+                  <Link
+                    key={tool.value}
+                    href={`/${tool.value}`}
+                    onClick={() => setIsOpen(false)}
+                    className={cn( "flex items-center gap-3 p-3 rounded-md transition-colors", isActive ? "bg-secondary text-primary font-semibold" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground" )}
+                  >
+                    <Icon className="h-6 w-6" style={{ color: isActive ? 'hsl(var(--primary))' : tool.color }} />
+                    <span>{tool.label}</span>
+                  </Link>
+                );
+              })}
+              {/* "View All Tools" link below the featured list */}
+              <Link href="/#tools" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-primary hover:bg-secondary/80 font-semibold transition-colors mt-2">
+                <Grid2X2 className="h-6 w-6" />
+                <span>View All Tools</span>
+              </Link>
+            </div>
+          </div>
           
+          <Separator />
+
           {/* Static Links Section - REORDERED */}
-          <div className="flex flex-col gap-1 p-3">
+          <div className="flex flex-col gap-1 p-3 pt-0">
              <Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground hover:text-foreground">
                 <LogIn className="h-6 w-6" />
                 <span className="font-medium">Login</span>
