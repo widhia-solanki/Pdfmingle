@@ -1,42 +1,96 @@
 // src/components/ToolsMenu.tsx
 
-import { useState } from "react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Grip, FileQuestion } from "lucide-react";
-import Link from "next/link";
-// FIX: Import toolArray for mapping, and iconMap
-import { toolArray, iconMap } from "@/constants/tools";
+import React from 'react';
+import Link from 'next/link';
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
+import { Button } from '@/components/ui/button';
+import { toolArray, iconMap } from '@/constants/tools';
+import { cn } from '@/lib/utils';
+import { Info, LogIn, FileQuestion } from 'lucide-react';
 
-export function ToolsMenu() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
+export const ToolsMenu = () => {
   return (
-    <Popover open={menuOpen} onOpenChange={setMenuOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-gray-800" aria-label="Open Tools Menu">
-          <Grip className="h-6 w-6" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-4">
-        <div className="grid grid-cols-3 gap-4">
-          {/* FIX: Use toolArray to correctly map over the list of tools */}
-          {toolArray.map((tool) => {
-            const Icon = iconMap[tool.icon] || FileQuestion;
-            return (
-              <Link
-                href={`/${tool.value}`}
-                key={tool.value}
-                onClick={() => setMenuOpen(false)}
-                className="flex flex-col items-center justify-center text-center gap-2 p-2 rounded-md hover:bg-gray-100 transition-colors"
-              >
-                <Icon className="h-8 w-8" style={{ color: tool.color }} />
-                <span className="text-xs font-medium text-gray-700">{tool.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </PopoverContent>
-    </Popover>
+    <NavigationMenu>
+      <NavigationMenuList>
+        {/* All PDF Tools Dropdown */}
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>All PDF Tools</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            {/* We create a two-column grid for the tools inside the dropdown */}
+            <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+              {toolArray.map((tool) => {
+                const Icon = iconMap[tool.icon] || FileQuestion;
+                return (
+                  <ListItem
+                    key={tool.label}
+                    title={tool.label}
+                    href={`/${tool.value}`}
+                  >
+                    <Icon className="h-5 w-5 mr-3" style={{ color: tool.color }} aria-hidden="true" />
+                    {tool.description.split('.')[0]}.
+                  </ListItem>
+                );
+              })}
+            </ul>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        {/* About Us Link */}
+        <NavigationMenuItem>
+          <Link href="/about" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <Info className="mr-2 h-4 w-4" /> About Us
+            </NavigationMenuLink>
+          </Link>
+        </NavigationMenuItem>
+        
+        {/* Login Button */}
+        <NavigationMenuItem>
+           <Button variant="outline" className="ml-4">
+             <LogIn className="mr-2 h-4 w-4" />
+             Login
+           </Button>
+        </NavigationMenuItem>
+
+      </NavigationMenuList>
+    </NavigationMenu>
   );
-}
+};
+
+// Helper component for styling list items inside the dropdown
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
+>(({ className, title, children, icon, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          <div className="flex items-center text-sm font-medium leading-none">
+            {icon}
+            {title}
+          </div>
+          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground pl-8">
+            {children}
+          </p>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
+ListItem.displayName = "ListItem";
