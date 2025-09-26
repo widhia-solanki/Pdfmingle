@@ -4,15 +4,17 @@ import { useState, FormEvent } from 'react';
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn, Loader2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext'; // Import useAuth to update context
+import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import { Separator } from '@/components/ui/separator';
 
 const LoginPage: NextPage = () => {
-  const router = useRouter();
+  const { login } = useAuth(); // Get login function from context
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,16 +39,19 @@ const LoginPage: NextPage = () => {
         throw new Error(data.error || 'Login failed. Please try again.');
       }
       
+      // Update the auth context with the user data from the API
+      login(data.user);
+
       toast({ title: 'Success!', description: 'You have been logged in.' });
       
-      // Redirect to homepage or a dashboard after login
-      // We use a reload to ensure the auth state is picked up globally
+      // Redirect to homepage after login
       window.location.href = '/';
 
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(message);
       toast({ title: 'Login Failed', description: message, variant: 'destructive' });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -54,12 +59,22 @@ const LoginPage: NextPage = () => {
   return (
     <>
       <NextSeo title="Login" noindex={true} />
-      <div className="w-full min-h-[calc(100vh-10rem)] flex items-center justify-center bg-secondary">
+      <div className="w-full min-h-[calc(100vh-10rem)] flex items-center justify-center bg-secondary p-4">
         <div className="w-full max-w-md p-8 space-y-6 bg-card border border-border rounded-lg shadow-md">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-foreground">Welcome Back!</h1>
             <p className="text-muted-foreground mt-2">Sign in to your PDFMingle account.</p>
           </div>
+
+          <div className="space-y-4">
+            <GoogleLoginButton />
+            <div className="relative flex items-center">
+              <Separator className="flex-grow" />
+              <span className="mx-2 flex-shrink-0 text-xs uppercase text-muted-foreground">Or continue with</span>
+              <Separator className="flex-grow" />
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -84,14 +99,14 @@ const LoginPage: NextPage = () => {
                 disabled={isLoading}
               />
             </div>
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
+            <Button type="submit" className="w-full h-11" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <LogIn className="mr-2 h-4 w-4" />
               )}
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading ? 'Signing In...' : 'Sign In with Email'}
             </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground">
