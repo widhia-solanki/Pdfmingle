@@ -10,9 +10,24 @@ import Link from "next/link";
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/contexts/AuthContext'; // Import useAuth
+// --- THIS IS THE FIX ---
+// The `useAuth` hook is now correctly imported from its context file.
+import { useAuth } from '@/contexts/AuthContext'; 
 
-// ... (PDFMingleLogo component remains the same)
+const PDFMingleLogo = () => (
+  <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground no-underline">
+    <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <path d="M50 0 L20 0 L0 20 L0 50 L30 50 L50 30 Z" fill="#10B981" />
+      <path d="M50 0 L80 0 L100 20 L100 50 L70 50 L50 30 Z" fill="#3B82F6" />
+      <path d="M50 100 L20 100 L0 80 L0 50 L30 50 L50 70 Z" fill="#2563EB" />
+      <path d="M50 100 L80 100 L100 80 L100 50 L70 50 L50 70 Z" fill="#6EE7B7" />
+    </svg>
+    <div>
+      <span className="text-blue-600">PDF</span>
+      <span className="text-foreground">Mingle</span>
+    </div>
+  </Link>
+);
 
 export const NewMobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,24 +40,56 @@ export const NewMobileMenu = () => {
         <Button variant="ghost" size="icon" className="text-foreground" aria-label="Open Menu"><Menu className="h-6 w-6" /></Button>
       </SheetTrigger>
       <SheetContent side="left" className="p-0 bg-background/80 backdrop-blur-lg border-r border-border flex flex-col">
-        {/* ... (Header with Logo remains the same) */}
+        <div className="flex items-center justify-between p-4 border-b border-border">
+            <PDFMingleLogo />
+            <SheetClose asChild>
+                <Button variant="ghost" size="icon" className="rounded-full text-foreground">
+                    <X className="h-6 w-6" />
+                </Button>
+            </SheetClose>
+        </div>
 
         <nav className="flex-grow overflow-y-auto p-4 space-y-2">
           <Accordion type="single" collapsible className="w-full">
-            {/* ... (Accordion with tool list remains the same) */}
+            <AccordionItem value="all-tools" className="border-b-0">
+              <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline p-3 -ml-3">
+                All PDF Tools
+              </AccordionTrigger>
+              <AccordionContent>
+                <div className="flex flex-col gap-1 border-l border-border ml-3 pl-4">
+                  {toolArray.map((tool) => {
+                    const Icon = iconMap[tool.icon] || FileQuestion;
+                    const isActive = router.pathname === `/${tool.value}`;
+                    return (
+                      <Link
+                        key={tool.value}
+                        href={`/${tool.value}`}
+                        onClick={() => setIsOpen(false)}
+                        className={cn( "flex items-center gap-3 p-3 rounded-md transition-colors", isActive ? "bg-secondary text-primary font-semibold" : "text-muted-foreground hover:bg-secondary/80 hover:text-foreground")}
+                      >
+                        <Icon className="h-6 w-6" style={{ color: isActive ? 'hsl(var(--primary))' : tool.color }} />
+                        <span>{tool.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
 
           <Separator />
           
-          {/* --- DYNAMIC AUTH LINKS --- */}
           <div className="flex flex-col gap-1 px-3 pt-2">
              {user ? (
-                <Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={logout}>
+                <Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={async () => {
+                  await logout();
+                  setIsOpen(false);
+                }}>
                   <LogOut className="h-6 w-6" />
                   <span className="font-medium">Logout</span>
                 </Button>
              ) : (
-                <Link href="/login" passHref>
+                <Link href="/login" passHref onClick={() => setIsOpen(false)}>
                   <Button variant="outline" className="w-full justify-start gap-3 p-3 h-auto text-muted-foreground">
                     <LogIn className="h-6 w-6" />
                     <span className="font-medium">Login</span>
@@ -62,36 +109,4 @@ export const NewMobileMenu = () => {
       </SheetContent>
     </Sheet>
   );
-};```
-
-### Final Step: Protect a Page (Example)
-
-Now, using your new `AuthGuard` is incredibly simple. Let's say you want to create a new, protected `/dashboard` page.
-
-1.  **Create the page:** `src/pages/dashboard.tsx`
-2.  **Wrap it with the `AuthGuard`:**
-
-```tsx
-// Example: src/pages/dashboard.tsx
-
-import { NextPage } from 'next';
-import { AuthGuard } from '@/components/auth/AuthGuard';
-import { useAuth } from '@/contexts/AuthContext';
-
-const DashboardPage: NextPage = () => {
-  const { user } = useAuth();
-
-  return (
-    // Wrap the entire page content with AuthGuard
-    <AuthGuard>
-      <div className="container mx-auto py-8">
-        <h1 className="text-4xl font-bold">Dashboard</h1>
-        <p className="mt-4 text-lg">
-          Welcome, {user?.email}! This is a protected page.
-        </p>
-      </div>
-    </AuthGuard>
-  );
 };
-
-export default DashboardPage;
