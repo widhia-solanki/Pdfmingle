@@ -9,3 +9,6 @@ pdf2image
 docx2pdf
 PyMuPDF
 webcolors
+google-cloud-firestore
+Flask-Bcrypt
+PyJWT
