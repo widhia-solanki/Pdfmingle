@@ -11,6 +11,7 @@ import SEO from '../../next-seo.config';
 import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
 import { useRouter } from 'next/router';
+import { AuthProvider } from '@/contexts/AuthContext'; // Import the new AuthProvider
 
 const flushLayoutRoutes = new Set([
   '/add-watermark',
@@ -24,23 +25,24 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <Head>
-        {/* --- THIS IS THE FIX --- */}
-        {/* The duplicate favicon links have been REMOVED from here. */}
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
-      </Head>
+      {/* --- THIS IS THE FIX --- */}
+      {/* Wrap the entire application with the AuthProvider */}
+      <AuthProvider>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
+        </Head>
 
-      {/* DefaultSeo will now handle the favicons correctly. */}
-      <DefaultSeo {...SEO} />
-      
-      <MainLayout flush={shouldUseFlushLayout}>
-        <Component {...pageProps} />
-      </MainLayout>
-      
-      <SpeedInsights />
-      <Analytics />
-      <CookieConsent />
+        <DefaultSeo {...SEO} />
+        
+        <MainLayout flush={shouldUseFlushLayout}>
+          <Component {...pageProps} />
+        </MainLayout>
+        
+        <SpeedInsights />
+        <Analytics />
+        <CookieConsent />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
