@@ -10,39 +10,41 @@ import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
 import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
-import { useRouter } from 'next/router';
-import { AuthProvider } from '@/contexts/AuthContext'; // Import the new AuthProvider
+import { AuthProvider } from '@/contexts/AuthContext';
+import { GoogleOAuthProvider } from '@react-oauth/google'; // Import Google Provider
 
-const flushLayoutRoutes = new Set([
-  '/add-watermark',
-  '/edit-pdf',
-]);
-
-export default function App({ Component, pageProps }: AppProps) {
-  const router = useRouter();
+const App = ({ Component, pageProps }: AppProps) => {
+  // The 'flush' logic can be simplified by moving it inside the pages that need it.
+  // For now, we keep your existing logic.
+  const router = useRouter(); // You'll need to import useRouter from 'next/router'
   const isHomePage = router.pathname === '/';
+  const flushLayoutRoutes = new Set(['/add-watermark', '/edit-pdf']);
   const shouldUseFlushLayout = isHomePage || flushLayoutRoutes.has(router.pathname);
 
-  return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      {/* --- THIS IS THE FIX --- */}
-      {/* Wrap the entire application with the AuthProvider */}
-      <AuthProvider>
-        <Head>
-          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
-        </Head>
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
 
-        <DefaultSeo {...SEO} />
-        
-        <MainLayout flush={shouldUseFlushLayout}>
-          <Component {...pageProps} />
-        </MainLayout>
-        
-        <SpeedInsights />
-        <Analytics />
-        <CookieConsent />
-      </AuthProvider>
-    </ThemeProvider>
+  return (
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <AuthProvider>
+          <Head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
+          </Head>
+          <DefaultSeo {...SEO} />
+          <MainLayout flush={shouldUseFlushLayout}>
+            <Component {...pageProps} />
+          </MainLayout>
+          <SpeedInsights />
+          <Analytics />
+          <CookieConsent />
+        </AuthProvider>
+      </ThemeProvider>
+    </GoogleOAuthProvider>
   );
-}
+};
+
+// You need to re-add useRouter import for the router logic to work
+import { useRouter } from 'next/router';
+
+export default App;
