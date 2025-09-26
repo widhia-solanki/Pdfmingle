@@ -12,3 +12,6 @@ webcolors
 google-cloud-firestore
 Flask-Bcrypt
 PyJWT
+google-auth-oauthlib
+google-api-python-client
+requests
