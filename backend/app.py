@@ -1,6 +1,7 @@
 # backend/app.py
 
 from flask import Flask, request, send_file, jsonify, make_response
+from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from PyPDF2 import PdfReader, PdfWriter
 import jwt
@@ -19,11 +20,14 @@ from datetime import datetime, timedelta, timezone
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 
+# --- Definitive CORS Fix ---
+CORS(app, origins=["https://pdfmingle.net", "http://localhost:3000"], supports_credentials=True)
+
+
 # --- Environment Variable Checks ---
 if not os.environ.get('JWT_SECRET_KEY'):
     raise ValueError("No JWT_SECRET_KEY set for Flask application")
-if not os.environ.get('GOOGLE_CLIENT_SECRET_JSON'):
-    raise ValueError("GOOGLE_CLIENT_SECRET_JSON environment variable not set.")
+# The check for GOOGLE_CLIENT_SECRET_JSON is now implicit in the google auth route
 
 # --- JWT Configuration ---
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
@@ -31,22 +35,6 @@ JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
 # --- Firestore Client ---
 db = firestore.Client()
 users_collection = db.collection('users')
-
-
-# --- DEFINITIVE CORS FIX: MANUAL CORS HANDLING ---
-@app.after_request
-def after_request(response):
-    origin = request.headers.get('Origin')
-    allowed_origins = ["https://pdfmingle.net", "http://localhost:3000"]
-    
-    if origin in allowed_origins:
-        response.headers.add('Access-Control-Allow-Origin', origin)
-    
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
-    
-    return response
 
 
 # --- HELPER FUNCTION TO CREATE SESSION ---
@@ -60,10 +48,8 @@ def create_session(user_doc):
 
 
 # --- GOOGLE AUTH ROUTE ---
-@app.route('/api/auth/google', methods=['POST', 'OPTIONS'])
+@app.route('/api/auth/google', methods=['POST'])
 def handle_google_auth():
-    if request.method == 'OPTIONS': return make_response('', 204)
-    
     data = request.get_json()
     auth_code = data.get('code')
     if not auth_code: return jsonify({"error": "Authorization code is missing"}), 400
@@ -71,6 +57,9 @@ def handle_google_auth():
     try:
         # Load the client secrets from the environment variable
         client_secrets_str = os.environ.get('GOOGLE_CLIENT_SECRET_JSON')
+        if not client_secrets_str:
+            raise ValueError("GOOGLE_CLIENT_SECRET_JSON environment variable not set.")
+        
         client_config = json.loads(client_secrets_str)
 
         flow = Flow.from_client_config(
@@ -105,9 +94,8 @@ def handle_google_auth():
 
 
 # --- EXISTING AUTH ROUTES ---
-@app.route('/api/signup', methods=['POST', 'OPTIONS'])
+@app.route('/api/signup', methods=['POST'])
 def handle_signup():
-    if request.method == 'OPTIONS': return make_response('', 204)
     data = request.get_json()
     if not data or not data.get('email') or not data.get('password'): return jsonify({"error": "Email and password are required"}), 400
     email = data.get('email').lower()
@@ -119,9 +107,8 @@ def handle_signup():
     users_collection.add(user_data)
     return jsonify({"message": "User created successfully"}), 201
 
-@app.route('/api/login', methods=['POST', 'OPTIONS'])
+@app.route('/api/login', methods=['POST'])
 def handle_login():
-    if request.method == 'OPTIONS': return make_response('', 204)
     data = request.get_json()
     if not data or not data.get('email') or not data.get('password'): return jsonify({"error": "Email and password are required"}), 400
     email = data.get('email').lower()
@@ -135,9 +122,8 @@ def handle_login():
         return jsonify({"error": "Invalid credentials"}), 401
     return create_session(user_doc)
 
-@app.route('/api/user', methods=['GET', 'OPTIONS'])
+@app.route('/api/user', methods=['GET'])
 def get_current_user():
-    if request.method == 'OPTIONS': return make_response('', 204)
     token = request.cookies.get('auth_token')
     if not token: return jsonify({"error": "Not authenticated"}), 401
     try:
@@ -150,18 +136,16 @@ def get_current_user():
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return jsonify({"error": "Invalid or expired token"}), 401
 
-@app.route('/api/logout', methods=['POST', 'OPTIONS'])
+@app.route('/api/logout', methods=['POST'])
 def handle_logout():
-    if request.method == 'OPTIONS': return make_response('', 204)
     response = make_response(jsonify({"message": "Logout successful"}), 200)
     response.set_cookie('auth_token', '', expires=0, httponly=True, secure=True, samesite='Lax')
     return response
 
 
 # --- EXISTING PDF TOOL ROUTES ---
-@app.route('/api/protect-pdf', methods=['POST', 'OPTIONS'])
+@app.route('/api/protect-pdf', methods=['POST'])
 def handle_protect_pdf():
-    if request.method == 'OPTIONS': return make_response('', 204)
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
@@ -181,9 +165,8 @@ def handle_protect_pdf():
         traceback.print_exc()
         return jsonify({"error": "Failed to protect the PDF."}), 500
 
-@app.route('/api/unlock-pdf', methods=['POST', 'OPTIONS'])
+@app.route('/api/unlock-pdf', methods=['POST'])
 def handle_unlock_pdf():
-    if request.method == 'OPTIONS': return make_response('', 204)
     if 'file' not in request.files: return jsonify({"error": "No file part"}), 400
     file = request.files['file']
     password = request.form.get('password')
