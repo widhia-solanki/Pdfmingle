@@ -1,9 +1,8 @@
 // src/lib/firebase.ts
 
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, Auth } from "firebase/auth";
 
-// This configuration object safely reads the keys from your .env.local file
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -13,7 +12,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
-// Initialize Firebase only once
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+// Check that all required environment variables are present
+const firebaseKeysAreValid = 
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId;
 
-export const auth = getAuth(app);
+let auth: Auth;
+
+if (firebaseKeysAreValid) {
+  // Initialize Firebase only once
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+} else {
+  console.error("Firebase config is missing or invalid. Authentication will be disabled.");
+  // Create a mock auth object to prevent the app from crashing
+  auth = {} as Auth;
+}
+
+export { auth, firebaseKeysAreValid };
