@@ -1,18 +1,14 @@
 // src/contexts/AuthContext.tsx
-
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/router';
 
-interface User {
-  email: string;
-}
-
-// --- THIS IS THE FIX ---
-// The `login` property has been added to the type definition.
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (user: User) => void; // Added this line
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -21,48 +17,43 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   const router = useRouter();
 
   useEffect(() => {
-    const verifyUserSession = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`);
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+      if (currentUser) {
+        // Redirect to home if user is logged in and on the login page
+        if (router.pathname === '/login' || router.pathname === '/signup') {
+          router.push('/');
         }
-      } catch (error) {
-        setUser(null);
-        console.error("Session verification failed:", error);
-      } finally {
-        setLoading(false);
       }
-    };
-    verifyUserSession();
-  }, []);
-  
-  // This function is for the standard email/password flow
-  const login = (userData: User) => {
-    setUser(userData);
-  };
+    });
+    return () => unsubscribe();
+  }, [router]);
 
-  const logout = async () => {
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    provider.addScope('https://www.googleapis.com/auth/drive.file');
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, { method: 'POST' });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setUser(null);
-      window.location.href = '/login';
+      await signInWithPopup(auth, provider);
+      toast({ title: 'Success!', description: 'You have been signed in.' });
+    } catch (error: any) {
+      console.error("Error signing in", error);
+      toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
     }
   };
 
-  const value = { user, loading, login, logout };
+  const logout = async ().
+    await signOut(auth);
+    toast({ title: 'Signed Out' });
+    router.push('/login'); // Go to login after logout
+  };
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
@@ -70,8 +61,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider');
   return context;
 };
