@@ -10,25 +10,31 @@ import { DefaultSeo } from 'next-seo';
 import SEO from '../../next-seo.config';
 import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { useRouter } from 'next/router';
-import { AuthProvider } from '@/contexts/AuthContext'; // Import the new AuthProvider
+import { firebaseKeysAreValid } from '@/lib/firebase'; // Import our new check
 
 const App = ({ Component, pageProps }: AppProps) => {
   const router = useRouter();
   const flushLayoutRoutes = new Set(['/add-watermark', '/edit-pdf']);
   const isHomePage = router.pathname === '/';
   const shouldUseFlushLayout = isHomePage || flushLayoutRoutes.has(router.pathname);
-
-  // This should already be in your _app.tsx from the previous step
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-  if (!googleClientId) {
-    return <div>Error: Google Client ID is not configured.</div>;
+  
+  // --- THIS IS THE FIX ---
+  // If the keys are invalid, we show an error and do not render the AuthProvider.
+  // This prevents the "API key not valid" error from ever happening.
+  if (!firebaseKeysAreValid) {
+    return (
+      <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#FFF0F0', color: '#D8000C' }}>
+        <h1>Configuration Error</h1>
+        <p>Firebase environment variables are not correctly configured. Please check your .env.local file and Vercel project settings.</p>
+      </div>
+    );
   }
-
+  
   return (
-    // The Google provider is no longer needed here with Firebase
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <AuthProvider> {/* THIS IS THE NEW WRAPPER */}
+      <AuthProvider>
         <Head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
           <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
