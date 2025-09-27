@@ -18,11 +18,12 @@ import { cn } from '@/lib/utils';
 import { Info, Mail, LogIn, LogOut, User, FileQuestion } from 'lucide-react';
 
 export const ToolsMenu = () => {
-  const { user, logout } = useAuth();
+  const { user, loading, logout } = useAuth();
 
   return (
     <NavigationMenu>
-      <NavigationMenuList>
+      <NavigationMenuList className="items-center">
+        {/* All PDF Tools Dropdown */}
         <NavigationMenuItem>
           <NavigationMenuTrigger>All PDF Tools</NavigationMenuTrigger>
           <NavigationMenuContent>
@@ -51,6 +52,7 @@ export const ToolsMenu = () => {
             </NavigationMenuLink>
           </Link>
         </NavigationMenuItem>
+        
         <NavigationMenuItem>
           <Link href="/about" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -59,37 +61,37 @@ export const ToolsMenu = () => {
           </Link>
         </NavigationMenuItem>
         
-        {user ? (
-          <>
-            <NavigationMenuItem>
-              <span className="flex items-center text-sm font-medium text-muted-foreground ml-4">
+        {/* Dynamic Auth Section */}
+        <NavigationMenuItem className="ml-4">
+          {loading ? (
+            // Show a skeleton loader while checking auth status
+            <div className="h-10 w-24 bg-muted animate-pulse rounded-md" />
+          ) : user ? (
+            // If user is logged in, show their email and a Logout button
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-muted-foreground hidden lg:flex items-center">
                 <User className="mr-2 h-4 w-4"/> {user.email}
               </span>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
-               <Button variant="outline" className="ml-4" onClick={logout}>
-                 <LogOut className="mr-2 h-4 w-4" />
-                 Logout
-               </Button>
-            </NavigationMenuItem>
-          </>
-        ) : (
-          <NavigationMenuItem>
-            <Link href="/login" passHref>
-               <Button variant="outline" className="ml-4">
-                 <LogIn className="mr-2 h-4 w-4" />
-                 Login
-               </Button>
-            </Link>
-          </NavigationMenuItem>
-        )}
+              <Button variant="outline" onClick={logout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            </div>
+          ) : (
+            // If user is logged out, show the Login button
+            <Button asChild>
+              <Link href="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Link>
+            </Button>
+          )}
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );
 };
 
-// --- THIS IS THE FIX ---
-// The correct JSX has been restored inside this component.
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
