@@ -23,11 +23,11 @@ bcrypt = Bcrypt(app)
 # --- Definitive CORS Fix ---
 CORS(app, origins=["https://pdfmingle.net", "http://localhost:3000"], supports_credentials=True)
 
-
 # --- Environment Variable Checks ---
 if not os.environ.get('JWT_SECRET_KEY'):
     raise ValueError("No JWT_SECRET_KEY set for Flask application")
-# The check for GOOGLE_CLIENT_SECRET_JSON is now implicit in the google auth route
+if not os.environ.get('GOOGLE_CLIENT_SECRET_JSON'):
+    raise ValueError("GOOGLE_CLIENT_SECRET_JSON environment variable not set.")
 
 # --- JWT Configuration ---
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
@@ -57,9 +57,6 @@ def handle_google_auth():
     try:
         # Load the client secrets from the environment variable
         client_secrets_str = os.environ.get('GOOGLE_CLIENT_SECRET_JSON')
-        if not client_secrets_str:
-            raise ValueError("GOOGLE_CLIENT_SECRET_JSON environment variable not set.")
-        
         client_config = json.loads(client_secrets_str)
 
         flow = Flow.from_client_config(
