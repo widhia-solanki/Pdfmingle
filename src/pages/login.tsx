@@ -9,12 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LogIn, Loader2 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext'; // Import useAuth to update context
-import GoogleLoginButton from '@/components/auth/GoogleLoginButton';
+import { useAuth } from '@/contexts/AuthContext';
+import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton'; // Import the new button
 import { Separator } from '@/components/ui/separator';
 
 const LoginPage: NextPage = () => {
-  const { login } = useAuth(); // Get login function from context
+  const { login } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -25,28 +25,19 @@ const LoginPage: NextPage = () => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
-
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.error || 'Login failed. Please try again.');
       }
-      
-      // Update the auth context with the user data from the API
       login(data.user);
-
       toast({ title: 'Success!', description: 'You have been logged in.' });
-      
-      // Redirect to homepage after login
       window.location.href = '/';
-
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unknown error occurred.';
       setError(message);
@@ -70,42 +61,23 @@ const LoginPage: NextPage = () => {
             <GoogleLoginButton />
             <div className="relative flex items-center">
               <Separator className="flex-grow" />
-              <span className="mx-2 flex-shrink-0 text-xs uppercase text-muted-foreground">Or continue with</span>
+              <span className="mx-2 flex-shrink-0 text-xs uppercase text-muted-foreground">Or</span>
               <Separator className="flex-grow" />
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                required
-                disabled={isLoading}
-              />
+              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isLoading}
-              />
+              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} />
             </div>
             {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
             <Button type="submit" className="w-full h-11" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <LogIn className="mr-2 h-4 w-4" />
-              )}
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
               {isLoading ? 'Signing In...' : 'Sign In with Email'}
             </Button>
           </form>
