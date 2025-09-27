@@ -37,6 +37,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/drive.file');
+
+    // --- THIS IS THE FIX ---
+    // This tells Google to always show the account selection screen.
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+
     try {
       await signInWithPopup(auth, provider);
       toast({ title: 'Success!', description: 'You have been signed in.' });
@@ -46,13 +53,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // --- THIS IS THE FIX ---
-  // The logout function now has the correct arrow function syntax.
   const logout = async () => {
     try {
       await signOut(auth);
       toast({ title: 'Signed Out' });
-      router.push('/login'); // Go to login after logout
+      router.push('/login');
     } catch (error: any) {
       console.error("Error signing out", error);
       toast({ title: 'Sign Out Failed', description: error.message, variant: 'destructive' });
