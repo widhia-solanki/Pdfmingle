@@ -1,16 +1,14 @@
 // src/contexts/AuthContext.tsx
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useRouter } from 'next/router';
-
-interface User {
-  email: string;
-}
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
+import { useToast } from '@/hooks/use-toast';
 
 interface AuthContextType {
   user: User | null;
-  isLoading: boolean;
-  login: (user: User) => void;
+  loading: boolean;
+  signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -18,47 +16,50 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const verifyUser = async () => {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`);
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        setUser(null);
-        console.error("Session verification failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    verifyUser();
+    // This listener is the core of Firebase Auth. It automatically
+    // updates the user state whenever the auth status changes.
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoading(false);
+    });
+
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
-  const login = (userData: User) => {
-    setUser(userData);
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    // This scope is what asks for permission to access Google Drive.
+    // It's the best practice for privacy as it only requests access to files
+    // created by this app or opened by the user with this app.
+    provider.addScope('https://www.googleapis.com/auth/drive.file');
+    try {
+      await signInWithPopup(auth, provider);
+      toast({ title: 'Success!', description: 'You have been signed in.' });
+    } catch (error: any) {
+      console.error("Error signing in with Google", error);
+      toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
+    }
   };
 
   const logout = async () => {
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/logout`, { method: 'POST' });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setUser(null);
-      // Use window.location to force a full page reload and clear all state
-      window.location.href = '/login';
+      await signOut(auth);
+      toast({ title: 'Signed Out', description: 'You have been successfully signed out.' });
+    } catch (error: any) {
+      console.error("Error signing out", error);
+      toast({ title: 'Sign Out Failed', description: error.message, variant: 'destructive' });
     }
   };
 
+  const value = { user, loading, signInWithGoogle, logout };
+
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
