@@ -14,7 +14,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const router = useRouter();
 
   // If the session is still being verified, show a loading spinner
-  if (isLoading) {
+if (Loading) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
