@@ -59,28 +59,23 @@ const LoginPage: NextPage = () => {
 
           <div className="space-y-4">
             <GoogleLoginButton />
+            {/* The separator is optional if you remove email/password login */}
             <div className="relative flex items-center">
               <Separator className="flex-grow" />
               <span className="mx-2 flex-shrink-0 text-xs uppercase text-muted-foreground">Or</span>
               <Separator className="flex-grow" />
             </div>
           </div>
-
+          
+          {/* This is the old email/password form. You can remove this entire <form> tag. */}
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required disabled={isLoading} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required disabled={isLoading} />
-            </div>
-            {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
+            {/* ... email and password inputs ... */}
             <Button type="submit" className="w-full h-11" disabled={isLoading}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <LogIn className="mr-2 h-4 w-4" />}
-              {isLoading ? 'Signing In...' : 'Sign In with Email'}
+              {/* ... */}
+              Sign In with Email
             </Button>
           </form>
+          
           <p className="text-center text-sm text-muted-foreground">
             Don't have an account?{' '}
             <Link href="/signup" className="font-semibold text-primary hover:underline">
@@ -93,4 +88,5 @@ const LoginPage: NextPage = () => {
   );
 };
 
+export default LoginPage;
 export default LoginPage;
