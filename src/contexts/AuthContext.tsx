@@ -1,4 +1,5 @@
 // src/contexts/AuthContext.tsx
+
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -25,7 +26,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(currentUser);
       setLoading(false);
       if (currentUser) {
-        // Redirect to home if user is logged in and on the login page
         if (router.pathname === '/login' || router.pathname === '/signup') {
           router.push('/');
         }
@@ -41,15 +41,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await signInWithPopup(auth, provider);
       toast({ title: 'Success!', description: 'You have been signed in.' });
     } catch (error: any) {
-      console.error("Error signing in", error);
+      console.error("Error signing in with Google", error);
       toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
     }
   };
 
-  const logout = async ().
-    await signOut(auth);
-    toast({ title: 'Signed Out' });
-    router.push('/login'); // Go to login after logout
+  // --- THIS IS THE FIX ---
+  // The logout function now has the correct arrow function syntax.
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      toast({ title: 'Signed Out' });
+      router.push('/login'); // Go to login after logout
+    } catch (error: any) {
+      console.error("Error signing out", error);
+      toast({ title: 'Sign Out Failed', description: error.message, variant: 'destructive' });
+    }
   };
 
   return (
