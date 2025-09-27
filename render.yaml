@@ -4,17 +4,20 @@ services:
   - type: web
     name: pdfmingle-backend
     env: python
-    region: ohio # You can change this to your preferred region
+    region: ohio 
     plan: free
     rootDir: ./backend
     buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    # --- THIS IS THE FIX ---
+    # The startCommand now uses the gevent worker class, which correctly
+    # handles the preflight OPTIONS requests that were causing the CORS error.
+    startCommand: "gunicorn --worker-class gevent app:app"
     healthCheckPath: /
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.6 # Specify a stable Python version
+        value: 3.11.6
+      # This PATH is likely unnecessary if the build commands install to system paths, but we'll keep it for safety.
       - key: PATH
-        value: /usr/bin:/opt/render/project/src/.local/bin:/opt/render/project/src/backend/poppler/bin:$PATH # Keep this if poppler is needed, otherwise remove the poppler part
+        value: /usr/bin:/opt/render/project/src/.local/bin:/opt/render/project/src/backend/poppler/bin:$PATH
     build:
-      # --- THIS IS THE FIX: Added more essential system packages ---
-      - command: "apt-get update && apt-get install -y poppler-utils ghostscript libglib2.0-0 libsm6 libxext6 libxrender1 mupdf-tools"
+      - command: "apt-get update && apt-get install -y poppler-utils ghostscript libglib2.0-0 libsm6 libxext6 libxrender1 mupdf-tools qpdf"
