@@ -7,11 +7,13 @@ interface User {
   email: string;
 }
 
+// --- THIS IS THE FIX ---
+// The `login` property has been added to the type definition.
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  login: (user: User) => void; // Added this line
   logout: () => Promise<void>;
-  // The login functions are now handled by the Google Button and Login Page
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,11 +23,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // This effect runs on app load to check if a session cookie exists
   useEffect(() => {
     const verifyUserSession = async () => {
       try {
-        // We ask our backend if we have a valid session
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user`);
         if (response.ok) {
           const data = await response.json();
@@ -42,6 +42,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
     verifyUserSession();
   }, []);
+  
+  // This function is for the standard email/password flow
+  const login = (userData: User) => {
+    setUser(userData);
+  };
 
   const logout = async () => {
     try {
@@ -50,11 +55,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Logout failed:", error);
     } finally {
       setUser(null);
-      window.location.href = '/login'; // Force reload and redirect
+      window.location.href = '/login';
     }
   };
 
-  const value = { user, loading, logout };
+  const value = { user, loading, login, logout };
 
   return (
     <AuthContext.Provider value={value}>
