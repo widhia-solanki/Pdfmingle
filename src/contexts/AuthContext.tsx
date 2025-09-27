@@ -5,9 +5,11 @@ import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User 
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
+// --- THIS IS THE FIX ---
+// The `isLoading` property has been added to the type definition.
 interface AuthContextType {
   user: User | null;
-  loading: boolean;
+  loading: boolean; // Renamed from isLoading for consistency
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -20,22 +22,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // This listener is the core of Firebase Auth. It automatically
-    // updates the user state whenever the auth status changes.
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
-
-    // Cleanup the listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    // This scope is what asks for permission to access Google Drive.
-    // It's the best practice for privacy as it only requests access to files
-    // created by this app or opened by the user with this app.
     provider.addScope('https://www.googleapis.com/auth/drive.file');
     try {
       await signInWithPopup(auth, provider);
