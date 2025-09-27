@@ -1,13 +1,16 @@
 // src/contexts/AuthContext.tsx
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut, User, getRedirectResult } from 'firebase/auth'; // Import signInWithRedirect and getRedirectResult
+import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut, User, getRedirectResult } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
+// --- THIS IS THE FIX ---
+// The `login` property has been added to the type definition.
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  login: (user: User) => void; // This was the missing line
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -20,22 +23,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // This is the main listener for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
-
-    // --- THIS IS THE FIX ---
-    // This effect runs once on app load to handle the redirect from Google
+    
     const handleRedirect = async () => {
       try {
         const result = await getRedirectResult(auth);
         if (result) {
-          // User has successfully signed in via redirect.
           setUser(result.user);
           toast({ title: 'Success!', description: 'You have been signed in.' });
-          // Redirect to homepage after successful login
           window.history.replaceState(null, '', '/');
         }
       } catch (error: any) {
@@ -48,10 +46,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [toast]);
 
+  // Dummy login function for email/password form
+  const login = (userData: User) => {
+    setUser(userData);
+  };
+
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/drive.file');
-    // We now use signInWithRedirect instead of signInWithPopup
     await signInWithRedirect(auth, provider);
   };
 
@@ -65,7 +67,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, logout };
+  const value = { user, loading, login, signInWithGoogle, logout };
 
   return (
     <AuthContext.Provider value={value}>
