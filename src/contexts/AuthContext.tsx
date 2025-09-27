@@ -6,10 +6,11 @@ import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
 // --- THIS IS THE FIX ---
-// The `isLoading` property has been added to the type definition.
+// The `login` function, which is used on the email/password form, has been added to the type.
 interface AuthContextType {
   user: User | null;
-  loading: boolean; // Renamed from isLoading for consistency
+  loading: boolean;
+  login: (user: User) => void; // Added this line
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -29,11 +30,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
+  // This function is for the standard email/password flow
+  const login = (userData: User) => {
+    setUser(userData);
+    // Note: This only sets the state. The actual login API call happens in LoginPage.
+  };
+
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/drive.file');
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
+      setUser(result.user); // Manually set user after successful sign-in
       toast({ title: 'Success!', description: 'You have been signed in.' });
     } catch (error: any) {
       console.error("Error signing in with Google", error);
@@ -51,7 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, loading, signInWithGoogle, logout };
+  const value = { user, loading, login, signInWithGoogle, logout };
 
   return (
     <AuthContext.Provider value={value}>
