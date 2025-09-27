@@ -1,7 +1,7 @@
 // src/contexts/AuthContext.tsx
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut, User, getRedirectResult } from 'firebase/auth'; // Import signInWithRedirect and getRedirectResult
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/router';
@@ -22,52 +22,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
 
   useEffect(() => {
+    // This is the main listener for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
-      if (currentUser) {
-        if (router.pathname === '/login' || router.pathname === '/signup') {
+    });
+
+    // --- THIS IS THE FIX ---
+    // This effect runs on app load to handle the redirect back from Google
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          // User has successfully signed in via redirect.
+          toast({ title: 'Success!', description: 'You have been signed in.' });
           router.push('/');
         }
+      } catch (error: any) {
+        console.error("Error handling redirect result", error);
+        toast({ title: 'Sign In Failed', description: 'Could not complete sign-in. Please try again.', variant: 'destructive' });
       }
-    });
+    };
+    handleRedirect();
+    
     return () => unsubscribe();
-  }, [router]);
+  }, [router, toast]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/drive.file');
-
-    // --- THIS IS THE FIX ---
-    // This tells Google to always show the account selection screen.
-    provider.setCustomParameters({
-      prompt: 'select_account'
-    });
-
-    try {
-      await signInWithPopup(auth, provider);
-      toast({ title: 'Success!', description: 'You have been signed in.' });
-    } catch (error: any) {
-      console.error("Error signing in with Google", error);
-      toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
-    }
+    provider.setCustomParameters({ prompt: 'select_account' });
+    
+    // We now use signInWithRedirect
+    await signInWithRedirect(auth, provider);
   };
 
   const logout = async () => {
-    try {
-      await signOut(auth);
-      toast({ title: 'Signed Out' });
-      router.push('/login');
-    } catch (error: any) {
-      console.error("Error signing out", error);
-      toast({ title: 'Sign Out Failed', description: error.message, variant: 'destructive' });
-    }
+    await signOut(auth);
+    toast({ title: 'Signed Out' });
+    router.push('/login');
   };
 
   return (
     <AuthContext.Provider value={{ user, loading, signInWithGoogle, logout }}>
       {children}
-    </AuthContext.Provider>
+    </Auth-Provider>
   );
 };
 
