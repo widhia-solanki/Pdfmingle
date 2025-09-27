@@ -1,16 +1,13 @@
 // src/contexts/AuthContext.tsx
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, User } from 'firebase/auth';
+import { onAuthStateChanged, GoogleAuthProvider, signInWithRedirect, signOut, User, getRedirectResult } from 'firebase/auth'; // Import signInWithRedirect and getRedirectResult
 import { auth } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 
-// --- THIS IS THE FIX ---
-// The `login` function, which is used on the email/password form, has been added to the type.
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (user: User) => void; // Added this line
   signInWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -23,30 +20,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // This is the main listener for auth state changes
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
     });
-    return () => unsubscribe();
-  }, []);
 
-  // This function is for the standard email/password flow
-  const login = (userData: User) => {
-    setUser(userData);
-    // Note: This only sets the state. The actual login API call happens in LoginPage.
-  };
+    // --- THIS IS THE FIX ---
+    // This effect runs once on app load to handle the redirect from Google
+    const handleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          // User has successfully signed in via redirect.
+          setUser(result.user);
+          toast({ title: 'Success!', description: 'You have been signed in.' });
+          // Redirect to homepage after successful login
+          window.history.replaceState(null, '', '/');
+        }
+      } catch (error: any) {
+        console.error("Error handling redirect result", error);
+        toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
+      }
+    };
+    handleRedirect();
+    
+    return () => unsubscribe();
+  }, [toast]);
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/drive.file');
-    try {
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user); // Manually set user after successful sign-in
-      toast({ title: 'Success!', description: 'You have been signed in.' });
-    } catch (error: any) {
-      console.error("Error signing in with Google", error);
-      toast({ title: 'Sign In Failed', description: error.message, variant: 'destructive' });
-    }
+    // We now use signInWithRedirect instead of signInWithPopup
+    await signInWithRedirect(auth, provider);
   };
 
   const logout = async () => {
@@ -59,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const value = { user, loading, login, signInWithGoogle, logout };
+  const value = { user, loading, signInWithGoogle, logout };
 
   return (
     <AuthContext.Provider value={value}>
