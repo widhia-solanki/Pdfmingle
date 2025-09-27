@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,15 +12,22 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Button } from '@/components/ui/button';
 import { toolArray, iconMap } from '@/constants/tools';
-import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
-import { Info, Mail, LogIn, LogOut, User, FileQuestion } from 'lucide-react';
+import { Info, Mail, FileQuestion } from 'lucide-react';
+
+// Dynamically import the AuthNavMenu and disable server-side rendering for it.
+// This is the key to fixing the bug where the login button disappears.
+const AuthNavMenuWithNoSSR = dynamic(
+  () => import('./AuthNavMenu').then((mod) => mod.AuthNavMenu),
+  { 
+    ssr: false,
+    // Provide a placeholder to prevent layout shift while the component loads on the client
+    loading: () => <div className="ml-4 h-10 w-24 bg-muted animate-pulse rounded-md" /> 
+  }
+);
 
 export const ToolsMenu = () => {
-  const { user, loading, logout } = useAuth();
-
   return (
     <NavigationMenu>
       <NavigationMenuList className="items-center">
@@ -45,6 +53,7 @@ export const ToolsMenu = () => {
           </NavigationMenuContent>
         </NavigationMenuItem>
 
+        {/* Contact Link */}
         <NavigationMenuItem>
           <Link href="/contact" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -53,6 +62,7 @@ export const ToolsMenu = () => {
           </Link>
         </NavigationMenuItem>
         
+        {/* About Us Link */}
         <NavigationMenuItem>
           <Link href="/about" legacyBehavior passHref>
             <NavigationMenuLink className={navigationMenuTriggerStyle()}>
@@ -61,37 +71,15 @@ export const ToolsMenu = () => {
           </Link>
         </NavigationMenuItem>
         
-        {/* Dynamic Auth Section */}
-        <NavigationMenuItem className="ml-4">
-          {loading ? (
-            // Show a skeleton loader while checking auth status
-            <div className="h-10 w-24 bg-muted animate-pulse rounded-md" />
-          ) : user ? (
-            // If user is logged in, show their email and a Logout button
-            <div className="flex items-center gap-4">
-              <span className="text-sm font-medium text-muted-foreground hidden lg:flex items-center">
-                <User className="mr-2 h-4 w-4"/> {user.email}
-              </span>
-              <Button variant="outline" onClick={logout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </div>
-          ) : (
-            // If user is logged out, show the Login button
-            <Button asChild>
-              <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Link>
-            </Button>
-          )}
-        </NavigationMenuItem>
+        {/* Auth Component (Login/Logout) */}
+        <AuthNavMenuWithNoSSR />
+
       </NavigationMenuList>
     </NavigationMenu>
   );
 };
 
+// Helper component for styling list items inside the dropdown
 const ListItem = React.forwardRef<
   React.ElementRef<"a">,
   React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }
