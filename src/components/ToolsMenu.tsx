@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,17 +12,20 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
-import { Button } from '@/components/ui/button';
 import { toolArray, iconMap } from '@/constants/tools';
-import { useSession, signIn } from 'next-auth/react';
 import { cn } from '@/lib/utils';
-import { Info, Mail, LogIn, FileQuestion } from 'lucide-react';
-import { UserNav } from './UserNav'; // Import the new UserNav component
+import { Info, Mail, FileQuestion } from 'lucide-react';
+
+// Dynamically import the UserNav to prevent SSR issues with the useSession hook
+const UserNavWithNoSSR = dynamic(
+  () => import('./UserNav').then((mod) => mod.UserNav),
+  { 
+    ssr: false,
+    loading: () => <div className="ml-4 h-10 w-10 bg-muted animate-pulse rounded-full" /> 
+  }
+);
 
 export const ToolsMenu = () => {
-  const { data: session, status } = useSession();
-  const loading = status === 'loading';
-
   return (
     <NavigationMenu>
       <NavigationMenuList className="items-center">
@@ -36,7 +40,7 @@ export const ToolsMenu = () => {
                     key={tool.label}
                     title={tool.label}
                     href={`/${tool.value}`}
-                    icon={<Icon className="h-5 w-5 mr-3" style={{ color: tool.color }} />}
+                    icon={<Icon className="h-5 w-5" style={{ color: tool.color }} />}
                   >
                     {tool.description.split('.')[0]}.
                   </ListItem>
@@ -47,40 +51,54 @@ export const ToolsMenu = () => {
         </NavigationMenuItem>
 
         <NavigationMenuItem>
-          <Link href="/contact" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}><Mail className="mr-2 h-4 w-4" /> Contact</NavigationMenuLink></Link>
+          <Link href="/contact" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <Mail className="mr-2 h-4 w-4" /> Contact
+            </NavigationMenuLink>
+          </Link>
         </NavigationMenuItem>
         
         <NavigationMenuItem>
-          <Link href="/about" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}><Info className="mr-2 h-4 w-4" /> About Us</NavigationMenuLink></Link>
+          <Link href="/about" legacyBehavior passHref>
+            <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+              <Info className="mr-2 h-4 w-4" /> About Us
+            </NavigationMenuLink>
+          </Link>
         </NavigationMenuItem>
         
-        <NavigationMenuItem className="ml-4">
-          {loading ? (
-            <div className="h-10 w-10 bg-muted animate-pulse rounded-full" />
-          ) : session?.user ? (
-            <UserNav />
-          ) : (
-            <Button asChild>
-              <Link href="/api/auth/signin" onClick={(e) => { e.preventDefault(); signIn('google'); }}>
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Link>
-            </Button>
-          )}
-        </NavigationMenuItem>
+        <UserNavWithNoSSR />
+
       </NavigationMenuList>
     </NavigationMenu>
   );
 };
 
-const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }>(({ className, title, children, icon, ...props }, ref) => (
-  <li>
-    <NavigationMenuLink asChild>
-      <a ref={ref} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-        <div className="flex items-center text-sm font-medium leading-none">{icon}{title}</div>
-        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground pl-8">{children}</p>
-      </a>
-    </NavigationMenuLink>
-  </li>
-));
+// --- THIS IS THE FIX ---
+// The ListItem component is now corrected to properly render the icon and text.
+const ListItem = React.forwardRef<
+  React.ElementRef<"a">,
+  React.ComponentPropsWithoutRef<"a"> & { icon: React.ReactNode }
+>(({ className, title, children, icon, ...props }, ref) => {
+  return (
+    <li>
+      <NavigationMenuLink asChild>
+        <a
+          ref={ref}
+          className={cn(
+            "flex items-start p-3 space-x-4 rounded-md no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            className
+          )}
+          {...props}
+        >
+          {/* Icon is now rendered in its own div for proper alignment */}
+          <div className="flex-shrink-0 mt-1">{icon}</div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium leading-none text-foreground">{title}</p>
+            <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">{children}</p>
+          </div>
+        </a>
+      </NavigationMenuLink>
+    </li>
+  );
+});
 ListItem.displayName = "ListItem";
