@@ -3,34 +3,32 @@
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { ProfileCard } from '@/pages/account/ProfileCard';
-import { SettingsCard } from '@/pages/account/SettingsCard';
-import { DeleteAccountCard } from '@/pages/account/DeleteAccountCard';
+import { ProfileCard } from '@/components/account/ProfileCard';
+import { SettingsCard } from '@/components/account/SettingsCard';
+import { DeleteAccountCard } from '@/components/account/DeleteAccountCard';
+import { Separator } from '@/components/ui/separator';
 
 const AccountPage: NextPage = () => {
   return (
+    // AuthGuard ensures only logged-in users can see this page.
     <AuthGuard>
       <NextSeo title="My Account" noindex={true} />
-      <div className="w-full bg-secondary py-12 sm:py-16">
-        <div className="container mx-auto px-4">
-          <header className="mb-12 text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">
-              Account & Settings
-            </h1>
-            <p className="mt-2 text-lg text-muted-foreground">
-              Manage your profile, preferences, and account settings.
-            </p>
-          </header>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1">
-              <ProfileCard />
-            </div>
-            <div className="lg:col-span-2 space-y-8">
-              <SettingsCard />
-              <DeleteAccountCard />
-            </div>
-          </div>
+      <div className="container mx-auto max-w-4xl py-12">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground">
+            My Account
+          </h1>
+          <p className="mt-2 text-lg text-muted-foreground">
+            Manage your account settings and preferences.
+          </p>
+        </header>
+        
+        <div className="space-y-8">
+          <ProfileCard />
+          <Separator />
+          <SettingsCard />
+          <Separator />
+          <DeleteAccountCard />
         </div>
       </div>
     </AuthGuard>
