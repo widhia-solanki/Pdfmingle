@@ -13,12 +13,14 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from '@/components/ui/button';
 import { toolArray, iconMap } from '@/constants/tools';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession, signIn, signOut } from 'next-auth/react'; // Import from next-auth
 import { cn } from '@/lib/utils';
 import { Info, Mail, LogIn, LogOut, User, FileQuestion } from 'lucide-react';
 
 export const ToolsMenu = () => {
-  const { user, loading, logout } = useAuth();
+  const { data: session, status } = useSession(); // Use the correct hook
+  const loading = status === 'loading';
+  const user = session?.user;
 
   return (
     <NavigationMenu>
@@ -38,14 +40,8 @@ export const ToolsMenu = () => {
             </ul>
           </NavigationMenuContent>
         </NavigationMenuItem>
-
-        <NavigationMenuItem>
-          <Link href="/contact" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}><Mail className="mr-2 h-4 w-4" /> Contact</NavigationMenuLink></Link>
-        </NavigationMenuItem>
-        
-        <NavigationMenuItem>
-          <Link href="/about" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}><Info className="mr-2 h-4 w-4" /> About Us</NavigationMenuLink></Link>
-        </NavigationMenuItem>
+        <NavigationMenuItem><Link href="/contact" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}><Mail className="mr-2 h-4 w-4" /> Contact</NavigationMenuLink></Link></NavigationMenuItem>
+        <NavigationMenuItem><Link href="/about" legacyBehavior passHref><NavigationMenuLink className={navigationMenuTriggerStyle()}><Info className="mr-2 h-4 w-4" /> About Us</NavigationMenuLink></Link></NavigationMenuItem>
         
         <NavigationMenuItem className="ml-4">
           {loading ? (
@@ -53,10 +49,10 @@ export const ToolsMenu = () => {
           ) : user ? (
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium text-muted-foreground hidden lg:flex items-center"><User className="mr-2 h-4 w-4"/> {user.email}</span>
-              <Button variant="outline" onClick={logout}><LogOut className="mr-2 h-4 w-4" />Logout</Button>
+              <Button variant="outline" onClick={() => signOut()}><LogOut className="mr-2 h-4 w-4" />Logout</Button>
             </div>
           ) : (
-            <Button asChild><Link href="/login"><LogIn className="mr-2 h-4 w-4" />Login</Link></Button>
+            <Button asChild><Link href="/api/auth/signin/google" onClick={(e) => { e.preventDefault(); signIn('google'); }}><LogIn className="mr-2 h-4 w-4" />Login</Link></Button>
           )}
         </NavigationMenuItem>
       </NavigationMenuList>
@@ -64,16 +60,14 @@ export const ToolsMenu = () => {
   );
 };
 
-const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }>(({ className, title, children, icon, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a ref={ref} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)} {...props}>
-          <div className="flex items-center text-sm font-medium leading-none">{icon}{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground pl-8">{children}</p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-});
+const ListItem = React.forwardRef<React.ElementRef<"a">, React.ComponentPropsWithoutRef<"a"> & { icon?: React.ReactNode }>(({ className, title, children, icon, ...props }, ref) => (
+  <li>
+    <NavigationMenuLink asChild>
+      <a ref={ref} className={cn("block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground", className)} {...props}>
+        <div className="flex items-center text-sm font-medium leading-none">{icon}{title}</div>
+        <p className="line-clamp-2 text-sm leading-snug text-muted-foreground pl-8">{children}</p>
+      </a>
+    </NavigationMenuLink>
+  </li>
+));
 ListItem.displayName = "ListItem";
