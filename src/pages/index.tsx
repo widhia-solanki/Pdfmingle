@@ -21,20 +21,10 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
         <p className="mt-6 max-w-3xl mx-auto text-lg text-gray-200">
           Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
         </p>
-        
         <div className="flex flex-wrap items-center justify-center gap-3 mt-10">
-          <Button
-            onClick={() => setActiveCategory('All')}
-            className={cn( "rounded-full px-6 py-3 text-base font-semibold transition-colors", activeCategory === 'All' ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm' )}
-          >
-            All
-          </Button>
+          <Button onClick={() => setActiveCategory('All')} className={cn( "rounded-full px-6 py-3 text-base font-semibold transition-colors", activeCategory === 'All' ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm' )}>All</Button>
           {categories.map((category) => (
-            <Button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={cn( "rounded-full px-6 py-3 text-base font-semibold transition-colors", activeCategory === category ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm' )}
-            >
+            <Button key={category} onClick={() => setActiveCategory(category)} className={cn( "rounded-full px-6 py-3 text-base font-semibold transition-colors", activeCategory === category ? 'bg-brand-blue text-white hover:bg-brand-blue-dark' : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm' )}>
               {category}
             </Button>
           ))}
@@ -45,10 +35,7 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
 
 const DesktopHero = () => {
     return (
-        // --- THIS IS THE FIX ---
-        // The hardcoded pt-20 md:pt-28 has been removed from this section.
-        // The padding is now correctly controlled ONLY by the MainLayout component.
-        <section className="w-full bg-background pt-12 md:pt-20">
+        <section className="w-full bg-background py-16 md:py-24">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
