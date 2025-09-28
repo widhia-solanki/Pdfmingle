@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Menu, X, FileQuestion, Info, LogIn, LogOut, Mail } from "lucide-react";
+import { Menu, X, FileQuestion, Info, LogIn, Mail } from "lucide-react";
 import { toolArray, iconMap } from "@/constants/tools";
 import Link from "next/link";
-import { useRouter } from 'next/router'; // --- THIS IS THE FIX ---
+import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { useSession, signIn } from 'next-auth/react';
+import { UserNav } from './UserNav'; // Import the UserNav component
 
 const PDFMingleLogo = () => (
     <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground no-underline">
@@ -25,23 +25,6 @@ export const NewMobileMenu = () => {
     const router = useRouter();
     const { data: session, status } = useSession();
     const loading = status === 'loading';
-    const user = session?.user;
-
-    const getInitials = (name: string | null | undefined) => {
-        if (!name) return 'U';
-        return name.split(' ').map(n => n[0]).join('').toUpperCase();
-    };
-
-    const handleLogoutClick = () => {
-        setIsOpen(false);
-        signOut();
-    };
-
-    const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        signIn('google');
-        setIsOpen(false);
-    };
 
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -49,23 +32,11 @@ export const NewMobileMenu = () => {
             <SheetContent side="left" className="p-0 bg-background/80 backdrop-blur-lg border-r border-border flex flex-col">
                 <div className="flex items-center justify-between p-4 border-b border-border">
                     <PDFMingleLogo />
+                    {session?.user && <UserNav />} 
                     <SheetClose asChild><Button variant="ghost" size="icon" className="rounded-full text-foreground"><X className="h-6 w-6" /></Button></SheetClose>
                 </div>
 
-                <nav className="flex-grow overflow-y-auto p-4 space-y-4">
-                    {user && (
-                        <div className='flex items-center gap-3 px-3 pb-2'>
-                            <Avatar>
-                                {user.image && <AvatarImage src={user.image} alt={user.name || 'User Avatar'} />}
-                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="text-sm font-semibold text-foreground truncate">{user.name || 'User'}</p>
-                                <p className="text-xs text-muted-foreground truncate">{user.email}</p>
-                            </div>
-                        </div>
-                    )}
-
+                <nav className="flex-grow overflow-y-auto p-4 space-y-2">
                     <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value="all-tools" className="border-b-0">
                             <AccordionTrigger className="text-lg font-semibold text-foreground hover:no-underline p-3 -ml-3">All PDF Tools</AccordionTrigger>
@@ -80,11 +51,9 @@ export const NewMobileMenu = () => {
                             </AccordionContent>
                         </AccordionItem>
                     </Accordion>
-                    
                     <Separator />
-                    
                     <div className="flex flex-col gap-1 px-3 pt-2">
-                        {loading ? (<div className="h-12 w-full bg-muted animate-pulse rounded-md" />) : user ? (<Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLogoutClick}><LogOut className="h-6 w-6" /><span className="font-medium">Logout</span></Button>) : (<Button asChild variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground"><Link href="/api/auth/signin/google" onClick={handleLoginClick}><LogIn className="h-6 w-6" /><span className="font-medium">Login</span></Link></Button>)}
+                        {loading ? (<div className="h-12 w-full bg-muted animate-pulse rounded-md" />) : !session?.user && (<Button asChild variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground"><Link href="/api/auth/signin" onClick={(e) => { e.preventDefault(); signIn('google'); setIsOpen(false); }}><LogIn className="h-6 w-6" /><span className="font-medium">Login</span></Link></Button>)}
                         <Link href="/contact" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"><Mail className="h-6 w-6" /><span className="font-medium">Contact Us</span></Link>
                         <Link href="/about" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"><Info className="h-6 w-6" /><span className="font-medium">About Us</span></Link>
                     </div>
