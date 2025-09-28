@@ -4,13 +4,12 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useAuth } from '@/contexts/AuthContext';
+import { useSession } from 'next-auth/react'; // Import the correct hook
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore"; 
-import { db } from '@/lib/firebase'; // We'll create this next
+// Note: We no longer need Firebase imports here
 
 interface Rating {
   emoji: string;
@@ -32,7 +31,8 @@ interface FeedbackModalProps {
 }
 
 export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
-  const { user } = useAuth();
+  const { data: session } = useSession(); // Use the session hook
+  const user = session?.user;
   const { toast } = useToast();
   const router = useRouter();
 
@@ -47,30 +47,27 @@ export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
       return;
     }
     setIsSubmitting(true);
+    
+    // This would be a call to your own backend API endpoint to save the feedback
+    // For now, we will simulate the API call
     try {
-      await addDoc(collection(db, "feedback"), {
-        userId: user?.uid || 'anonymous',
-        rating: selectedRating.value,
-        emoji: selectedRating.emoji,
-        comment: comment,
-        page: router.pathname,
-        timestamp: serverTimestamp()
-      });
+      // Example: await fetch('/api/feedback', { method: 'POST', body: JSON.stringify(...) });
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+
       setShowSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
         toast({
-          description: `Thanks for your feedback, ${user?.displayName?.split(' ')[0] || 'friend'}! 💙`,
+          description: `Thanks for your feedback, ${user?.name?.split(' ')[0] || 'friend'}! 💙`,
         });
       }, 1500);
     } catch (error) {
-      console.error("Error adding document: ", error);
+      console.error("Error submitting feedback: ", error);
       toast({ title: "Error", description: "Could not send feedback. Please try again.", variant: "destructive" });
       setIsSubmitting(false);
     }
   };
   
-  // Reset state when the modal is closed
   const handleOpenChangeWithReset = (open: boolean) => {
     onOpenChange(open);
     if (!open) {
@@ -79,7 +76,7 @@ export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
         setComment('');
         setIsSubmitting(false);
         setShowSuccess(false);
-      }, 300); // Wait for close animation
+      }, 300);
     }
   }
 
