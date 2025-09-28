@@ -3,6 +3,8 @@
 import Link from 'next/link';
 import { Tool, iconMap } from '@/constants/tools';
 import { FileQuestion } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'; // Import Card components
+import { cn } from '@/lib/utils';
 
 interface ToolGridProps {
   tools: Tool[];
@@ -10,8 +12,7 @@ interface ToolGridProps {
 
 export const ToolGrid = ({ tools }: ToolGridProps) => {
   return (
-   // Use `bg-background` to match the main layout
-   <section id="tools" className="w-full bg-background pb-16 md:pb-24">
+   <section id="tools" className="w-full bg-background py-16 md:py-24">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {tools.map((tool) => {
@@ -20,12 +21,21 @@ export const ToolGrid = ({ tools }: ToolGridProps) => {
               <Link
                 href={`/${tool.value}`}
                 key={tool.value}
-                // Use theme variables for card, text, and hover states
-                className="group flex flex-col items-center text-center p-6 bg-card rounded-lg border border-border shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300"
+                className="group block"
               >
-                <Icon className="h-12 w-12 mb-4" style={{ color: tool.color }} />
-                <h3 className="font-bold text-foreground text-xl">{tool.label}</h3>
-                <p className="text-sm text-muted-foreground mt-2 flex-grow">{tool.description}</p>
+                {/* --- THIS IS THE FIX --- */}
+                {/* The entire link is now wrapped in a themed Card component */}
+                <Card className="h-full flex flex-col items-center text-center p-6 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                  <CardHeader className="p-0">
+                    <div className="mb-4">
+                      <Icon className="h-12 w-12" style={{ color: tool.color }} />
+                    </div>
+                    <CardTitle className="text-xl">{tool.label}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 mt-2 flex-grow">
+                    <CardDescription>{tool.description}</CardDescription>
+                  </CardContent>
+                </Card>
               </Link>
             );
           })}
