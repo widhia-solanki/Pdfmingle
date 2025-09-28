@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from 'next/router';
 import { Header } from "@/components/Header";
-import { FeedbackButton } from "@/components/FeedbackButton";
+import { FeedbackButton } from "@/components/feedback/FeedbackButton";
 import { InformativePanel } from "@/components/InformativePanel";
 import { AdPlaceholder } from "@/components/AdPlaceholder";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
       
       {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
       
-      <FeedbackButton />
+    <FeedbackButton />
     </div>
   );
 };
