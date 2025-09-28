@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useSession } from 'next-auth/react'; // Import the correct hook
+import { useSession } from 'next-auth/react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
-// Note: We no longer need Firebase imports here
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"; 
+import { db } from '@/lib/firebase';
 
 interface Rating {
   emoji: string;
@@ -31,7 +32,7 @@ interface FeedbackModalProps {
 }
 
 export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
-  const { data: session } = useSession(); // Use the session hook
+  const { data: session } = useSession();
   const user = session?.user;
   const { toast } = useToast();
   const router = useRouter();
@@ -48,12 +49,18 @@ export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
     }
     setIsSubmitting(true);
     
-    // This would be a call to your own backend API endpoint to save the feedback
-    // For now, we will simulate the API call
-    try {
-      // Example: await fetch('/api/feedback', { method: 'POST', body: JSON.stringify(...) });
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
+    const feedbackData = {
+      userId: user?.email || 'anonymous', 
+      userName: user?.name || 'Anonymous User',
+      rating: selectedRating.value,
+      emoji: selectedRating.emoji,
+      comment: comment,
+      page: router.pathname,
+      timestamp: serverTimestamp()
+    };
 
+    try {
+      await addDoc(collection(db, "feedback"), feedbackData);
       setShowSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
@@ -62,8 +69,9 @@ export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
         });
       }, 1500);
     } catch (error) {
-      console.error("Error submitting feedback: ", error);
+      console.error("Error adding document: ", error);
       toast({ title: "Error", description: "Could not send feedback. Please try again.", variant: "destructive" });
+    } finally {
       setIsSubmitting(false);
     }
   };
