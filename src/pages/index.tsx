@@ -14,9 +14,6 @@ import Image from 'next/image';
 
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 py-8 md:py-12">
-      {/* --- THIS IS THE FIX --- */}
-      {/* The incorrect `style` attribute has been removed. */}
-      {/* `bg-gray-900` provides a clean, dark background that works in both themes for this component. */}
       <div className="bg-gray-900 text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
           Every tool you need to work with PDFs in one place
@@ -46,10 +43,12 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
     </section>
 );
 
-// The rest of the file is included for completeness. No other changes were needed.
 const DesktopHero = () => {
     return (
-        <section className="w-full pt-20 md:pt-28 bg-background">
+        // --- THIS IS THE FIX ---
+        // The hardcoded pt-20 md:pt-28 has been removed from this section.
+        // The padding is now correctly controlled ONLY by the MainLayout component.
+        <section className="w-full bg-background pt-12 md:pt-20">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
