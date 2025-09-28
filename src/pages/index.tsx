@@ -35,12 +35,12 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
 
 const DesktopHero = () => {
     return (
-        // --- THIS IS THE DEFINITIVE FIX ---
-        // The section itself now fills the entire screen height minus the header.
-        // `min-h-[calc(100vh-5rem)]` is the key. 5rem is the height of your header (h-20).
-        // `flex items-center` is used to vertically center the content within this full-height section.
-        <section className="w-full bg-background min-h-[calc(100vh-5rem)] flex items-center">
-            <div className="container mx-auto px-4">
+        // --- THIS IS THE FIX ---
+        // We are adding a negative top margin (`-mt-20`) to pull the hero section up.
+        // The `20` in `-mt-20` corresponds to the height of the header (`h-20`),
+        // which is 5rem. This will make it sit perfectly flush.
+        <section className="w-full bg-background pt-20 -mt-20">
+            <div className="container mx-auto px-4 pt-20">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
                         <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
