@@ -3,7 +3,7 @@
 import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { ProfileCard } from '@/components/account/ProfileCard';
+import { ProfileCard } from '@/components/ProfileCard';
 import { SettingsCard } from '@/components/account/SettingsCard';
 import { DeleteAccountCard } from '@/components/account/DeleteAccountCard';
 
