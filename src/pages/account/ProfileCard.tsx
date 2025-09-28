@@ -26,7 +26,6 @@ export const ProfileCard = () => {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      // This is a mock update. In a real app, you would fetch your backend.
       await new Promise(res => setTimeout(res, 1000));
       await update({ name: displayName });
       toast({ title: 'Success', description: 'Your profile has been updated.' });
