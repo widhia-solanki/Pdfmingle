@@ -1,65 +1,82 @@
 # backend/app.py
 
-from flask import Flask, request, send_file, jsonify, make_response
+from flask import Flask, request, jsonify, make_response
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
-from PyPDF2 import PdfReader, PdfWriter
 import jwt
 from google.cloud import firestore
 from google_auth_oauthlib.flow import Flow
 import os
-import io
 import json
-import uuid
-import traceback
-import subprocess
-import shutil
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone, timedelta
+from functools import wraps
+# ... other imports remain the same
 
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
-
 CORS(app, origins=["https://pdfmingle.net", "http://localhost:3000"], supports_credentials=True)
 
-# --- Environment Variable Checks ---
-if not os.environ.get('JWT_SECRET_KEY'):
-    raise ValueError("No JWT_SECRET_KEY set for Flask application")
-# The GOOGLE_APPLICATION_CREDENTIALS variable is now handled automatically by the library
-
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
-
-# --- THIS IS THE FIX ---
-# This will now automatically find and use the GOOGLE_APPLICATION_CREDENTIALS path
 db = firestore.Client()
 users_collection = db.collection('users')
 
+# --- NEW: JWT DECORATOR FOR PROTECTED ROUTES ---
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('auth_token')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            data = jwt.decode(token, JWT_SECRET_KEY, algorithms=['HS256'])
+            current_user_doc = users_collection.document(data['sub']).get()
+            if not current_user_doc.exists:
+                return jsonify({'error': 'User not found'}), 401
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return jsonify({'error': 'Token is invalid or expired'}), 401
+        return f(current_user_doc, *args, **kwargs)
+    return decorated
 
-# ... (The rest of your file is now correct and does not need to change) ...
+# --- NEW: ACCOUNT MANAGEMENT ENDPOINTS ---
 
-def create_session(user_doc):
-    # ... (unchanged)
-
-@app.route('/api/auth/google', methods=['POST'])
-def handle_google_auth():
+@app.route('/api/account/profile', methods=['PUT'])
+@token_required
+def update_profile(current_user_doc):
     data = request.get_json()
-    auth_code = data.get('code')
-    if not auth_code: return jsonify({"error": "Authorization code is missing"}), 400
-        
+    new_name = data.get('name')
+    if not new_name:
+        return jsonify({'error': 'Name is required'}), 400
+    
     try:
-        # This will also automatically find and use the credentials
-        flow = Flow.from_client_secrets_file(
-            os.environ.get('GOOGLE_APPLICATION_CREDENTIALS'),
-            scopes=['openid', 'https://www.googleapis.com/auth/userinfo.email', 'https://www.googleapis.com/auth/userinfo.profile', 'https://www.googleapis.com/auth/drive.file'],
-            redirect_uri='postmessage'
-        )
-        flow.fetch_token(code=auth_code)
-        # ... (rest of function is the same)
-        
+        users_collection.document(current_user_doc.id).update({'name': new_name})
+        return jsonify({'message': 'Profile updated successfully'}), 200
     except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": "Google authentication failed."}), 500
+        return jsonify({'error': str(e)}), 500
 
-# ... (All other routes remain the same) ...
+@app.route('/api/account/settings', methods=['GET', 'POST'])
+@token_required
+def manage_settings(current_user_doc):
+    settings_ref = users_collection.document(current_user_doc.id).collection('settings').document('preferences')
+    
+    if request.method == 'GET':
+        settings_doc = settings_ref.get()
+        if settings_doc.exists:
+            return jsonify(settings_doc.to_dict()), 200
+        else:
+            # Return default settings if none exist
+            return jsonify({'darkMode': True, 'emailNotifications': False}), 200
+            
+    if request.method == 'POST':
+        data = request.get_json()
+        settings_data = {
+            'darkMode': data.get('darkMode', True),
+            'emailNotifications': data.get('emailNotifications', False),
+            'updatedAt': firestore.SERVER_TIMESTAMP
+        }
+        settings_ref.set(settings_data, merge=True)
+        return jsonify({'message': 'Settings updated'}), 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
+@app.route('/api/account/delete', methods=['DELETE'])
+@token_required
+def delete_account(current_user_doc):
+    try:
