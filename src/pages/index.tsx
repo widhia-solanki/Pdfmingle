@@ -35,8 +35,10 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
 
 const DesktopHero = () => {
     return (
-        // --- FIX: Removed bottom padding (py- becomes pt-) ---
-        <section className="w-full bg-background pt-16 md:pt-24">
+        // --- THIS IS THE FIX ---
+        // The section itself is now full-screen and sits behind the header.
+        <section className="w-full bg-background min-h-screen flex flex-col justify-center">
+            {/* The inner container has padding to push the content down from the top edge. */}
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
