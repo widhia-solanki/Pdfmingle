@@ -1,8 +1,8 @@
 // src/components/auth/AuthGuard.tsx
 
-import { ReactNode } from 'react';
+import { ReactNode, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/router';
-import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
 interface AuthGuardProps {
@@ -10,24 +10,29 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children }: AuthGuardProps) => {
-  const { user, loading } = useAuth();
+  // --- THIS IS THE FIX ---
+  // We now use the 'useSession' hook from NextAuth.js.
+  const { data: session, status } = useSession();
   const router = useRouter();
+  const isLoading = status === 'loading';
+  const isSignedIn = !!session?.user;
 
-  // If the session is still being verified, show a loading spinner
-if (loading) {
+  useEffect(() => {
+    // If loading is finished and the user is not signed in, redirect them.
+    if (!isLoading && !isSignedIn) {
+      router.push('/login');
+    }
+  }, [isLoading, isSignedIn, router]);
+
+  // While the session is being verified, show a loading spinner.
+  if (isLoading || !isSignedIn) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
 
-  // If verification is done and there is no user, redirect to login
-  if (!user) {
-    router.push('/login');
-    return null; // Render nothing while redirecting
-  }
-
-  // If the user is logged in, render the protected page content
+  // If the user is signed in, render the protected page content.
   return <>{children}</>;
 };
