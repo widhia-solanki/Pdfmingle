@@ -20,7 +20,7 @@ JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
 db = firestore.Client()
 users_collection = db.collection('users')
 
-# --- NEW: JWT DECORATOR FOR PROTECTED ROUTES ---
+
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
@@ -80,3 +80,16 @@ def manage_settings(current_user_doc):
 @token_required
 def delete_account(current_user_doc):
     try:
+       
+        settings_ref = users_collection.document(current_user_doc.id).collection('settings').document('preferences')
+        settings_ref.delete()
+        
+       
+        users_collection.document(current_user_doc.id).delete()
+        
+        
+        response = make_response(jsonify({'message': 'Account deleted successfully'}), 200)
+        response.set_cookie('auth_token', '', expires=0)
+        return response
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
