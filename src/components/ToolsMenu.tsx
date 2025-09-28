@@ -17,6 +17,7 @@ import { toolArray, iconMap } from '@/constants/tools';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { cn } from '@/lib/utils';
 import { Info, Mail, LogIn, LogOut, FileQuestion } from 'lucide-react';
+import { UserNav } from './UserNav';
 
 export const ToolsMenu = () => {
   const { data: session, status } = useSession();
