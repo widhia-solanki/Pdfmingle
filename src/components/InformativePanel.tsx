@@ -32,6 +32,7 @@ export const InformativePanel = () => {
                             <li><Link href="/" className="text-muted-foreground hover:text-primary hover:underline">Home</Link></li>
                             <li><Link href="/about" className="text-muted-foreground hover:text-primary hover:underline">About Us</Link></li>
                             <li><Link href="/blog" className="text-muted-foreground hover:text-primary hover:underline">Blog</Link></li>
+                             <li><Link href="/tools" className="text-muted-foreground hover:text-primary hover:underline">All 
                         </ul>
                     </div>
                     <div className="space-y-3">
