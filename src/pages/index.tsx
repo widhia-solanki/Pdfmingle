@@ -35,10 +35,7 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
 
 const DesktopHero = () => {
     return (
-        // --- THIS IS THE FIX ---
-        // The section itself is now full-screen and sits behind the header.
         <section className="w-full bg-background min-h-screen flex flex-col justify-center">
-            {/* The inner container has padding to push the content down from the top edge. */}
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
@@ -49,12 +46,20 @@ const DesktopHero = () => {
                             Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
                         </p>
                         <div className="mt-10 flex justify-center lg:justify-start">
+                            {/* --- THIS IS THE FIX --- */}
+                            {/* The href now points to our new /tools page */}
                             <Button asChild size="lg" className="text-lg px-8 py-7 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl">
-                                <Link href="#tools">View All Tools</Link>
+                                <Link href="/tools">View All Tools</Link>
                             </Button>
                         </div>
                     </div>
-                    <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
+                    {/* ... (Image div remains the same) ... */}
+                </div>
+            </div>
+        </section>
+    );
+};
+
                         <Image
                           src="/hero-illustration-v2.png"
                           alt="Illustration of PDF document management tools"
