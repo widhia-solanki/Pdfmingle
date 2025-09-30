@@ -13,7 +13,7 @@ import React from 'react';
 import Image from 'next/image';
 
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
-    <section className="container mx-auto px-4 py-8 md:py-12">
+    <section className="container mx-auto px-4 pt-8 md:pt-12">
       <div className="bg-gray-900 text-white rounded-2xl p-8 md:p-16 text-center animate-in fade-in duration-500">
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-white">
           Every tool you need to work with PDFs in one place
@@ -46,20 +46,12 @@ const DesktopHero = () => {
                             Enjoy all the tools you need to work efficiently with your digital documents while keeping your data safe and secure.
                         </p>
                         <div className="mt-10 flex justify-center lg:justify-start">
-                            {/* --- THIS IS THE FIX --- */}
-                            {/* The href now points to our new /tools page */}
                             <Button asChild size="lg" className="text-lg px-8 py-7 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl">
                                 <Link href="/tools">View All Tools</Link>
                             </Button>
                         </div>
                     </div>
-                    {/* ... (Image div remains the same) ... */}
-                </div>
-            </div>
-        </section>
-    );
-};
-
+                    <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
                         <Image
                           src="/hero-illustration-v2.png"
                           alt="Illustration of PDF document management tools"
