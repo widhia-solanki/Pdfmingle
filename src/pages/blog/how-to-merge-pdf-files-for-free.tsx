@@ -1,4 +1,3 @@
-x
 import { NextSeo } from 'next-seo';
 
 const HowToMergePdfPage = () => {
