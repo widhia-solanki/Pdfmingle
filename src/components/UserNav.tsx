@@ -13,19 +13,27 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from '@/components/ui/button';
 import { useSession, signOut } from 'next-auth/react';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, History } from 'lucide-react';
 
 export const UserNav = () => {
   const { data: session } = useSession();
   const user = session?.user;
 
+  // This should not happen if UserNav is rendered correctly, but it's a good safeguard.
   if (!user) {
-    return null; // Should not happen if this component is rendered correctly
+    return null;
   }
 
   const getInitials = (name: string | null | undefined) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+    if (!name) {
+      // Fallback to the first two letters of the email if name is not available
+      return user.email ? user.email.substring(0, 2).toUpperCase() : 'U';
+    }
+    const nameParts = name.split(' ');
+    if (nameParts.length > 1) {
+      return (nameParts[0][0] + nameParts[nameParts.length - 1][0]).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   };
 
   return (
@@ -41,7 +49,7 @@ export const UserNav = () => {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none text-foreground">{user.name}</p>
+            <p className="text-sm font-medium leading-none text-foreground">{user.name || 'User'}</p>
             <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
           </div>
         </DropdownMenuLabel>
@@ -50,6 +58,12 @@ export const UserNav = () => {
           <Link href="/account">
             <User className="mr-2 h-4 w-4" />
             <span>My Account</span>
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account/history">
+            <History className="mr-2 h-4 w-4" />
+            <span>File History</span>
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
