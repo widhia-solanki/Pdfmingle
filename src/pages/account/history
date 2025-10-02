@@ -1,0 +1,85 @@
+// src/pages/account/history.tsx
+
+import { NextPage } from 'next';
+import { NextSeo } from 'next-seo';
+import { AuthGuard } from '@/components/auth/AuthGuard';
+import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import { collection, query, orderBy, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { Loader2, Download, FileText } from 'lucide-react';
+import { format } from 'date-fns';
+
+interface HistoryItem {
+  id: string;
+  tool: string;
+  originalFilename: string;
+  timestamp: { toDate: () => Date };
+  // ... other fields
+}
+
+const HistoryPage: NextPage = () => {
+  const { user } = useAuth();
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      if (!user) return;
+      try {
+        const historyRef = collection(db, 'users', user.uid, 'history');
+        const q = query(historyRef, orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(q);
+        const historyData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as HistoryItem[];
+        setHistory(historyData);
+      } catch (error) {
+        console.error("Error fetching history:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchHistory();
+  }, [user]);
+
+  return (
+    <AuthGuard>
+      <NextSeo title="File History" noindex={true} />
+      <div className="container mx-auto max-w-4xl py-12">
+        <header className="mb-8">
+          <h1 className="text-4xl font-bold text-foreground">File History</h1>
+          <p className="mt-2 text-lg text-muted-foreground">
+            View and re-download your recently processed files.
+          </p>
+        </header>
+
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>
+        ) : history.length === 0 ? (
+          <div className="text-center py-12 bg-card border border-border rounded-lg">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h3 className="mt-4 text-lg font-semibold text-foreground">No History Found</h3>
+            <p className="mt-1 text-muted-foreground">You haven't processed any files yet.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {history.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-4 bg-card border border-border rounded-lg">
+                <div>
+                  <p className="font-semibold text-foreground">{item.originalFilename}</p>
+                  <p className="text-sm text-muted-foreground">
+                    Tool: {item.tool} | {format(item.timestamp.toDate(), 'PPp')}
+                  </p>
+                </div>
+                <Button variant="outline" size="icon">
+                  <Download className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </AuthGuard>
+  );
+};
+
+export default HistoryPage;
