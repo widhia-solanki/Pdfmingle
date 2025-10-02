@@ -19,14 +19,12 @@ export const UserNav = () => {
   const { data: session } = useSession();
   const user = session?.user;
 
-  // This should not happen if UserNav is rendered correctly, but it's a good safeguard.
   if (!user) {
     return null;
   }
 
   const getInitials = (name: string | null | undefined) => {
     if (!name) {
-      // Fallback to the first two letters of the email if name is not available
       return user.email ? user.email.substring(0, 2).toUpperCase() : 'U';
     }
     const nameParts = name.split(' ');
@@ -60,12 +58,16 @@ export const UserNav = () => {
             <span>My Account</span>
           </Link>
         </DropdownMenuItem>
+        
+        {/* --- THIS IS THE FIX --- */}
+        {/* The href now correctly points to the file we created. */}
         <DropdownMenuItem asChild>
           <Link href="/account/history">
             <History className="mr-2 h-4 w-4" />
             <span>File History</span>
           </Link>
         </DropdownMenuItem>
+        
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
           <LogOut className="mr-2 h-4 w-4" />
