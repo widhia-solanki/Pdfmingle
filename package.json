@@ -11,6 +11,7 @@
     "prebuild": "node ./copy-worker.js"
   },
   "dependencies": {
+    "react-google-recaptcha-v3": "^1.10.1",
     "@emailjs/browser": "^4.3.3",
     "@hookform/resolvers": "^3.3.4",
     "@radix-ui/react-accordion": "^1.1.2",
