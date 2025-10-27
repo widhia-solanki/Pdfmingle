@@ -1,23 +1,22 @@
+// src/pages/admin/blog-ai.tsx
+
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { MainLayout } from '@/layouts/MainLayout';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { Loader2 } from 'lucide-react';
+import { AuthGuard } from '@/components/auth/AuthGuard'; // Import the AuthGuard
 
 export default function BlogAI() {
-  const { data: session, status } = useSession();
   const { toast } = useToast();
   const [topic, setTopic] = useState('');
   const [tsxContent, setTsxContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [slug, setSlug] = useState('');
   const [date, setDate] = useState('');
-
-  if (status === 'loading') return <p>Loading...</p>;
-  if (!session) return <p>Access denied. <a href="/signup">Sign up</a> to manage blogs.</p>;
 
   const generateBlog = async () => {
     setLoading(true);
@@ -32,9 +31,9 @@ export default function BlogAI() {
         setTsxContent(data.tsx);
         setSlug(data.slug);
         setDate(data.date);
-        toast({ title: 'Generated!' });
+        toast({ title: 'Blog Post Generated!' });
       } else {
-        toast({ variant: 'destructive', title: 'Error', description: data.error });
+        throw new Error(data.error || 'Failed to generate blog.');
       }
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
@@ -48,14 +47,15 @@ export default function BlogAI() {
       const res = await fetch('/api/generate-blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'push', tsx: tsxContent, topic, slug, date }),
+        body: JSON.stringify({ action: 'push', tsx: tsxContent, slug, date, topic }),
       });
       const data = await res.json();
       if (res.ok) {
-        toast({ title: 'Pushed to GitHub!' });
-        setTsxContent(''); // Clear after success
+        toast({ title: 'Success!', description: 'Blog post has been pushed to GitHub.' });
+        setTopic('');
+        setTsxContent('');
       } else {
-        toast({ variant: 'destructive', title: 'Error', description: data.error });
+        throw new Error(data.error || 'Failed to push to GitHub.');
       }
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
@@ -64,55 +64,56 @@ export default function BlogAI() {
   };
 
   return (
-    <MainLayout>
+    // This page is now wrapped in the AuthGuard to protect it.
+    <AuthGuard>
+      {/* The redundant <MainLayout> has been removed. */}
       <div className="container mx-auto py-8">
-        <Card>
+        <Card className="max-w-4xl mx-auto">
           <CardHeader>
-            <CardTitle>AI Blog Generator</CardTitle>
+            <CardTitle className="text-2xl">AI Blog Generator</CardTitle>
+            <CardDescription>Generate and deploy new blog posts using AI.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Input
-              placeholder="Enter topic (or leave blank for random)"
-              value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-            />
-            <Button onClick={generateBlog} disabled={loading}>
-              {loading ? 'Generating...' : 'Generate TSX'}
-            </Button>
+            <div className="space-y-2">
+              <Input
+                placeholder="Enter a topic (e.g., How to Compress a PDF) or leave blank for a random suggestion."
+                value={topic}
+                onChange={(e) => setTopic(e.target.value)}
+                disabled={loading}
+              />
+              <Button onClick={generateBlog} disabled={loading}>
+                {loading && tsxContent === '' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {loading && tsxContent === '' ? 'Generating...' : 'Generate TSX'}
+              </Button>
+            </div>
+            
             {tsxContent && (
-              <>
+              <div className="space-y-4 pt-4 border-t">
                 <Textarea
                   value={tsxContent}
-                  rows={20}
+                  onChange={(e) => setTsxContent(e.target.value)}
+                  rows={25}
+                  className="font-mono text-sm"
                   placeholder="Generated TSX will appear here..."
-                  readOnly
                 />
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button onClick={pushToRepo} disabled={loading || !slug}>
-                    Push to /blog/{date}-{slug}
+                    {loading && tsxContent !== '' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                    {loading && tsxContent !== '' ? 'Pushing...' : `Push to /blog/${date}-${slug}.tsx`}
                   </Button>
                   <a
                     href={`data:text/plain;charset=utf-8,${encodeURIComponent(tsxContent)}`}
                     download={`${date}-${slug}.tsx`}
-                    className="px-4 py-2 bg-gray-500 text-white rounded"
+                    className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2"
                   >
                     Download TSX
                   </a>
                 </div>
-              </>
+              </div>
             )}
           </CardContent>
         </Card>
-        {/* Future: Add list of existing blogs with delete buttons */}
-        <Card className="mt-8">
-          <CardHeader>
-            <CardTitle>Existing Blogs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>TODO: Fetch from GitHub API and add delete/push updates.</p>
-          </CardContent>
-        </Card>
       </div>
-    </MainLayout>
+    </AuthGuard>
   );
 }
