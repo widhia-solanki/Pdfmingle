@@ -10,29 +10,31 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children }: AuthGuardProps) => {
-  // --- THIS IS THE FIX ---
-  // We now use the 'useSession' hook from NextAuth.js.
   const { data: session, status } = useSession();
   const router = useRouter();
   const isLoading = status === 'loading';
   const isSignedIn = !!session?.user;
 
   useEffect(() => {
-    // If loading is finished and the user is not signed in, redirect them.
+    // Only perform the redirect check AFTER the loading is complete.
     if (!isLoading && !isSignedIn) {
+      // If not signed in, redirect to the login page.
       router.push('/login');
     }
   }, [isLoading, isSignedIn, router]);
 
-  // While the session is being verified, show a loading spinner.
+  // --- THIS IS THE FIX ---
+  // While the session is loading OR if the user is not signed in yet
+  // (and the redirect is about to happen), show a full-page loading screen.
   if (isLoading || !isSignedIn) {
     return (
-      <div className="flex items-center justify-center h-screen bg-background">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Verifying access...</p>
       </div>
     );
   }
 
-  // If the user is signed in, render the protected page content.
+  // If loading is complete AND the user is signed in, render the protected content.
   return <>{children}</>;
 };
