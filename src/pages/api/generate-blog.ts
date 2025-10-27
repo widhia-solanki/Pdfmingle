@@ -4,7 +4,9 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { Octokit } from '@octokit/rest';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '../auth/[...nextauth]';
+// --- THIS IS THE FIX ---
+// The import path is now correct.
+import { authOptions } from './auth/[...nextauth]';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 const octokit = new Octokit({ auth: process.env.GITHUB_TOKEN });
@@ -56,7 +58,8 @@ export default function BlogPost() {
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const session = await getServerSession(req, res, authOptions);
-  if (!session || !session.user || session.user.email !== 'your-admin-email@gmail.com') {
+  // IMPORTANT: Replace with your actual admin email for security
+  if (!session || !session.user || session.user.email !== 'contact.dafda.pdfmingle@gmail.com') {
     return res.status(401).json({ error: 'Unauthorized: Access is restricted to administrators.' });
   }
 
