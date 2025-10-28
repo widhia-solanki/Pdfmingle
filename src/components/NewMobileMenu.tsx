@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { signIn, signOut } from 'next-auth/react'; // Only import what's needed
+import { useAuth } from '@/contexts/AuthContext'; // Use our Firebase Auth Context
 
 const PDFMingleLogo = () => (
     <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground no-underline">
@@ -20,15 +20,10 @@ const PDFMingleLogo = () => (
     </Link>
 );
 
-// Define the type for the session prop
-interface NewMobileMenuProps {
-  session: any;
-}
-
-export const NewMobileMenu = ({ session }: NewMobileMenuProps) => {
+export const NewMobileMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
-    const user = session?.user;
+    const { user, loading, signInWithGoogle, logout } = useAuth();
 
     const getInitials = (name: string | null | undefined) => {
         if (!name) return user?.email ? user.email.substring(0, 2).toUpperCase() : 'U';
@@ -39,12 +34,11 @@ export const NewMobileMenu = ({ session }: NewMobileMenuProps) => {
 
     const handleLogoutClick = () => {
         setIsOpen(false);
-        signOut({ callbackUrl: '/' });
+        logout();
     };
 
-    const handleLoginClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        signIn('google');
+    const handleLoginClick = () => {
+        signInWithGoogle();
         setIsOpen(false);
     };
 
@@ -60,11 +54,11 @@ export const NewMobileMenu = ({ session }: NewMobileMenuProps) => {
                     {user && (
                         <div className='flex items-center gap-3 px-3 pb-2'>
                             <Avatar>
-                                {user.image && <AvatarImage src={user.image} alt={user.name || 'User Avatar'} />}
-                                <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                                {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || 'User Avatar'} />}
+                                <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
                             </Avatar>
                             <div>
-                                <p className="text-sm font-semibold text-foreground truncate">{user.name || 'User'}</p>
+                                <p className="text-sm font-semibold text-foreground truncate">{user.displayName || 'User'}</p>
                                 <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                             </div>
                         </div>
@@ -85,17 +79,7 @@ export const NewMobileMenu = ({ session }: NewMobileMenuProps) => {
                     </Accordion>
                     <Separator />
                     <div className="flex flex-col gap-1 px-3 pt-2">
-                        {user ? (
-                            <Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLogoutClick}>
-                                <LogOut className="h-6 w-6" /><span className="font-medium">Logout</span>
-                            </Button>
-                        ) : (
-                            <Button asChild variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground">
-                                <Link href="/api/auth/signin" onClick={handleLoginClick}>
-                                    <LogIn className="h-6 w-6" /><span className="font-medium">Login</span>
-                                </Link>
-                            </Button>
-                        )}
+                        {loading ? (<div className="h-12 w-full bg-muted animate-pulse rounded-md" />) : user ? (<Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLogoutClick}><LogOut className="h-6 w-6" /><span className="font-medium">Logout</span></Button>) : (<Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLoginClick}><LogIn className="h-6 w-6" /><span className="font-medium">Login</span></Button>)}
                         <Link href="/contact" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"><Mail className="h-6 w-6" /><span className="font-medium">Contact Us</span></Link>
                         <Link href="/about" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"><Info className="h-6 w-6" /><span className="font-medium">About Us</span></Link>
                     </div>
