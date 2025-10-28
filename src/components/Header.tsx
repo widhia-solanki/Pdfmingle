@@ -5,23 +5,17 @@ import { NewMobileMenu } from './NewMobileMenu';
 import { ToolsMenu } from './ToolsMenu';
 
 // --- THIS IS THE FIX ---
-// Define the props for the Header and accept the session object
-interface HeaderProps {
-  session: any;
-}
-
-export const Header = ({ session }: HeaderProps) => {
+// The Header component no longer needs to accept or pass any props.
+export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-lg">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         
-        {/* On mobile (default), show the menu. Hide it on medium screens and up. */}
         <div className="md:hidden">
-          {/* Pass the session prop down to the mobile menu */}
-          <NewMobileMenu session={session} />
+          {/* The session prop has been removed, as NewMobileMenu gets the session from a hook. */}
+          <NewMobileMenu />
         </div>
 
-        {/* Logo and Brand Name */}
         <div className="flex-1 md:flex-none">
           <Link href="/" className="flex items-center justify-center md:justify-start gap-3 text-2xl font-bold tracking-tighter text-foreground no-underline">
             <svg
@@ -43,13 +37,10 @@ export const Header = ({ session }: HeaderProps) => {
           </Link>
         </div>
 
-        {/* Desktop Menu - visible on medium screens and up */}
         <div className="hidden md:flex flex-1 justify-end">
-          {/* The desktop menu uses the useSession hook, so it doesn't need the prop */}
           <ToolsMenu />
         </div>
 
-        {/* Spacer for mobile to balance the menu button and center the logo */}
         <div className="w-8 md:hidden" aria-hidden="true" />
 
       </div>
