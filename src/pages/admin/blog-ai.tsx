@@ -6,17 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Calendar as CalendarIcon } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { cn } from '@/lib/utils';
 import { NextSeo } from 'next-seo';
-
-// In a real app, you would fetch this data from Firestore
-const mockScheduledPosts: any[] = [];
-const mockPublishedPosts: any[] = [];
 
 export default function BlogAI() {
   const { toast } = useToast();
@@ -25,8 +17,7 @@ export default function BlogAI() {
   const [loading, setLoading] = useState(false);
   const [slug, setSlug] = useState('');
   const [date, setDate] = useState('');
-  const [publishDate, setPublishDate] = useState<Date | undefined>(new Date());
-  const [currentAction, setCurrentAction] = useState<'generate' | 'schedule' | null>(null);
+  const [currentAction, setCurrentAction] = useState<'generate' | 'push' | null>(null);
 
   const generateBlog = async () => {
     setLoading(true);
@@ -42,7 +33,7 @@ export default function BlogAI() {
         setTsxContent(data.tsx);
         setSlug(data.slug);
         setDate(data.date);
-        toast({ title: 'Blog Post Generated!', description: 'Review the TSX and schedule for publishing.' });
+        toast({ title: 'Blog Post Generated!', description: 'Review the TSX and push to GitHub.' });
       } else {
         throw new Error(data.error || 'Failed to generate blog.');
       }
@@ -53,29 +44,22 @@ export default function BlogAI() {
     setCurrentAction(null);
   };
 
-  const scheduleForPublishing = async () => {
+  const pushToRepo = async () => {
     setLoading(true);
-    setCurrentAction('schedule');
+    setCurrentAction('push');
     try {
       const res = await fetch('/api/generate-blog', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          action: 'schedule',
-          tsx: tsxContent, 
-          topic, 
-          slug, 
-          date,
-          publishDate: publishDate?.toISOString()
-        }),
+        body: JSON.stringify({ action: 'push', tsx: tsxContent, topic, slug, date }),
       });
       const data = await res.json();
       if (res.ok) {
-        toast({ title: 'Blog Scheduled!', description: `Post will be published on ${format(publishDate!, 'PPP')}.` });
+        toast({ title: 'Success!', description: 'Blog post has been pushed to GitHub.' });
         setTopic('');
         setTsxContent('');
       } else {
-        throw new Error(data.error || 'Failed to schedule post.');
+        throw new Error(data.error || 'Failed to push to GitHub.');
       }
     } catch (error) {
       toast({ variant: 'destructive', title: 'Error', description: (error as Error).message });
@@ -92,7 +76,7 @@ export default function BlogAI() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">AI Blog Generator</CardTitle>
-              <CardDescription>Generate and schedule new blog posts to be automatically deployed.</CardDescription>
+              <CardDescription>Generate and deploy new blog posts using AI.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -117,54 +101,20 @@ export default function BlogAI() {
                     className="font-mono text-sm bg-secondary"
                     placeholder="Generated TSX will appear here..."
                   />
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className={cn("w-full sm:w-[280px] justify-start text-left font-normal", !publishDate && "text-muted-foreground")}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {publishDate ? `Publish on: ${format(publishDate, "PPP")}` : <span>Pick a publish date</span>}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={publishDate}
-                          onSelect={setPublishDate}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <Button onClick={scheduleForPublishing} disabled={loading || !slug || !publishDate} className="flex-grow">
-                      {loading && currentAction === 'schedule' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                      {loading && currentAction === 'schedule' ? 'Scheduling...' : 'Schedule Post'}
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={pushToRepo} disabled={loading || !slug}>
+                      {loading && currentAction === 'push' ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                      {loading && currentAction === 'push' ? 'Pushing...' : `Push to /blog/${date}-${slug}.tsx`}
                     </Button>
+                    <a
+                      href={`data:text/plain;charset=utf-8,${encodeURIComponent(tsxContent)}`}
+                      download={`${date}-${slug}.tsx`}
+                      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-secondary text-secondary-foreground hover:bg-secondary/80 h-10 px-4 py-2"
+                    >
+                      Download TSX
+                    </a>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* In a real app, you would fetch this data from Firestore */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Content Queue</CardTitle>
-              <CardDescription>View posts that are scheduled or have been published.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <h3 className="font-semibold text-lg mb-2 text-foreground">Scheduled</h3>
-              {mockScheduledPosts.length > 0 ? (
-                <div className="space-y-2">...</div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No posts are currently scheduled.</p>
-              )}
-              <h3 className="font-semibold text-lg mt-6 mb-2 text-foreground">Published</h3>
-              {mockPublishedPosts.length > 0 ? (
-                <div className="space-y-2">...</div>
-              ) : (
-                <p className="text-sm text-muted-foreground">No posts have been published yet.</p>
               )}
             </CardContent>
           </Card>
