@@ -11,7 +11,6 @@ import Link from "next/link";
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { useSession, signIn, signOut } from 'next-auth/react';
 
 const PDFMingleLogo = () => (
     <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground no-underline">
