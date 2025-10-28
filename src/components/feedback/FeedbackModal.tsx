@@ -4,12 +4,13 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext'; // Use our Firebase Auth Context
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { CheckCircle, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/router';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { collection, addDoc, serverTimestamp } from "firebase/firestore"; 
+import { db } from '@/lib/firebase';
 
 interface Rating {
   emoji: string;
@@ -31,11 +32,9 @@ interface FeedbackModalProps {
 }
 
 export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
-  const { data: session } = useSession();
-  const user = session?.user;
+  const { user } = useAuth(); // Use the correct hook
   const { toast } = useToast();
   const router = useRouter();
-  const { executeRecaptcha } = useGoogleReCaptcha();
 
   const [selectedRating, setSelectedRating] = useState<Rating | null>(null);
   const [comment, setComment] = useState('');
@@ -47,46 +46,30 @@ export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
       toast({ title: "Please select a rating.", variant: "destructive" });
       return;
     }
-    if (!executeRecaptcha) {
-      toast({ title: "Error", description: "reCAPTCHA is not ready. Please try again in a moment.", variant: "destructive" });
-      return;
-    }
     setIsSubmitting(true);
+    
+    const feedbackData = {
+      userId: user?.uid || 'anonymous', 
+      userName: user?.displayName || 'Anonymous User',
+      rating: selectedRating.value,
+      emoji: selectedRating.emoji,
+      comment: comment,
+      page: router.pathname,
+      timestamp: serverTimestamp()
+    };
 
     try {
-      const recaptchaToken = await executeRecaptcha('feedbackSubmit');
-
-      const feedbackData = {
-        userId: user?.email || 'anonymous',
-        userName: user?.name || 'Anonymous User',
-        rating: selectedRating.value,
-        emoji: selectedRating.emoji,
-        comment: comment,
-        page: router.pathname,
-      };
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/feedback`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ feedback: feedbackData, recaptchaToken }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to submit feedback.');
-      }
-
+      await addDoc(collection(db, "feedback"), feedbackData);
       setShowSuccess(true);
       setTimeout(() => {
         onOpenChange(false);
         toast({
-          description: `Thanks for your feedback, ${user?.name?.split(' ')[0] || 'friend'}! 💙`,
+          description: `Thanks for your feedback, ${user?.displayName?.split(' ')[0] || 'friend'}! 💙`,
         });
       }, 1500);
-
-    } catch (error: any) {
-      console.error("Error submitting feedback: ", error);
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      toast({ title: "Error", description: "Could not send feedback. Please try again.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
@@ -120,7 +103,12 @@ export const FeedbackModal = ({ isOpen, onOpenChange }: FeedbackModalProps) => {
             </DialogHeader>
             <div className="flex justify-around items-center py-4">
               {ratings.map((rating) => (
-                <button key={rating.value} onClick={() => setSelectedRating(rating)} className={cn("flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background", selectedRating?.value === rating.value ? "scale-125 transform" : "scale-100 hover:scale-110 opacity-60 hover:opacity-100")} aria-label={rating.label}>
+                <button
+                  key={rating.value}
+                  onClick={() => setSelectedRating(rating)}
+                  className={cn("flex flex-col items-center gap-2 text-4xl rounded-lg p-2 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background", selectedRating?.value === rating.value ? "scale-125 transform" : "scale-100 hover:scale-110 opacity-60 hover:opacity-100")}
+                  aria-label={rating.label}
+                >
                   {rating.emoji}
                 </button>
               ))}
