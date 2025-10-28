@@ -4,19 +4,24 @@ import Link from 'next/link';
 import { NewMobileMenu } from './NewMobileMenu';
 import { ToolsMenu } from './ToolsMenu';
 
-export const Header = () => {
+// --- THIS IS THE FIX ---
+// Define the props for the Header and accept the session object
+interface HeaderProps {
+  session: any;
+}
+
+export const Header = ({ session }: HeaderProps) => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-lg">
       <div className="container mx-auto flex h-20 items-center justify-between px-4">
         
-        {/* --- THIS IS THE FIX --- */}
         {/* On mobile (default), show the menu. Hide it on medium screens and up. */}
         <div className="md:hidden">
-          <NewMobileMenu />
+          {/* Pass the session prop down to the mobile menu */}
+          <NewMobileMenu session={session} />
         </div>
 
         {/* Logo and Brand Name */}
-        {/* On mobile, this will be pushed to the center. On desktop, it's on the left. */}
         <div className="flex-1 md:flex-none">
           <Link href="/" className="flex items-center justify-center md:justify-start gap-3 text-2xl font-bold tracking-tighter text-foreground no-underline">
             <svg
@@ -40,6 +45,7 @@ export const Header = () => {
 
         {/* Desktop Menu - visible on medium screens and up */}
         <div className="hidden md:flex flex-1 justify-end">
+          {/* The desktop menu uses the useSession hook, so it doesn't need the prop */}
           <ToolsMenu />
         </div>
 
