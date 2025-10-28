@@ -17,7 +17,7 @@ import { UserNav } from './UserNav';
 export const NewMobileMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
-  const { data: session, status } = useSession(); // Use the correct hook
+  const { data: session, status } = 'session(); // Use the correct hook
   const loading = status === 'loading';
 
   return (
