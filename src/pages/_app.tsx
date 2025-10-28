@@ -12,7 +12,6 @@ import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
 import { useRouter } from 'next/router';
 import { SessionProvider } from "next-auth/react";
-import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 interface AppPropsWithSession extends AppProps {
   pageProps: {
@@ -24,31 +23,25 @@ interface AppPropsWithSession extends AppProps {
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppPropsWithSession) {
   const router = useRouter();
   const flushLayoutRoutes = new Set(['/', '/add-watermark', '/edit-pdf']);
-  const shouldUseFlushLayout = flushLayoutRoutes.has(router.pathname);
-  const recaptchaSiteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-
-  if (!recaptchaSiteKey) {
-    // This provides a clear error if the key is missing
-    return <div>Error: reCAPTCHA Site Key is not configured.</div>;
-  }
+  const isHomePage = router.pathname === '/';
+  const shouldUseFlushLayout = isHomePage || flushLayoutRoutes.has(router.pathname);
 
   return (
-    <GoogleReCaptchaProvider reCaptchaKey={recaptchaSiteKey}>
-      <SessionProvider session={session}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <Head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
-          </Head>
-          <DefaultSeo {...SEO} />
-          <MainLayout flush={shouldUseFlushLayout}>
-            <Component {...pageProps} />
-          </MainLayout>
-          <SpeedInsights />
-          <Analytics />
-          <CookieConsent />
-        </ThemeProvider>
-      </SessionProvider>
-    </GoogleReCaptchaProvider>
+    <SessionProvider session={session}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <Head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <meta name="google-adsense-account" content="ca-pub-9837860640878429" />
+        </Head>
+        <DefaultSeo {...SEO} />
+        <MainLayout flush={shouldUseFlushLayout}>
+          {/* We pass the session object down to every page as a prop */}
+          <Component {...pageProps} session={session} />
+        </MainLayout>
+        <SpeedInsights />
+        <Analytics />
+        <CookieConsent />
+      </ThemeProvider>
+    </SessionProvider>
   );
 }
