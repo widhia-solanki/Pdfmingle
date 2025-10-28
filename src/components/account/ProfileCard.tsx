@@ -1,7 +1,7 @@
 // src/components/account/ProfileCard.tsx
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useAuth } from '@/contexts/AuthContext'; // Use our Firebase Auth Context
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Edit, Save } from 'lucide-react';
+import { updateProfile } from 'firebase/auth'; // Import Firebase update function
 
 export const ProfileCard = () => {
-  const { data: session, update } = useSession();
-  const user = session?.user;
+  const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [displayName, setDisplayName] = useState(user?.name || '');
+  const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [isSaving, setIsSaving] = useState(false);
 
   const getInitials = (name: string | null | undefined) => {
@@ -24,12 +24,15 @@ export const ProfileCard = () => {
   };
 
   const handleSaveProfile = async () => {
+    if (!user) return;
     setIsSaving(true);
     try {
-      await new Promise(res => setTimeout(res, 1000));
-      await update({ name: displayName });
+      // Use Firebase's updateProfile function
+      await updateProfile(user, { displayName: displayName });
       toast({ title: 'Success', description: 'Your profile has been updated.' });
       setIsEditing(false);
+      // You might need to refresh the page or update the context to see the change immediately
+      window.location.reload();
     } catch (error: any) {
       toast({ title: 'Error', description: 'Failed to update profile.', variant: 'destructive' });
     } finally {
@@ -46,7 +49,7 @@ export const ProfileCard = () => {
       <CardHeader><CardTitle>Profile</CardTitle><CardDescription>Your personal information.</CardDescription></CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
-          <Avatar className="h-20 w-20"><AvatarImage src={user?.image || ''} alt={user?.name || ''} /><AvatarFallback className="text-2xl">{getInitials(user?.name)}</AvatarFallback></Avatar>
+          <Avatar className="h-20 w-20"><AvatarImage src={user?.photoURL || ''} alt={user?.displayName || ''} /><AvatarFallback className="text-2xl">{getInitials(user?.displayName)}</AvatarFallback></Avatar>
           <Button variant="outline" onClick={handlePictureUpload}>Change Picture</Button>
         </div>
         <div className="space-y-2"><Label>Email Address</Label><p className="text-sm font-medium text-muted-foreground">{user?.email}</p></div>
@@ -59,7 +62,7 @@ export const ProfileCard = () => {
             </div>
           ) : (
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-foreground">{user?.name || 'Not set'}</p>
+              <p className="text-sm font-medium text-foreground">{user?.displayName || 'Not set'}</p>
               <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)}><Edit className="h-4 w-4" /></Button>
             </div>
           )}
