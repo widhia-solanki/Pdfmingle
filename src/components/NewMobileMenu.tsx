@@ -10,7 +10,6 @@ import Link from "next/link";
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { useSession, signIn, signOut } from 'next-auth/react'; // Import from next-auth
 import { UserNav } from './UserNav';
 
 // ... PDFMingleLogo component is the same
