@@ -13,14 +13,13 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from '@/components/ui/button';
 import { toolArray, iconMap } from '@/constants/tools';
-import { useSession, signIn, signOut } from 'next-auth/react'; // Import from next-auth
+import { useAuth } from '@/contexts/AuthContext'; // Use our Firebase Auth Context
 import { cn } from '@/lib/utils';
-import { Info, Mail, LogIn, LogOut, User, FileQuestion } from 'lucide-react';
-import { UserNav } from './UserNav'; // We will use UserNav for the logged-in state
+import { Info, Mail, LogIn, FileQuestion } from 'lucide-react';
+import { UserNav } from './UserNav';
 
 export const ToolsMenu = () => {
-  const { data: session, status } = useSession(); // Use the correct hook
-  const loading = status === 'loading';
+  const { user, loading, signInWithGoogle } = useAuth();
 
   return (
     <NavigationMenu>
@@ -46,14 +45,12 @@ export const ToolsMenu = () => {
         <NavigationMenuItem className="ml-4">
           {loading ? (
             <div className="h-10 w-10 bg-muted animate-pulse rounded-full" />
-          ) : session?.user ? (
+          ) : user ? (
             <UserNav />
           ) : (
-            <Button asChild>
-              <Link href="/api/auth/signin" onClick={(e) => { e.preventDefault(); signIn('google'); }}>
-                <LogIn className="mr-2 h-4 w-4" />
-                Login
-              </Link>
+            <Button onClick={() => signInWithGoogle()}>
+              <LogIn className="mr-2 h-4 w-4" />
+              Login
             </Button>
           )}
         </NavigationMenuItem>
