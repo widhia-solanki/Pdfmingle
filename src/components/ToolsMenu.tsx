@@ -13,13 +13,13 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Button } from '@/components/ui/button';
 import { toolArray, iconMap } from '@/constants/tools';
-import { useAuth } from '@/contexts/AuthContext'; // Use our Firebase Auth Context
+import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { Info, Mail, LogIn, FileQuestion } from 'lucide-react';
 import { UserNav } from './UserNav';
 
 export const ToolsMenu = () => {
-  const { user, loading, signInWithGoogle } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <NavigationMenu>
@@ -48,9 +48,13 @@ export const ToolsMenu = () => {
           ) : user ? (
             <UserNav />
           ) : (
-            <Button onClick={() => signInWithGoogle()}>
-              <LogIn className="mr-2 h-4 w-4" />
-              Login
+            // --- THIS IS THE FIX ---
+            // The button now correctly links to the /login page.
+            <Button asChild>
+              <Link href="/login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Link>
             </Button>
           )}
         </NavigationMenuItem>
