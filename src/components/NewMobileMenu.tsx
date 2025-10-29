@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useRouter } from 'next/router';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/contexts/AuthContext'; // Use our Firebase Auth Context
+import { useAuth } from '@/contexts/AuthContext';
 
 const PDFMingleLogo = () => (
     <Link href="/" className="flex items-center gap-2 text-2xl font-bold tracking-tighter text-foreground no-underline">
@@ -23,7 +23,7 @@ const PDFMingleLogo = () => (
 export const NewMobileMenu = () => {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
-    const { user, loading, signInWithGoogle, logout } = useAuth();
+    const { user, loading, logout } = useAuth();
 
     const getInitials = (name: string | null | undefined) => {
         if (!name) return user?.email ? user.email.substring(0, 2).toUpperCase() : 'U';
@@ -35,11 +35,6 @@ export const NewMobileMenu = () => {
     const handleLogoutClick = () => {
         setIsOpen(false);
         logout();
-    };
-
-    const handleLoginClick = () => {
-        signInWithGoogle();
-        setIsOpen(false);
     };
 
     return (
@@ -79,7 +74,17 @@ export const NewMobileMenu = () => {
                     </Accordion>
                     <Separator />
                     <div className="flex flex-col gap-1 px-3 pt-2">
-                        {loading ? (<div className="h-12 w-full bg-muted animate-pulse rounded-md" />) : user ? (<Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLogoutClick}><LogOut className="h-6 w-6" /><span className="font-medium">Logout</span></Button>) : (<Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLoginClick}><LogIn className="h-6 w-6" /><span className="font-medium">Login</span></Button>)}
+                        {loading ? (<div className="h-12 w-full bg-muted animate-pulse rounded-md" />) : user ? (
+                            <Button variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground" onClick={handleLogoutClick}><LogOut className="h-6 w-6" /><span className="font-medium">Logout</span></Button>
+                        ) : (
+                            // --- THIS IS THE FIX ---
+                            // The button now correctly links to the /login page.
+                            <Button asChild variant="outline" className="justify-start gap-3 p-3 h-auto text-muted-foreground">
+                                <Link href="/login" onClick={() => setIsOpen(false)}>
+                                    <LogIn className="h-6 w-6" /><span className="font-medium">Login</span>
+                                </Link>
+                            </Button>
+                        )}
                         <Link href="/contact" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"><Mail className="h-6 w-6" /><span className="font-medium">Contact Us</span></Link>
                         <Link href="/about" onClick={() => setIsOpen(false)} className="flex items-center gap-3 p-3 rounded-md text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors"><Info className="h-6 w-6" /><span className="font-medium">About Us</span></Link>
                     </div>
