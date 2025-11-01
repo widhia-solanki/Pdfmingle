@@ -1,3 +1,4 @@
+```tsx
 // src/pages/login.tsx
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
@@ -118,7 +119,7 @@ const LoginPage: NextPage = () => {
             <style jsx global>{`
                 /* --- Character Animation CSS --- */
                 .characters {
-                    --char-transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+                    --char-transition: transform 0.3s ease-in-out;
                 }
                 .character { position: absolute; transition: var(--char-transition); }
                 .face { position: absolute; width: 100%; height: 100%; }
@@ -126,66 +127,79 @@ const LoginPage: NextPage = () => {
                 .mouth { position: absolute; background-color: #111; transition: all 0.2s ease; }
 
                 /* -- Character Definitions -- */
-                .char-purple { top: 20%; left: 30%; width: 120px; height: 140px; }
+                .char-purple { top: 25%; left: 35%; width: 80px; height: 90px; }
                 .char-purple .shape { width: 100%; height: 100%; background-color: #6c47ff; clip-path: polygon(15% 0, 100% 20%, 85% 100%, 0 80%); }
-                .char-purple .eye { width: 10px; height: 12px; }
-                .char-purple .eye-left { top: 40px; left: 30px; }
-                .char-purple .eye-right { top: 40px; right: 30px; }
-                .char-purple .mouth { top: 75px; left: 50%; transform: translateX(-50%); width: 25px; height: 4px; border-radius: 2px; }
+                .char-purple .eye { width: 8px; height: 10px; }
+                .char-purple .eye-left { top: 30px; left: 20px; }
+                .char-purple .eye-right { top: 30px; right: 20px; }
+                .char-purple .mouth { top: 55px; left: 50%; transform: translateX(-50%); width: 20px; height: 3px; border-radius: 2px; }
 
-                .char-black { top: 45%; left: 45%; width: 80px; height: 100px; z-index: 10; }
-                .char-black .shape { width: 100%; height: 100%; background-color: #111; border-radius: 15px 15px 10px 10px; }
-                .char-black .eye { background-color: #fff; width: 10px; height: 10px; }
-                .char-black .eye-left { top: 40px; left: 20px; }
-                .char-black .eye-right { top: 40px; right: 20px; }
+                .char-black { top: 40%; left: 40%; width: 60px; height: 70px; z-index: 10; }
+                .char-black .shape { width: 100%; height: 100%; background-color: #111; border-radius: 10px 10px 8px 8px; }
+                .char-black .eye { background-color: #fff; width: 8px; height: 8px; }
+                .char-black .eye-left { top: 30px; left: 18px; }
+                .char-black .eye-right { top: 30px; right: 18px; }
                 
-                .char-yellow { top: 50%; left: 60%; width: 70px; height: 110px; }
-                .char-yellow .shape { width: 100%; height: 100%; background-color: #ffc700; border-radius: 35px 35px 20px 20px; }
-                .char-yellow .eye { width: 8px; height: 8px; top: 45px; }
-                .char-yellow .eye-left { left: 20px; }
-                .char-yellow .eye-right { right: 20px; }
-                .char-yellow .mouth { top: 65px; left: 50%; transform: translateX(-50%); width: 4px; height: 12px; border-radius: 2px; }
+                .char-yellow { top: 50%; left: 50%; width: 50px; height: 70px; }
+                .char-yellow .shape { width: 100%; height: 100%; background-color: #ffc700; border-radius: 25px 25px 15px 15px; }
+                .char-yellow .eye { width: 6px; height: 6px; top: 30px; }
+                .char-yellow .eye-left { left: 15px; }
+                .char-yellow .eye-right { right: 15px; }
+                .char-yellow .mouth { top: 45px; left: 50%; transform: translateX(-50%); width: 3px; height: 8px; border-radius: 2px; }
 
-                .char-orange { top: 65%; left: 25%; width: 180px; height: 90px; }
-                .char-orange .shape { width: 100%; height: 100%; background-color: #ff6b2e; border-radius: 90px 90px 0 0; }
-                .char-orange .mouth { top: 30px; left: 50%; transform: translateX(-50%); width: 25px; height: 25px; background: transparent; border: 4px solid #111; border-radius: 50%; border-top-color: transparent; border-left-color: transparent; border-right-color: transparent; }
+                .char-orange { top: 60%; left: 30%; width: 120px; height: 60px; }
+                .char-orange .shape { width: 100%; height: 100%; background-color: #ff6b2e; border-radius: 60px 60px 0 0; }
+                .char-orange .mouth { top: 20px; left: 50%; transform: translateX(-50%); width: 20px; height: 20px; background: transparent; border: 3px solid #111; border-radius: 50%; border-top-color: transparent; border-left-color: transparent; border-right-color: transparent; }
+
+                /* --- Idle Animation --- */
+                @keyframes idle-bob {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                }
+                [data-state='idle'] .character {
+                    animation: idle-bob 3s ease-in-out infinite;
+                }
 
                 /* --- Animation States --- */
-                /* Idle */
-                [data-state='idle'] .char-orange .mouth { transform: translateX(-50%) rotate(180deg); top: 50px; }
-                [data-state='idle'] .char-purple { transform: translateY(10px); }
+                /* Idle - Reset */
+                [data-state='idle'] .char-orange .mouth { transform: translateX(-50%) rotate(180deg); top: 30px; }
+                [data-state='idle'] .char-purple { transform: translateY(5px); }
 
                 /* Typing Email */
                 [data-state='typing-email'] .character { transform-origin: bottom center; }
-                [data-state='typing-email'] .char-purple { transform: rotate(-8deg) translateX(-20px) translateY(10px) scale(0.95); }
-                [data-state='typing-email'] .char-black { transform: rotate(-5deg) translateX(-15px) scale(0.95); }
-                [data-state='typing-email'] .char-yellow { transform: rotate(-3deg) translateX(-10px) scale(0.95); }
-                [data-state='typing-email'] .eye { animation: look-right 0.5s forwards; }
-                @keyframes look-right { to { transform: translateX(3px); } }
+                [data-state='typing-email'] .char-purple { transform: rotate(-5deg) translateX(-15px) translateY(5px); }
+                [data-state='typing-email'] .char-black { transform: rotate(-3deg) translateX(-10px); }
+                [data-state='typing-email'] .char-yellow { transform: rotate(-2deg) translateX(-8px); }
+                [data-state='typing-email'] .char-purple .eye-left, [data-state='typing-email'] .char-purple .eye-right,
+                [data-state='typing-email'] .char-black .eye-left, [data-state='typing-email'] .char-black .eye-right,
+                [data-state='typing-email'] .char-yellow .eye-left, [data-state='typing-email'] .char-yellow .eye-right,
+                [data-state='typing-email'] .char-orange .mouth { transform-origin: center; transform: translateX(-3px); }
 
                 /* Typing Password */
-                [data-state='typing-password'] .char-purple .eye, [data-state='typing-password'] .char-black .eye { transform: scaleY(0.2); top: 45px; }
-                [data-state='typing-password'] .char-yellow .mouth { height: 4px; top: 70px; }
-                [data-state='typing-password'] .char-orange .mouth { height: 4px; border-radius: 2px; border: none; background: #111; top: 40px; }
+                [data-state='typing-password'] .char-purple .eye-left, [data-state='typing-password'] .char-purple .eye-right,
+                [data-state='typing-password'] .char-black .eye-left, [data-state='typing-password'] .char-black .eye-right { transform: scaleY(0.1) translateY(2px); }
+                [data-state='typing-password'] .char-yellow .mouth { height: 3px; top: 48px; }
+                [data-state='typing-password'] .char-orange .mouth { height: 3px; border-radius: 2px; border: none; background: #111; top: 25px; }
                 
                 /* Password Peek (Toggle Visibility) */
                 @keyframes peek-animation {
                     0%, 100% { transform: translateY(0); }
-                    20%, 80% { transform: translateY(-40px); }
-                    40%, 60% { transform: translateY(-40px) scale(1.1); }
+                    50% { transform: translateY(-20px); }
                 }
-                [data-state='peek'] .character { animation: peek-animation 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55); }
-                [data-state='peek'] .eye { width: 14px !important; height: 14px !important; }
-                [data-state='peek'] .char-black .eye { background-color: #fff !important; } /* Ensure visibility */
-                [data-state='peek'] .mouth { transform: translateX(-50%) scale(1.2); }
+                [data-state='peek'] .character { animation: peek-animation 0.4s ease; }
+                [data-state='peek'] .char-purple .eye, [data-state='peek'] .char-black .eye { width: 10px; height: 10px; }
+                [data-state='peek'] .char-yellow .mouth { width: 15px; height: 15px; top: 40px; border-radius: 50%; background: #111; border: none; }
+                [data-state='peek'] .char-orange .mouth { width: 25px; height: 25px; top: 18px; }
                 
                 /* Submitting */
                 [data-state='submitting'] .eye { transform: scaleY(0.1); }
+                [data-state='submitting'] .mouth { transform: translateX(-50%) scale(0.8); }
                 
                 /* Error */
-                @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+                @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-3px); } 75% { transform: translateX(3px); } }
                 [data-state='error'] .character { animation: shake 0.3s ease; }
-                [data-state='error'] .mouth { transform: translateX(-50%) rotate(180deg); }
+                [data-state='error'] .char-purple .mouth, [data-state='error'] .char-yellow .mouth { transform: translateX(-50%) rotate(180deg); }
+                [data-state='error'] .char-orange .mouth { transform: translateX(-50%) rotate(180deg); top: 25px; }
             `}</style>
             
             <div className="flex h-screen w-full bg-[#f8f8f8] font-sans">
