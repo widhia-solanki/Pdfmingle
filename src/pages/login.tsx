@@ -1,4 +1,3 @@
-```tsx
 // src/pages/login.tsx
 
 import { useState, useEffect, useRef, FormEvent } from 'react';
