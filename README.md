@@ -1,5 +1,5 @@
-
-
+Originally developed under a previous account.
+Repository ownership and maintenance currently by @widhia-solanki.
 
 # PDFMingle - Your All-in-One PDF Toolkit
 
