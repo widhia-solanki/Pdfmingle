@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Edit } from 'lucide-react';
+import { buildCanonical } from '@/lib/seo';
 
 // Dynamically import the heavy thumbnail viewer
 const PdfThumbnailViewer = dynamic(() => import('@/components/tools/PdfThumbnailViewer').then(mod => mod.PdfThumbnailViewer), {
@@ -121,7 +122,7 @@ const EditPdfPage: NextPage = () => {
 
   return (
     <>
-      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.com/${tool.value}`} />
+      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={buildCanonical(`/${tool.value}`)} />
       
         {status === 'idle' && (
           <div className="container mx-auto px-4 py-12 text-center">

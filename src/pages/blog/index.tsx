@@ -4,6 +4,7 @@ import { GetStaticProps, NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
+import { buildCanonical } from '@/lib/seo';
 
 const allPosts = [
   {
@@ -21,6 +22,16 @@ const allPosts = [
     title: 'How to Convert PDF to Word in 3 Easy Steps',
     description: 'A step-by-step guide to turning your PDFs into editable Word documents online for free, without losing formatting.',
   },
+  {
+    slug: 'generative-engine-optimization-for-pdf-tools',
+    title: 'Generative Engine Optimization (GEO) for PDF Tools: A Practical Playbook',
+    description: 'How to make your PDF workflows discoverable and consumable by AI chat and generative engines.',
+  },
+  {
+    slug: 'answer-engine-optimization-for-pdfmingle',
+    title: 'Answer Engine Optimization (AEO) + LLM Optimization (LLMO) Checklist',
+    description: 'How to structure pages, schema, and summaries so answer engines and LLMs can surface PDFMingle instantly.',
+  },
 ];
 
 interface Post {
@@ -34,7 +45,7 @@ interface BlogIndexPageProps {
 }
 
 const BlogIndexPage: NextPage<BlogIndexPageProps> = ({ posts }) => {
-    const canonicalUrl = "https://pdfmingle.net/blog";
+    const canonicalUrl = buildCanonical('/blog');
 
     return (
         <>

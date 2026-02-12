@@ -10,6 +10,7 @@ import { FileArranger } from '@/components/tools/FileArranger';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+import { buildCanonical } from '@/lib/seo';
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
@@ -95,7 +96,7 @@ const ImageToPdfPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
+        canonical={buildCanonical(`/${tool.value}`)}
       />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold text-foreground">{tool.h1}</h1>

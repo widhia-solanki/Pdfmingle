@@ -9,9 +9,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { buildCanonical } from '@/lib/seo';
 
 const BlogPost3 = () => {
-    const canonicalUrl = "https://pdfmingle.net/blog/how-to-compress-a-pdf";
+    const canonicalUrl = buildCanonical('/blog/how-to-compress-a-pdf');
     const faqs = [
         { question: "Will compressing my PDF make the images look blurry?", answer: "No. Our tool uses smart compression that significantly reduces the file size while preserving the visual quality of images and text, making it perfect for most documents." },
         { question: "Is it safe to upload confidential documents for compression?", answer: "Yes, security is a top priority. Your files are uploaded over an encrypted connection and are automatically and permanently deleted from our servers a few hours after processing." },

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Lock } from 'lucide-react';
+import { buildCanonical } from '@/lib/seo';
 
 type Status = 'idle' | 'options' | 'processing' | 'success' | 'error';
 
@@ -97,7 +98,7 @@ const UnlockPDFPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.com/${tool.value}`}
+        canonical={buildCanonical(`/${tool.value}`)}
       />
       <div className="container mx-auto px-4 py-8 pt-20">
         <h1 className="text-4xl font-bold text-center mb-4">{tool.h1}</h1>

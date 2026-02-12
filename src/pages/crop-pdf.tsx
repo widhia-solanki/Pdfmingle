@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Crop } from 'lucide-react';
+import { buildCanonical } from '@/lib/seo';
 
 if (typeof window !== 'undefined') {
   pdfjsLib.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.js`;
@@ -126,7 +127,7 @@ const CropPdfPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.com/${tool.value}`}
+        canonical={buildCanonical(`/${tool.value}`)}
       />
       <main className="w-full">
         {(status === 'idle' || status === 'error') && (

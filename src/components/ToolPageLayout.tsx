@@ -10,6 +10,7 @@ import { ResultsPage } from '@/components/ResultsPage';
 import { useToast } from '@/hooks/use-toast';
 import { mergePDFs, splitPDF, rotatePDF, jpgToPDF, addPageNumbersPDF } from '@/lib/pdf-tools';
 import { FileQuestion } from 'lucide-react';
+import { buildCanonical } from '@/lib/seo';
 
 
 interface ToolPageLayoutProps {
@@ -149,7 +150,7 @@ export const ToolPageLayout = ({ tool }: ToolPageLayoutProps) => {
         <meta property="og:title" content={tool.metaTitle} />
         <meta property="og:description" content={tool.metaDescription} />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content={`https://www.pdfmingle.org/${tool.value}`} />
+        <meta property="og:url" content={buildCanonical(`/${tool.value}`)} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}

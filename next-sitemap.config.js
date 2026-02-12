@@ -2,7 +2,7 @@
 
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://pdfmingle.net',
+  siteUrl: 'https://pdfmmingle.net',
   generateRobotsTxt: true, // This will create a robots.txt file
   
   // Custom transformation to add priority and changefreq
@@ -12,9 +12,9 @@ module.exports = {
     // Manually define the list of tool pages for priority checking
     const toolPages = [
       '/merge-pdf', '/split-pdf', '/compress-pdf', '/pdf-to-word', '/word-to-pdf',
-      '/pdf-to-excel', '/excel-to-pdf', '/pdf-to-ppt', '/ppt-to-pdf', '/image-to-pdf',
+      '/pdf-to-excel', '/excel-to-pdf', '/pdf-to-powerpoint', '/powerpoint-to-pdf', '/image-to-pdf',
       '/pdf-to-image', '/protect-pdf', '/unlock-pdf', '/rotate-pdf', '/esign-pdf',
-      '/edit-pdf', '/organize-pdf'
+      '/edit-pdf', '/organize-pdf', '/add-watermark'
     ];
 
     if (path === '/') {

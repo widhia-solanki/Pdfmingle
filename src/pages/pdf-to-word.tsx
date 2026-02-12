@@ -7,6 +7,7 @@ import { ToolDownloader } from '@/components/ToolDownloader';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
+import { buildCanonical, buildOgImage } from '@/lib/seo';
 
 type Status = 'idle' | 'processing' | 'success' | 'error';
 
@@ -124,11 +125,12 @@ const PdfToWordPage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
+        canonical={buildCanonical(`/${tool.value}`)}
         openGraph={{
           title: tool.metaTitle,
           description: tool.metaDescription,
-          url: `https://pdfmingle.net/${tool.value}`,
+          url: buildCanonical(`/${tool.value}`),
+          images: [{ url: buildOgImage() }],
         }}
       />
       <main className="container mx-auto px-4 py-12 text-center">

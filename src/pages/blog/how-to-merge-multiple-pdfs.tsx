@@ -9,9 +9,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { buildCanonical } from '@/lib/seo';
 
 const BlogPost2 = () => {
-    const canonicalUrl = "https://pdfmingle.net/blog/how-to-merge-multiple-pdfs";
+    const canonicalUrl = buildCanonical('/blog/how-to-merge-multiple-pdfs');
     const faqs = [
         { question: "Can I merge different file types together?", answer: "Our Merge PDF tool works specifically with PDF files. If you have other file types like Word or JPG, you should first convert them to PDF using our converter tools, and then you can merge them together." },
         { question: "Is there a limit on the number of files I can merge?", answer: "Our free tool allows you to merge up to 20 PDF files at once, which covers most common needs for reports, presentations, and document assembly." },

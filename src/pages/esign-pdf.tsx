@@ -3,6 +3,7 @@
 import { ToolComingSoon } from "@/components/ToolComingSoon";
 import { toolArray } from "@/constants/tools";
 import { NextSeo } from "next-seo";
+import { buildCanonical } from "@/lib/seo";
 
 const ESignPdfPage = () => {
     const tool = toolArray.find(t => t.value === 'esign-pdf');
@@ -16,7 +17,7 @@ const ESignPdfPage = () => {
             <NextSeo
                 title={tool.metaTitle}
                 description={tool.metaDescription}
-                canonical={`https://pdfmingle.com/${tool.value}`}
+                canonical={buildCanonical(`/${tool.value}`)}
             />
             <ToolComingSoon tool={tool} />
         </>

@@ -4,6 +4,7 @@ import { NextPage } from 'next';
 import { NextSeo } from 'next-seo';
 import { ToolGrid } from '@/components/ToolGrid';
 import { toolArray } from '@/constants/tools';
+import { buildCanonical } from '@/lib/seo';
 
 const AllToolsPage: NextPage = () => {
   return (
@@ -11,7 +12,7 @@ const AllToolsPage: NextPage = () => {
       <NextSeo
         title="All PDF Tools - Free & Secure"
         description="Explore the complete suite of online PDF tools from PDFMingle. Merge, split, compress, convert, edit, and secure your PDF files for free."
-        canonical="https://pdfmingle.net/tools"
+        canonical={buildCanonical('/tools')}
       />
       <div className="container mx-auto py-12 md:py-16">
         <header className="text-center mb-12">

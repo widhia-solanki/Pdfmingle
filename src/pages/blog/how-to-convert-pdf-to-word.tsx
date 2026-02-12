@@ -4,9 +4,10 @@ import { NextSeo } from 'next-seo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Head from 'next/head';
+import { buildCanonical, buildOgImage } from '@/lib/seo';
 
 const BlogPost1 = () => {
-    const canonicalUrl = "https://pdfmingle.net/blog/how-to-convert-pdf-to-word";
+    const canonicalUrl = buildCanonical('/blog/how-to-convert-pdf-to-word');
 
     return (
         <>
@@ -20,7 +21,7 @@ const BlogPost1 = () => {
                     description: "A simple guide to turning your PDFs into editable Word documents online for free.",
                     images: [
                         {
-                            url: 'https://pdfmingle.net/og-image.png', // Assumes a general OG image
+                            url: buildOgImage(),
                             width: 1200,
                             height: 630,
                             alt: 'A guide on converting PDF to Word.',

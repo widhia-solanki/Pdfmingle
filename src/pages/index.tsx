@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
 import Image from 'next/image';
+import { SITE_URL } from '@/lib/seo';
 
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 pt-8 md:pt-12">
@@ -74,8 +75,8 @@ const HomePage = () => {
   if (isMobile === undefined) { return <div className="w-full h-screen bg-background" />; }
   return (
     <>
-      <NextSeo title="Free & Secure Online PDF Tools" description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs." canonical="https://pdfmingle.com" />
-      <WebPageJsonLd name="PDFMingle" description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs." id="https://pdfmingle.com/#webpage" url="https://pdfmingle.com" />
+      <NextSeo title="Free & Secure Online PDF Tools" description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs." canonical={SITE_URL} />
+      <WebPageJsonLd name="PDFMingle" description="Merge, split, compress, convert, and protect your PDF files for free. PDFMingle is the ultimate online suite of tools for all your PDF needs." id={`${SITE_URL}/#webpage`} url={SITE_URL} />
       <div className="w-full bg-background">
         {isMobile ? (<MobileHero activeCategory={activeCategory} setActiveCategory={setActiveCategory} />) : (<DesktopHero />)}
         <ToolGrid tools={filteredTools} />

@@ -9,6 +9,7 @@ import { ToolDownloader } from '@/components/ToolDownloader';
 import { Button } from '@/components/ui/button';
 import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
+import { buildCanonical } from '@/lib/seo';
 
 type Status = 'idle' | 'processing' | 'success' | 'error';
 
@@ -116,7 +117,7 @@ const PdfToImagePage: NextPage = () => {
       <NextSeo
         title={tool.metaTitle}
         description={tool.metaDescription}
-        canonical={`https://pdfmingle.net/${tool.value}`}
+        canonical={buildCanonical(`/${tool.value}`)}
       />
       <main className="container mx-auto px-4 py-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800">{tool.h1}</h1>

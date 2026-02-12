@@ -15,6 +15,7 @@ import { tools } from '@/constants/tools';
 import { useToast } from '@/hooks/use-toast';
 import { Droplets } from 'lucide-react';
 import { addWatermarkToPdf } from '@/lib/pdf/watermark';
+import { buildCanonical } from '@/lib/seo';
 
 const PdfThumbnailViewer = dynamic(() => import('@/components/tools/PdfThumbnailViewer').then(mod => mod.PdfThumbnailViewer), {
   ssr: false,
@@ -114,7 +115,7 @@ const AddWatermarkPage: NextPage = () => {
 
   return (
     <>
-      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={`https://pdfmingle.com/${tool.value}`} />
+      <NextSeo title={tool.metaTitle} description={tool.metaDescription} canonical={buildCanonical(`/${tool.value}`)} />
       <div className="w-full h-full">
         {(status === 'idle' || status === 'error') ? (
           <div className="container mx-auto px-4 py-12 text-center">

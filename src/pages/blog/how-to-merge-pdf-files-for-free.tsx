@@ -1,7 +1,8 @@
 import { NextSeo } from 'next-seo';
+import { buildCanonical } from '@/lib/seo';
 
 const HowToMergePdfPage = () => {
-  const pageUrl = "https://www.pdfmingle.com/blog/how-to-merge-pdf-files-for-free";
+  const pageUrl = buildCanonical('/blog/how-to-merge-pdf-files-for-free');
   const pageTitle = "How to Merge PDF Files for Free Online | PDFMingle";
   const pageDescription = "Easily merge or combine multiple PDF files into one organized document for free with PDFMingle's online PDF joiner. Fast, secure, and no software needed.";
 

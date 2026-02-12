@@ -154,9 +154,9 @@ const AboutPage = () => {
               <Mail className="h-6 w-6" />
               <span>contact.dafda.pdfmingle@gmail.com</span>
             </a>
-            <a href="https://pdfmingle.net" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-lg text-muted-foreground hover:text-primary transition-colors">
+            <a href="https://pdfmmingle.net" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-lg text-muted-foreground hover:text-primary transition-colors">
               <Globe className="h-6 w-6" />
-              <span>pdfmingle.net</span>
+              <span>pdfmmingle.net</span>
             </a>
           </div>
         </div>
