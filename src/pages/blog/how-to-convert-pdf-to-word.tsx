@@ -29,49 +29,49 @@ const BlogPost1 = () => {
                 }}
             />
 
-            <div className="bg-white py-16 sm:py-24">
+            <div className="bg-background py-16 sm:py-24">
                 <div className="container mx-auto px-4 max-w-3xl">
-                    <article className="prose lg:prose-xl mx-auto">
+                    <article className="prose lg:prose-xl mx-auto dark:prose-invert">
                         {/* Article Header */}
                         <header className="mb-12 text-center">
-                            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Step-by-Step Guide</p>
-                            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                            <p className="text-sm font-semibold uppercase tracking-wide text-primary">Step-by-Step Guide</p>
+                            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                                 How to Convert PDF to Word in 3 Easy Steps
                             </h1>
-                            <p className="mt-6 text-xl text-gray-500">
+                            <p className="mt-6 text-xl text-muted-foreground">
                                 Converting a PDF to an editable Word document is simple with the right tool. In this post, we'll show you exactly how to do it for free online.
                             </p>
                         </header>
 
                         {/* Article Body */}
-                        <div className="space-y-8 text-lg text-gray-600">
+                        <div className="space-y-8 text-lg text-muted-foreground">
                             <p>
                                 Have you ever needed to make changes to a PDF file but couldn't? It's a common problem. PDFs are great for sharing, but they aren't designed to be edited. The solution is to convert your PDF into a Microsoft Word document (.DOCX).
                             </p>
 
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 1: Upload Your PDF</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 1: Upload Your PDF</h2>
                                 <p>
-                                    First, visit our <Link href="/pdf-to-word" className="text-blue-600 hover:underline font-semibold">PDF to Word Converter</Link> page. You can either drag and drop your file directly onto the page or click the "Choose File" button to select a PDF from your computer. Our tool works securely in your browser and can handle PDFs of any size.
+                                    First, visit our <Link href="/pdf-to-word" className="text-primary hover:underline font-semibold">PDF to Word Converter</Link> page. You can either drag and drop your file directly onto the page or click the "Choose File" button to select a PDF from your computer. Our tool works securely in your browser and can handle PDFs of any size.
                                 </p>
                             </div>
 
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 2: Start the Conversion</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 2: Start the Conversion</h2>
                                 <p>
                                     Once your PDF is uploaded, the tool is ready to go. Simply click the "Convert" button to begin the process. Our powerful engine will process your file, carefully converting each page into editable Word content. This usually takes just a few seconds.
                                 </p>
                             </div>
                             
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 3: Download Your Word Document</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 3: Download Your Word Document</h2>
                                 <p>
                                     After the conversion is complete, a download button will appear. Click it to save the new .DOCX file to your computer. You can now open it in Microsoft Word, Google Docs, or any other word processor to make any edits you need.
                                 </p>
                             </div>
 
-                            <div className="border-l-4 border-blue-500 pl-6 py-2">
-                                <p className="font-semibold text-gray-700">
+                            <div className="border-l-4 border-primary pl-6 py-2">
+                                <p className="font-semibold text-foreground">
                                     <span className="font-bold">Pro Tip:</span> If your original PDF contains complex tables or images, double-check the formatting in the Word document to ensure everything looks perfect.
                                 </p>
                             </div>

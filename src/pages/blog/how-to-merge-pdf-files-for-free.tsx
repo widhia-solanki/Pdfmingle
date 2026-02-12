@@ -18,8 +18,8 @@ const HowToMergePdfPage = () => {
           site_name: 'PDFMingle',
         }}
       />
-      <main className="container mx-auto px-4 py-8">
-        <article className="prose lg:prose-xl max-w-4xl mx-auto">
+      <main className="container mx-auto px-4 py-8 bg-background">
+        <article className="prose lg:prose-xl max-w-4xl mx-auto dark:prose-invert text-foreground">
           <h1>How to Merge PDF Files for Free</h1>
           
           <p>

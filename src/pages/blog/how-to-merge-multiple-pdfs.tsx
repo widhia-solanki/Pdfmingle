@@ -37,46 +37,46 @@ const BlogPost2 = () => {
                 }))}
             />
 
-            <div className="bg-white py-16 sm:py-24">
+            <div className="bg-background py-16 sm:py-24">
                 <div className="container mx-auto px-4 max-w-3xl">
-                    <article className="prose lg:prose-xl mx-auto">
+                    <article className="prose lg:prose-xl mx-auto dark:prose-invert">
                         <header className="mb-12 text-center">
-                            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">Combine Documents</p>
-                            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                            <p className="text-sm font-semibold uppercase tracking-wide text-primary">Combine Documents</p>
+                            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                                 How to Merge Multiple PDFs into One File for Free
                             </h1>
-                            <p className="mt-6 text-xl text-gray-500">
+                            <p className="mt-6 text-xl text-muted-foreground">
                                 Whether you're compiling a report, creating an e-book, or organizing contracts, merging PDFs is an essential task. Here's how to do it in seconds.
                             </p>
                         </header>
 
-                        <div className="space-y-8 text-lg text-gray-600">
+                        <div className="space-y-8 text-lg text-muted-foreground">
                             <p>
                                 Combining several PDF documents into one is a simple way to keep your files organized and easy to share. Instead of sending multiple attachments, you can send a single, streamlined file. Let's walk through the process.
                             </p>
 
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 1: Upload Your Files</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 1: Upload Your Files</h2>
                                 <p>
-                                    Navigate to the <Link href="/merge-pdf" className="text-blue-600 hover:underline font-semibold">PDFMingle Merge PDF tool</Link>. You can select multiple files from your device at once or drag and drop them directly into the browser window.
+                                    Navigate to the <Link href="/merge-pdf" className="text-primary hover:underline font-semibold">PDFMingle Merge PDF tool</Link>. You can select multiple files from your device at once or drag and drop them directly into the browser window.
                                 </p>
                             </div>
 
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 2: Arrange and Reorder</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 2: Arrange and Reorder</h2>
                                 <p>
                                     After uploading, you'll see a preview of all your documents. Simply drag and drop the file thumbnails to arrange them in the exact order you want them to appear in the final, merged document.
                                 </p>
                             </div>
                             
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 3: Merge Instantly and Download</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 3: Merge Instantly and Download</h2>
                                 <p>
                                     Once you're happy with the order, click the "Merge PDF" button. Our tool will instantly combine the files. You can then download your new, single PDF document immediately.
                                 </p>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-800 pt-8">Why Use PDFMingle to Merge Files?</h2>
+                            <h2 className="text-2xl font-bold text-foreground pt-8">Why Use PDFMingle to Merge Files?</h2>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong>Fast and Secure:</strong> Your files are processed quickly and are automatically deleted from our servers for your privacy.</li>
                                 <li><strong>Unlimited Free Use:</strong> Merge as many documents as you need, as often as you want, completely for free.</li>
@@ -84,14 +84,14 @@ const BlogPost2 = () => {
                             </ul>
 
                             <section className="pt-8">
-                                <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Frequently Asked Questions</h2>
+                                <h2 className="text-2xl font-bold text-center mb-6 text-foreground">Frequently Asked Questions</h2>
                                 <Accordion type="single" collapsible>
                                     {faqs.map((faq, index) => (
                                         <AccordionItem value={`item-${index}`} key={index}>
-                                            <AccordionTrigger className="text-left font-semibold text-lg hover:no-underline">
+                                            <AccordionTrigger className="text-left font-semibold text-lg hover:no-underline text-foreground">
                                                 {faq.question}
                                             </AccordionTrigger>
-                                            <AccordionContent className="text-base text-gray-600 leading-relaxed">
+                                            <AccordionContent className="text-base text-muted-foreground leading-relaxed">
                                                 {faq.answer}
                                             </AccordionContent>
                                         </AccordionItem>

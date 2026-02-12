@@ -37,46 +37,46 @@ const BlogPost3 = () => {
                 }))}
             />
 
-            <div className="bg-white py-16 sm:py-24">
+            <div className="bg-background py-16 sm:py-24">
                 <div className="container mx-auto px-4 max-w-3xl">
-                    <article className="prose lg:prose-xl mx-auto">
+                    <article className="prose lg:prose-xl mx-auto dark:prose-invert">
                         <header className="mb-12 text-center">
-                            <p className="text-sm font-semibold uppercase tracking-wide text-blue-600">File Optimization</p>
-                            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+                            <p className="text-sm font-semibold uppercase tracking-wide text-primary">File Optimization</p>
+                            <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                                 How to Compress a PDF Without Losing Quality
                             </h1>
-                            <p className="mt-6 text-xl text-gray-500">
+                            <p className="mt-6 text-xl text-muted-foreground">
                                 Large PDF files are slow to email and a pain to upload. Here’s the secret to making them smaller while keeping them sharp and clear.
                             </p>
                         </header>
 
-                        <div className="space-y-8 text-lg text-gray-600">
+                        <div className="space-y-8 text-lg text-muted-foreground">
                             <p>
                                 A massive PDF can bring your workflow to a halt. Whether you're trying to meet an email attachment limit or just want to save storage space, compressing your PDF is the solution. The best part? You don't have to sacrifice quality.
                             </p>
 
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 1: Upload Your Large PDF</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 1: Upload Your Large PDF</h2>
                                 <p>
-                                    Start by visiting the <Link href="/compress-pdf" className="text-blue-600 hover:underline font-semibold">PDFMingle Compress PDF tool</Link>. Drag your large PDF file into the browser or click the upload button to select it from your device.
+                                    Start by visiting the <Link href="/compress-pdf" className="text-primary hover:underline font-semibold">PDFMingle Compress PDF tool</Link>. Drag your large PDF file into the browser or click the upload button to select it from your device.
                                 </p>
                             </div>
 
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 2: Choose Your Compression Level</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 2: Choose Your Compression Level</h2>
                                 <p>
                                     Our tool gives you control over the final file size. You can typically choose between different levels of compression. For most documents, the recommended setting provides the perfect balance of size reduction and quality preservation.
                                 </p>
                             </div>
                             
-                            <div className="p-6 bg-gray-50 rounded-lg">
-                                <h2 className="text-2xl font-bold text-gray-800 mb-4">Step 3: Download the Smaller File</h2>
+                            <div className="p-6 bg-card border border-border rounded-lg">
+                                <h2 className="text-2xl font-bold text-foreground mb-4">Step 3: Download the Smaller File</h2>
                                 <p>
                                     Click the "Compress" button and let our tool work its magic. In just a few moments, your new, smaller PDF will be ready to download. You'll be surprised how much smaller it is, with fonts and images still looking crisp.
                                 </p>
                             </div>
 
-                            <h2 className="text-2xl font-bold text-gray-800 pt-8">Benefits of Compressing Your PDFs</h2>
+                            <h2 className="text-2xl font-bold text-foreground pt-8">Benefits of Compressing Your PDFs</h2>
                             <ul className="list-disc pl-6 space-y-2">
                                 <li><strong>Email Faster:</strong> Easily attach and send large documents without worrying about size limits.</li>
                                 <li><strong>Save Space:</strong> Keep your device's storage free by shrinking archived files.</li>
@@ -84,14 +84,14 @@ const BlogPost3 = () => {
                             </ul>
 
                             <section className="pt-8">
-                                <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Frequently Asked Questions</h2>
+                                <h2 className="text-2xl font-bold text-center mb-6 text-foreground">Frequently Asked Questions</h2>
                                 <Accordion type="single" collapsible>
                                     {faqs.map((faq, index) => (
                                         <AccordionItem value={`item-${index}`} key={index}>
-                                            <AccordionTrigger className="text-left font-semibold text-lg hover:no-underline">
+                                            <AccordionTrigger className="text-left font-semibold text-lg hover:no-underline text-foreground">
                                                 {faq.question}
                                             </AccordionTrigger>
-                                            <AccordionContent className="text-base text-gray-600 leading-relaxed">
+                                            <AccordionContent className="text-base text-muted-foreground leading-relaxed">
                                                 {faq.answer}
                                             </AccordionContent>
                                         </AccordionItem>
