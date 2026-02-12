@@ -1,288 +1,31 @@
 {
   "polyfillFiles": [
-    "static/chunks/polyfills-78c92fac7aa8fdd8.js"
+    "static/chunks/polyfills.js"
   ],
-  "devFiles": [],
+  "devFiles": [
+    "static/chunks/react-refresh.js"
+  ],
   "ampDevFiles": [],
   "lowPriorityFiles": [
-    "static/222Ew_VIKUWFBVb5LFxRc/_buildManifest.js",
-    "static/222Ew_VIKUWFBVb5LFxRc/_ssgManifest.js"
+    "static/development/_buildManifest.js",
+    "static/development/_ssgManifest.js"
   ],
   "rootMainFiles": [],
   "pages": {
     "/": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/index-2cee9f692c231ae8.js"
-    ],
-    "/404": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/404-3830e1bbc06b2fb2.js"
-    ],
-    "/ToolPage": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/chunks/5733-d5ee68fa118ba297.js",
-      "static/chunks/pages/ToolPage-ca812fcfb205ebdb.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/index.js"
     ],
     "/_app": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/css/5bdaaa6700f4f3a4.css",
-      "static/chunks/pages/_app-d5029797b24a727f.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/_app.js"
     ],
     "/_error": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/_error-00f02c167da2bd70.js"
-    ],
-    "/about": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/about-9500b3168998c91b.js"
-    ],
-    "/account": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/account-faf8f845f5c9fcda.js"
-    ],
-    "/add-watermark": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/chunks/pages/add-watermark-6b2906811ec3f229.js"
-    ],
-    "/blog": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/blog-cce3cfc30c3a3b05.js"
-    ],
-    "/blog/how-to-compress-a-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/blog/how-to-compress-a-pdf-19ef9b277d8b525e.js"
-    ],
-    "/blog/how-to-convert-pdf-to-word": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/blog/how-to-convert-pdf-to-word-0153f31aead80d86.js"
-    ],
-    "/blog/how-to-merge-multiple-pdfs": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/blog/how-to-merge-multiple-pdfs-e2508c15a7349257.js"
-    ],
-    "/blog/how-to-merge-pdf-files-for-free": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/blog/how-to-merge-pdf-files-for-free-57fd0b94e5f5d464.js"
-    ],
-    "/compress-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/css/481c88687278819c.css",
-      "static/chunks/2227-52957b8271fdc817.js",
-      "static/chunks/pages/compress-pdf-9ffb2e3a2fe9a72e.js"
-    ],
-    "/contact": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/contact-0cb301af84f3f471.js"
-    ],
-    "/crop-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/2663-4d611db864e631fd.js",
-      "static/chunks/5443-ac84b7c0d5d63440.js",
-      "static/chunks/pages/crop-pdf-76cefc708c9d34a0.js"
-    ],
-    "/edit-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/chunks/2663-4d611db864e631fd.js",
-      "static/chunks/pages/edit-pdf-3769cd4c79d41281.js"
-    ],
-    "/esign-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/esign-pdf-cc720976ea409771.js"
-    ],
-    "/excel-to-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/excel-to-pdf-bef186ac0e407ba8.js"
-    ],
-    "/forgot-password": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/forgot-password-0ce0370ac54b5ddb.js"
-    ],
-    "/image-to-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/pages/image-to-pdf-b553ce933e4887e3.js"
-    ],
-    "/login": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/9199-2b096bfcae763571.js",
-      "static/chunks/pages/login-0f3655f9c3fe07f1.js"
-    ],
-    "/merge-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/chunks/pages/merge-pdf-51a1616dc2d40cf4.js"
-    ],
-    "/organize-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/bee240a3-d37f6e4336126822.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/chunks/1706-dbac5162ced24466.js",
-      "static/chunks/pages/organize-pdf-c05caa2373ebdc1e.js"
-    ],
-    "/pdf-to-excel": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/pdf-to-excel-bf26359c96cd91de.js"
-    ],
-    "/pdf-to-image": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/pages/pdf-to-image-e65703216f443bcc.js"
-    ],
-    "/pdf-to-powerpoint": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/pdf-to-powerpoint-6cae901483101347.js"
-    ],
-    "/pdf-to-word": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/pages/pdf-to-word-ad588a14ddedb757.js"
-    ],
-    "/powerpoint-to-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/powerpoint-to-pdf-273b2ec998a008c9.js"
-    ],
-    "/privacy": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/privacy-f95466f924794388.js"
-    ],
-    "/protect-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/css/481c88687278819c.css",
-      "static/chunks/pages/protect-pdf-33a12f91cbc69ab4.js"
-    ],
-    "/rotate-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/css/481c88687278819c.css",
-      "static/chunks/pages/rotate-pdf-e0d1496ad1a78d60.js"
-    ],
-    "/signup": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/cfaebb58-7acfed14ab59d7e6.js",
-      "static/chunks/8462-be070ec55c33f632.js",
-      "static/chunks/pages/signup-b27f6c415d4a90f5.js"
-    ],
-    "/split-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/chunks/9495-1f6579497684dfac.js",
-      "static/css/481c88687278819c.css",
-      "static/chunks/5733-d5ee68fa118ba297.js",
-      "static/chunks/pages/split-pdf-aca187ea0d034125.js"
-    ],
-    "/terms": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/terms-bd48140e8b8d2cd8.js"
-    ],
-    "/tools": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/tools-0e248ee404ba41d1.js"
-    ],
-    "/unlock-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/e18fe737-854ff5725105ba6d.js",
-      "static/chunks/4827-09c4d3334acaac21.js",
-      "static/css/481c88687278819c.css",
-      "static/chunks/pages/unlock-pdf-fe83bacc85fec970.js"
-    ],
-    "/word-to-pdf": [
-      "static/chunks/webpack-15b6a14e6fbb6625.js",
-      "static/chunks/framework-0995a3e8436ddc4f.js",
-      "static/chunks/main-bb9b1135b8d830f9.js",
-      "static/chunks/pages/word-to-pdf-9e8ad71f843d9646.js"
+      "static/chunks/webpack.js",
+      "static/chunks/main.js",
+      "static/chunks/pages/_error.js"
     ]
   },
   "ampFirstPages": []
