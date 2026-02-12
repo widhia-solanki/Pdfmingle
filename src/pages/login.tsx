@@ -188,7 +188,7 @@ const LoginPage: NextPage = () => {
         [data-state='error'] .mouth { transform: translateX(-50%) rotate(180deg); }
       `}</style>
 
-      <div className="flex h-screen w-full bg-[#f8f8f8] font-sans">
+      <div className="flex min-h-screen w-full bg-background text-foreground font-sans">
         {/* Left Panel - Characters */}
         <div ref={containerRef} className="hidden lg:flex w-1/2 justify-center items-center relative">
           <div className="characters relative w-[400px] h-[400px]">
@@ -200,12 +200,12 @@ const LoginPage: NextPage = () => {
         </div>
 
         {/* Right Panel - Form */}
-        <div className="w-full lg:w-1/2 flex justify-center items-center bg-white rounded-l-[3rem]">
+        <div className="w-full lg:w-1/2 flex justify-center items-center bg-card rounded-l-[3rem] border border-border/60 shadow-lg">
           <div className="w-full max-w-sm p-8 space-y-8">
             <div className="flex justify-center"><PlusIcon /></div>
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900">Welcome back!</h1>
-              <p className="text-gray-500 mt-2 text-sm">Please enter your details</p>
+              <h1 className="text-3xl font-bold text-foreground">Welcome back!</h1>
+              <p className="text-muted-foreground mt-2 text-sm">Please enter your details</p>
             </div>
             
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -217,10 +217,10 @@ const LoginPage: NextPage = () => {
                   value={email}
                   onFocus={() => setAnimationState('typing-email')}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="peer h-12 pt-4 border-0 border-b-2 border-gray-200 focus:border-gray-900 placeholder-transparent focus:outline-none focus:ring-0" 
+                  className="peer h-12 bg-background text-foreground placeholder-transparent" 
                   placeholder="Email"
                 />
-                <label htmlFor="email" className="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-gray-500 peer-focus:text-sm">Email</label>
+                <label htmlFor="email" className="absolute left-0 -top-3.5 text-muted-foreground text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-foreground peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-muted-foreground peer-focus:text-sm">Email</label>
               </div>
               
               <div className="relative">
@@ -231,10 +231,10 @@ const LoginPage: NextPage = () => {
                   value={password}
                   onFocus={() => setAnimationState('typing-password')}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="peer h-12 pt-4 border-0 border-b-2 border-gray-200 focus:border-gray-900 placeholder-transparent focus:outline-none focus:ring-0" 
+                  className="peer h-12 bg-background text-foreground placeholder-transparent" 
                   placeholder="Password"
                 />
-                <label htmlFor="password" className="absolute left-0 -top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-gray-400 peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-gray-500 peer-focus:text-sm">Password</label>
+                <label htmlFor="password" className="absolute left-0 -top-3.5 text-muted-foreground text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:text-muted-foreground peer-placeholder-shown:top-3 peer-focus:-top-3.5 peer-focus:text-muted-foreground peer-focus:text-sm">Password</label>
                 <button type="button" onClick={() => { setShowPassword(!showPassword); setAnimationState('peek'); }} className="absolute right-0 top-3">
                   <EyeIcon isVisible={!showPassword} />
                 </button>
@@ -243,28 +243,28 @@ const LoginPage: NextPage = () => {
               <div className="flex items-center justify-between text-sm">
                 <div className="flex items-center space-x-2">
                   <Checkbox id="remember" className="rounded"/>
-                  <label htmlFor="remember" className="text-gray-600 font-medium cursor-pointer">Remember for 30 days</label>
+                  <label htmlFor="remember" className="text-muted-foreground font-medium cursor-pointer">Remember for 30 days</label>
                 </div>
-                <Link href="/forgot-password" passHref><a className="font-medium text-gray-600 hover:text-gray-900">Forgot password?</a></Link>
+                <Link href="/forgot-password" passHref><a className="font-medium text-muted-foreground hover:text-foreground">Forgot password?</a></Link>
               </div>
               
               {error && <p className="text-sm font-medium text-red-500 text-center">{error}</p>}
 
               <div className="space-y-4">
-                <Button type="submit" className="w-full h-12 bg-gray-900 text-white hover:bg-gray-800 rounded-full text-md font-semibold" disabled={isLoading}>
+                <Button type="submit" className="w-full h-12 bg-primary text-primary-foreground hover:opacity-90 rounded-full text-md font-semibold" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Log in
                 </Button>
-                <Button type="button" variant="outline" className="w-full h-12 rounded-full text-md font-semibold border-gray-300 hover:bg-gray-50" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
+                <Button type="button" variant="outline" className="w-full h-12 rounded-full text-md font-semibold border-border hover:bg-muted" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
                   {isGoogleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon />}
                   Log in with Google
                 </Button>
               </div>
             </form>
             
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-muted-foreground">
               Don't have an account?{' '}
-              <Link href="/signup" passHref><a className="font-semibold text-gray-900 hover:underline">Sign up</a></Link>
+              <Link href="/signup" passHref><a className="font-semibold text-foreground hover:underline">Sign up</a></Link>
             </p>
           </div>
         </div>
