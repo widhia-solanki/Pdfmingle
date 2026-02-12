@@ -28,11 +28,11 @@ export const FileArranger = ({ files, onFilesChange }: FileArrangerProps) => {
     <div className="w-full space-y-3">
       {files.map((file, index) => (
         // --- THIS IS THE FIX: Use a more stable key ---
-        <div key={file.name + file.lastModified + index} className="w-full flex items-center justify-between p-3 bg-gray-100 rounded-lg shadow-sm">
+        <div key={file.name + file.lastModified + index} className="w-full flex items-center justify-between p-3 bg-card border border-border rounded-lg shadow-sm">
           <div className="flex items-center gap-3 overflow-hidden">
-            <span className="font-bold text-gray-500">{index + 1}.</span>
-            <FileIcon className="w-6 h-6 text-gray-600 flex-shrink-0" />
-            <span className="font-medium truncate">{file.name}</span>
+            <span className="font-bold text-muted-foreground">{index + 1}.</span>
+            <FileIcon className="w-6 h-6 text-muted-foreground flex-shrink-0" />
+            <span className="font-medium text-foreground truncate">{file.name}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={() => moveFile(index, 'up')} disabled={index === 0}><ArrowUp className="h-5 w-5" /></Button>
