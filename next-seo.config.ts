@@ -32,20 +32,25 @@ const config: DefaultSeoProps = {
   additionalLinkTags: [
     {
       rel: 'icon',
-      href: '/favicon.ico', // This file exists, so we keep it.
-      sizes: 'any',
+      type: 'image/x-icon',
+      href: '/favicon.ico',
     },
-    // The link to 'favicon.svg' has been REMOVED because the file does not exist.
+    {
+      rel: 'icon',
+      type: 'image/png',
+      sizes: '96x96',
+      href: '/favicon-96x96.png',
+    },
     {
       rel: 'apple-touch-icon',
-      href: '/bglogo.jpg', // We now point to your existing logo file.
+      sizes: '180x180',
+      href: '/apple-touch-icon.png',
     },
     {
       rel: 'manifest',
-      href: '/site.webmanifest', // This file exists, so we keep it.
+      href: '/site.webmanifest',
     },
   ],
-  // --- END OF FIX ---
 };
 
 export default config;

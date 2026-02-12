@@ -1,0 +1,28 @@
+{
+  "components/feedback/FeedbackButton.tsx -> ./FeedbackModal": {
+    "id": 2234,
+    "files": [
+      "static/chunks/2234.a9f84c4fe708473d.js"
+    ]
+  },
+  "pages/add-watermark.tsx -> @/components/tools/PdfThumbnailViewer": {
+    "id": 8241,
+    "files": [
+      "static/chunks/5443-ac84b7c0d5d63440.js",
+      "static/chunks/8241.16fd9851ae905193.js"
+    ]
+  },
+  "pages/add-watermark.tsx -> @/components/tools/PdfWatermarkPreviewer": {
+    "id": 4277,
+    "files": [
+      "static/chunks/4277.f39105c648628345.js"
+    ]
+  },
+  "pages/edit-pdf.tsx -> @/components/tools/PdfThumbnailViewer": {
+    "id": 8241,
+    "files": [
+      "static/chunks/5443-ac84b7c0d5d63440.js",
+      "static/chunks/8241.16fd9851ae905193.js"
+    ]
+  }
+}
