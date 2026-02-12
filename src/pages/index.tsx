@@ -35,8 +35,9 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
 );
 
 const DesktopHero = () => {
+    // Adjust height to account for the sticky header and remove the visible gap.
     return (
-        <section className="w-full bg-background min-h-screen flex flex-col justify-center">
+        <section className="w-full bg-background min-h-[calc(100vh-5rem)] flex flex-col justify-center">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
