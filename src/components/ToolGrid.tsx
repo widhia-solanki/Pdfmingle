@@ -28,10 +28,12 @@ export const ToolGrid = ({ tools }: ToolGridProps) => {
                     <div className="mb-4">
                       <Icon className="h-12 w-12" style={{ color: tool.color }} />
                     </div>
-                    <CardTitle className="text-xl">{tool.label}</CardTitle>
+                    <CardTitle className="text-xl min-h-[2.5rem]">{tool.label}</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0 mt-2 flex-grow">
-                    <CardDescription>{tool.description}</CardDescription>
+                    <CardDescription className="min-h-[3.5rem] line-clamp-2">
+                      {tool.description}
+                    </CardDescription>
                   </CardContent>
                 </Card>
               </Link>
