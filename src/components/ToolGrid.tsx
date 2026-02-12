@@ -23,7 +23,7 @@ export const ToolGrid = ({ tools }: ToolGridProps) => {
                 key={tool.value}
                 className="group block"
               >
-                <Card className="h-full flex flex-col items-center text-center p-6 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300">
+                <Card className="h-full flex flex-col items-center text-center p-6 shadow-sm hover:shadow-xl transition-shadow duration-300">
                   <CardHeader className="p-0">
                     <div className="mb-4">
                       <Icon className="h-12 w-12" style={{ color: tool.color }} />
