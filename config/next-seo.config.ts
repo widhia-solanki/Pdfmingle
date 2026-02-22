@@ -1,7 +1,7 @@
 // next-seo.config.ts
 
 import { DefaultSeoProps } from 'next-seo';
-import { SITE_URL, buildOgImage, aiMetaSummary } from './src/lib/seo';
+import { SITE_URL, buildOgImage, aiMetaSummary } from '../src/lib/seo';
 
 const config: DefaultSeoProps = {
   titleTemplate: '%s | PDFMingle',

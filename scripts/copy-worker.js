@@ -3,8 +3,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const source = path.join(__dirname, 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.mjs');
-const destination = path.join(__dirname, 'public', 'pdf.worker.min.mjs');
+const source = path.join(__dirname, '..', 'node_modules', 'pdfjs-dist', 'build', 'pdf.worker.min.mjs');
+const destination = path.join(__dirname, '..', 'public', 'pdf.worker.min.mjs');
 
 // Ensure the public directory exists
 fs.mkdirSync(path.dirname(destination), { recursive: true });

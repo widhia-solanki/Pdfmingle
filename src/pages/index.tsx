@@ -35,9 +35,9 @@ const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: Too
 );
 
 const DesktopHero = () => {
-    // Adjust height to account for the sticky header and remove the visible gap.
+    // Tighter vertical rhythm so the tools grid sits closer to the fold.
     return (
-        <section className="w-full bg-background min-h-[calc(100vh-5rem)] flex flex-col justify-center">
+        <section className="w-full bg-background pt-10 pb-8 md:pt-14 md:pb-10">
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">

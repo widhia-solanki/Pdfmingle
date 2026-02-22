@@ -7,7 +7,7 @@ import { MainLayout } from '@/layouts/MainLayout';
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
 import { DefaultSeo } from 'next-seo';
-import SEO from '../../next-seo.config';
+import SEO from '../../config/next-seo.config';
 import { CookieConsent } from '@/components/CookieConsent';
 import { ThemeProvider } from 'next-themes';
 import { useRouter } from 'next/router';
