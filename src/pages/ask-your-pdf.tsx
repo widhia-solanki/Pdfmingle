@@ -14,6 +14,8 @@ import { useToast } from "@/hooks/use-toast";
 
 const AI_CONSENT_STORAGE_KEY = "ai_consent_given";
 const MAX_TEXT_LENGTH = 20000;
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL || "https://pdfmingle-backend.onrender.com";
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
@@ -172,6 +174,7 @@ const AskYourPdfPage: NextPage = () => {
 
     try {
       const response = await fetch("/api/ask-pdf", {
+      const response = await fetch(`${API_BASE_URL}/api/ask-pdf`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
