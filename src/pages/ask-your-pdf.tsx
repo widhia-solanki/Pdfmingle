@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import * as pdfjsLib from "pdfjs-dist";
-import { ShieldCheck, Stars, WandSparkles } from "lucide-react";
+import { ShieldCheck, Sparkles, Stars, WandSparkles } from "lucide-react";
 
 import { ChatBox, type AskPdfMessage } from "@/components/askpdf/ChatBox";
 import { ConsentModal } from "@/components/askpdf/ConsentModal";
