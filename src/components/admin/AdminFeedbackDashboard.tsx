@@ -50,16 +50,16 @@ const fetchFeedbackDocuments = async (): Promise<FeedbackEntry[]> => {
   const response = await fetch("/api/admin/feedback", {
     credentials: "include",
   });
+  const payload = (await response.json()) as { error?: string; feedback?: FeedbackEntry[] };
 
   if (response.status === 401) {
     throw new Error("unauthorized");
   }
 
   if (!response.ok) {
-    throw new Error("fetch_failed");
+    throw new Error(payload.error ?? "Could not load feedback.");
   }
 
-  const payload = (await response.json()) as { feedback?: FeedbackEntry[] };
   return Array.isArray(payload.feedback) ? payload.feedback : [];
 };
 
@@ -225,6 +225,7 @@ export const AdminFeedbackDashboard = ({
         method: "DELETE",
         credentials: "include",
       });
+      const payload = (await response.json()) as { error?: string };
 
       if (response.status === 401) {
         onSessionExpired("Your admin session expired. Please log in again.");
@@ -232,7 +233,7 @@ export const AdminFeedbackDashboard = ({
       }
 
       if (!response.ok) {
-        throw new Error("delete_failed");
+        throw new Error(payload.error ?? "Could not delete feedback.");
       }
 
       setFeedback((current) => current.filter((item) => item.id !== entry.id));
@@ -244,7 +245,8 @@ export const AdminFeedbackDashboard = ({
       console.error("Error deleting feedback:", deleteError);
       toast({
         title: "Delete failed",
-        description: "Could not delete the feedback entry.",
+        description:
+          deleteError instanceof Error ? deleteError.message : "Could not delete the feedback entry.",
         variant: "destructive",
       });
     } finally {

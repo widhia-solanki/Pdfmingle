@@ -39,6 +39,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     return response.status(200).json({ success: true });
   } catch (error) {
     console.error("Admin feedback delete failed:", error);
-    return response.status(500).json({ error: "Could not delete feedback." });
+    return response.status(500).json({
+      error: error instanceof Error ? error.message : "Could not delete feedback.",
+    });
   }
 }

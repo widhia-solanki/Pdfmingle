@@ -78,6 +78,8 @@ export default async function handler(request: NextApiRequest, response: NextApi
     return response.status(200).json({ feedback });
   } catch (error) {
     console.error("Admin feedback fetch failed:", error);
-    return response.status(500).json({ error: "Could not load feedback." });
+    return response.status(500).json({
+      error: error instanceof Error ? error.message : "Could not load feedback.",
+    });
   }
 }

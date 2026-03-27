@@ -2,19 +2,18 @@
   "name": "pdfmingle-next",
   "version": "0.0.0",
   "private": true,
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "node ./scripts/copy-worker.js",
     "sitemap": "next-sitemap --config config/next-sitemap.config.js"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.3.3",
-    "@google/generative-ai": "^0.11.3",
     "@hookform/resolvers": "^3.3.4",
-    "@octokit/rest": "^20.1.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-alert-dialog": "^1.0.5",
     "@radix-ui/react-aspect-ratio": "^1.0.3",
@@ -53,7 +52,6 @@
     "firebase-admin": "^12.1.0",
     "framer-motion": "^11.2.10",
     "input-otp": "^1.2.4",
-    "jspdf": "^2.5.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.372.0",
     "negotiator": "^0.6.3",
@@ -71,11 +69,8 @@
     "react-dropzone": "^14.2.3",
     "react-google-recaptcha-v3": "^1.10.1",
     "react-hook-form": "^7.51.3",
-    "react-icons": "^5.2.1",
     "react-resizable-panels": "^2.0.18",
     "react-rnd": "^10.4.11",
-    "recharts": "^2.12.6",
-    "sharp": "^0.33.3",
     "sonner": "^1.4.44",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7",
