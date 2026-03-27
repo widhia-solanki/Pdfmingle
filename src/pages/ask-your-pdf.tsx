@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import * as pdfjsLib from "pdfjs-dist";
-import { ShieldCheck, Sparkles, Stars, WandSparkles } from "lucide-react";
+import { ShieldCheck, Stars, WandSparkles } from "lucide-react";
 
 import { ChatBox, type AskPdfMessage } from "@/components/askpdf/ChatBox";
 import { ConsentModal } from "@/components/askpdf/ConsentModal";
@@ -173,7 +173,6 @@ const AskYourPdfPage: NextPage = () => {
     setIsAsking(true);
 
     try {
-      const response = await fetch("/api/ask-pdf", {
       const response = await fetch(`${API_BASE_URL}/api/ask-pdf`, {
         method: "POST",
         headers: {

@@ -1,108 +1,120 @@
-# backend/app.py
-
-from flask import Flask, request, send_file, jsonify, make_response
-from flask_bcrypt import Bcrypt
-from PyPDF2 import PdfReader, PdfWriter
-import jwt
-from google.cloud import firestore
-from google_auth_oauthlib.flow import Flow
 import os
-import io
-import json
-import uuid
-import traceback
-import subprocess
-import shutil
-import requests # Make sure this is imported
-from datetime import datetime, timedelta, timezone
 
-# --- App Initialization ---
+import requests
+from flask import Flask, jsonify, request
+from flask_cors import CORS
+
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
 
-# CORS must be handled by Render Header Rules as discussed
-# If you still have CORS issues, add this back:
-# from flask_cors import CORS
-# CORS(app, origins=["https://pdfmingle.net", "http://localhost:3000"], supports_credentials=True)
+allowed_origins = [
+    "http://localhost:3000",
+    "https://mingle.vercel.app",
+    "https://pdfmingle.net",
+    "https://pdfmmingle.net",
+]
 
-# --- Environment Variable Checks ---
-if not os.environ.get('JWT_SECRET_KEY'):
-    raise ValueError("No JWT_SECRET_KEY set for Flask application")
-if not os.environ.get('RECAPTCHA_SECRET_KEY'):
-    raise ValueError("RECAPTCHA_SECRET_KEY environment variable not set.")
+frontend_url = os.environ.get("FRONTEND_URL")
+if frontend_url and frontend_url not in allowed_origins:
+    allowed_origins.append(frontend_url)
 
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY')
-db = firestore.Client()
-users_collection = db.collection('users')
+CORS(app, resources={r"/api/*": {"origins": allowed_origins}})
 
-# --- HELPER FUNCTION TO CREATE SESSION ---
-def create_session(user_doc):
-    payload = { 'sub': user_doc.id, 'iat': datetime.now(timezone.utc), 'exp': datetime.now(timezone.utc) + timedelta(days=7) }
-    token = jwt.encode(payload, JWT_SECRET_KEY, algorithm='HS256')
-    user_data = user_doc.to_dict()
-    response = make_response(jsonify({ "message": "Login successful", "user": {"email": user_data.get('email')} }), 200)
-    response.set_cookie('auth_token', token, httponly=True, secure=True, samesite='Lax', max_age=timedelta(days=7))
-    return response
+DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
+MAX_TEXT_LENGTH = 20000
+MAX_QUESTION_LENGTH = 1000
 
-# --- AUTHENTICATION ROUTES ---
-@app.route('/api/auth/google', methods=['POST'])
-def handle_google_auth():
-    # ... (code from previous step)
-@app.route('/api/signup', methods=['POST'])
-def handle_signup():
-    # ... (code from previous step)
-@app.route('/api/login', methods=['POST'])
-def handle_login():
-    # ... (code from previous step)
-@app.route('/api/user', methods=['GET'])
-def get_current_user():
-    # ... (code from previous step)
-@app.route('/api/logout', methods=['POST'])
-def handle_logout():
-    # ... (code from previous step)
 
-# --- NEW SECURE FEEDBACK ROUTE ---
-@app.route('/api/feedback', methods=['POST'])
-def handle_feedback():
-    data = request.get_json()
-    
-    recaptcha_token = data.get('recaptchaToken')
-    if not recaptcha_token:
-        return jsonify({"error": "reCAPTCHA token is missing."}), 400
+def normalize_message_content(content):
+    if isinstance(content, str):
+        return content.strip()
 
-    secret_key = os.environ.get('RECAPTCHA_SECRET_KEY')
-    verification_url = "https://www.google.com/recaptcha/api/siteverify"
-    verification_payload = {'secret': secret_key, 'response': recaptcha_token}
-    
-    try:
-        verify_response = requests.post(verification_url, data=verification_payload)
-        verify_result = verify_response.json()
+    if isinstance(content, list):
+        parts = []
+        for item in content:
+            if isinstance(item, dict):
+                text = item.get("text")
+                if isinstance(text, str):
+                    parts.append(text)
+        return "\n".join(parts).strip()
 
-        if not verify_result.get('success') or verify_result.get('score', 0) < 0.5:
-            return jsonify({"error": "reCAPTCHA verification failed. Are you a robot?"}), 403
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": "reCAPTCHA server error."}), 500
+    return ""
 
-    feedback_data = data.get('feedback')
-    if not feedback_data or 'rating' not in feedback_data or 'page' not in feedback_data:
-        return jsonify({"error": "Missing required feedback data"}), 400
+
+@app.route("/", methods=["GET"])
+def healthcheck():
+    return jsonify({"status": "ok"}), 200
+
+
+@app.route("/api/ask-pdf", methods=["POST"])
+def ask_pdf():
+    api_key = os.environ.get("DEEPSEEK_API_KEY")
+    if not api_key:
+        return jsonify({"error": "DeepSeek API key is not configured."}), 500
+
+    data = request.get_json(silent=True) or {}
+    text = data.get("text", "")
+    question = data.get("question", "")
+
+    if not isinstance(text, str) or not isinstance(question, str):
+        return jsonify({"error": "Text and question are required."}), 400
+
+    normalized_text = text.strip()[:MAX_TEXT_LENGTH]
+    normalized_question = question.strip()[:MAX_QUESTION_LENGTH]
+
+    if not normalized_text or not normalized_question:
+        return jsonify({"error": "Text and question cannot be empty."}), 400
 
     try:
-        feedback_data['timestamp'] = firestore.SERVER_TIMESTAMP
-        db.collection('feedback').add(feedback_data)
-        return jsonify({"message": "Feedback submitted successfully"}), 200
-    except Exception as e:
-        traceback.print_exc()
-        return jsonify({"error": "An internal server error occurred."}), 500
+        deepseek_response = requests.post(
+            DEEPSEEK_API_URL,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": "deepseek-chat",
+                "temperature": 0.2,
+                "max_tokens": 700,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are an AI assistant that answers questions based on provided document text.",
+                    },
+                    {
+                        "role": "user",
+                        "content": f'Document text:\n"""\n{normalized_text}\n"""\n\nQuestion: {normalized_question}',
+                    },
+                ],
+            },
+            timeout=45,
+        )
+        payload = deepseek_response.json()
+    except requests.RequestException as exc:
+        return jsonify({"error": f"DeepSeek request failed: {exc}"}), 502
+    except ValueError:
+        return jsonify({"error": "DeepSeek returned an invalid response."}), 502
 
-# --- EXISTING PDF TOOL ROUTES ---
-@app.route('/api/protect-pdf', methods=['POST'])
-def handle_protect_pdf():
-    # ... (code from previous step)
-@app.route('/api/unlock-pdf', methods=['POST'])
-def handle_unlock_pdf():
-    # ... (code from previous step)
+    if not deepseek_response.ok:
+        error_message = "DeepSeek request failed."
+        if isinstance(payload, dict):
+            error = payload.get("error")
+            if isinstance(error, dict):
+                maybe_message = error.get("message")
+                if isinstance(maybe_message, str):
+                    error_message = maybe_message
+        return jsonify({"error": error_message}), deepseek_response.status_code
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 10000)), debug=True)
+    choices = payload.get("choices") if isinstance(payload, dict) else None
+    first_choice = choices[0] if isinstance(choices, list) and choices else {}
+    message = first_choice.get("message") if isinstance(first_choice, dict) else {}
+    content = message.get("content") if isinstance(message, dict) else ""
+    answer = normalize_message_content(content)
+
+    if not answer:
+        return jsonify({"error": "DeepSeek returned an empty response."}), 502
+
+    return jsonify({"answer": answer}), 200
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)), debug=True)
