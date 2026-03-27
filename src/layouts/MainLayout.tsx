@@ -15,10 +15,12 @@ interface MainLayoutProps {
 }
 
 const toolPaths = new Set(toolArray.map(tool => `/${tool.value}`));
+const informativeToolPaths = new Set(["/ask-your-pdf"]);
 
 export const MainLayout = ({ children, flush }: MainLayoutProps) => {
   const router = useRouter();
   const isToolPage = toolPaths.has(router.pathname);
+  const shouldShowInformativePanel = !isToolPage || informativeToolPaths.has(router.pathname);
 
   return (
     // THIS IS THE FIX:
@@ -29,7 +31,7 @@ export const MainLayout = ({ children, flush }: MainLayoutProps) => {
         {children}
       </main>
       
-      {isToolPage ? <AdPlaceholder /> : <InformativePanel />}
+      {shouldShowInformativePanel ? <InformativePanel /> : <AdPlaceholder />}
       
     <FeedbackButton />
     </div>

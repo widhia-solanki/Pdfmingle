@@ -14,8 +14,6 @@ import { useToast } from "@/hooks/use-toast";
 
 const AI_CONSENT_STORAGE_KEY = "ai_consent_given";
 const MAX_TEXT_LENGTH = 20000;
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "https://pdfmingle-backend.onrender.com";
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
@@ -173,7 +171,7 @@ const AskYourPdfPage: NextPage = () => {
     setIsAsking(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/ask-pdf`, {
+      const response = await fetch("/api/ask-pdf", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -232,7 +230,7 @@ const AskYourPdfPage: NextPage = () => {
         <div className="absolute right-[-5rem] top-10 h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl" />
         <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-lime-200/30 blur-3xl" />
 
-        <section className="relative container mx-auto px-4 pb-16 pt-10 md:pb-24 md:pt-14">
+        <section className="relative container mx-auto px-4 pb-16 pt-6 md:pb-24 md:pt-8">
           <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
             <div className="space-y-8">
               <div className="space-y-6">

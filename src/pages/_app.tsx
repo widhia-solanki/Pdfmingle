@@ -18,7 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
   const router = useRouter();
   
   // This is your existing logic for a 'flush' or edge-to-edge layout
-  const flushLayoutRoutes = new Set(['/', '/add-watermark', '/edit-pdf']);
+  const flushLayoutRoutes = new Set(['/', '/add-watermark', '/edit-pdf', '/ask-your-pdf']);
   const shouldUseFlushLayout = flushLayoutRoutes.has(router.pathname);
   
   // --- NEW ---
