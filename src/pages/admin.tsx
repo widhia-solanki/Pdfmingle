@@ -8,8 +8,6 @@ import { AdminFeedbackDashboard } from "@/components/admin/AdminFeedbackDashboar
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
 import { useToast } from "@/hooks/use-toast";
 
-const ADMIN_AUTH_STORAGE_KEY = "admin_auth";
-
 type AuthStatus = "checking" | "authenticated" | "unauthenticated";
 
 const AdminPage: NextPage = () => {
@@ -17,76 +15,126 @@ const AdminPage: NextPage = () => {
   const { toast } = useToast();
 
   const [authStatus, setAuthStatus] = useState<AuthStatus>("checking");
+  const [isConfigured, setIsConfigured] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const isConfigured = Boolean(
-    process.env.NEXT_PUBLIC_ADMIN_EMAIL && process.env.NEXT_PUBLIC_ADMIN_PASSWORD
-  );
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSession = async () => {
+      try {
+        const response = await fetch("/api/admin/session", {
+          credentials: "include",
+        });
+        const payload = (await response.json()) as {
+          authenticated?: boolean;
+          configured?: boolean;
+        };
+
+        if (!isMounted) {
+          return;
+        }
+
+        setIsConfigured(Boolean(payload.configured));
+        setAuthStatus(payload.authenticated ? "authenticated" : "unauthenticated");
+      } catch (sessionError) {
+        console.error("Admin session check failed:", sessionError);
+
+        if (isMounted) {
+          setAuthStatus("unauthenticated");
+          setError("Could not verify the admin session.");
+        }
+      }
+    };
+
+    void checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (!router.isReady) {
       return;
     }
 
-    if (!isConfigured) {
-      window.localStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
-      setAuthStatus("unauthenticated");
+    if (router.query.expired === "1") {
+      setError("Session expired after 3 minutes. Please log in again.");
+    }
+  }, [router.isReady, router.query.expired]);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
       return;
     }
 
-    const isAuthenticated = window.localStorage.getItem(ADMIN_AUTH_STORAGE_KEY) === "true";
-    setAuthStatus(isAuthenticated ? "authenticated" : "unauthenticated");
-  }, [isConfigured]);
+    const timeout = window.setTimeout(() => {
+      window.location.replace("/admin?expired=1");
+    }, 3 * 60 * 1000);
 
-  const handleLogin = ({ email, password }: { email: string; password: string }) => {
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [authStatus]);
+
+  const handleLogin = async ({ email, password }: { email: string; password: string }) => {
     setIsSubmitting(true);
     setError(null);
 
-    const expectedEmail = process.env.NEXT_PUBLIC_ADMIN_EMAIL;
-    const expectedPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
+    try {
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
-    if (!expectedEmail || !expectedPassword) {
-      setError("Admin credentials are not configured.");
-      setIsSubmitting(false);
+      const payload = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        const message = payload.error ?? "Could not log in.";
+        setError(message);
+
+        toast({
+          title: "Access denied",
+          description: message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setAuthStatus("authenticated");
+      setIsConfigured(true);
 
       toast({
-        title: "Missing admin configuration",
-        description: "Set the admin email and password environment variables first.",
-        variant: "destructive",
+        title: "Admin access granted",
+        description: "The dashboard is ready. You will be asked to log in again after 3 minutes.",
       });
-      return;
-    }
 
-    const emailMatches = email.trim().toLowerCase() === expectedEmail.trim().toLowerCase();
-    const passwordMatches = password === expectedPassword;
-
-    if (!emailMatches || !passwordMatches) {
-      setError("Invalid admin credentials.");
-      setIsSubmitting(false);
-
+      void router.replace("/admin");
+    } catch (loginError) {
+      console.error("Admin login failed:", loginError);
+      setError("Could not complete admin login.");
       toast({
-        title: "Access denied",
-        description: "The email or password did not match the configured admin account.",
+        title: "Login failed",
+        description: "Please try again.",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsSubmitting(false);
     }
-
-    window.localStorage.setItem(ADMIN_AUTH_STORAGE_KEY, "true");
-    setAuthStatus("authenticated");
-    setIsSubmitting(false);
-
-    toast({
-      title: "Admin access granted",
-      description: "The dashboard is ready.",
-    });
-
-    void router.replace("/admin");
   };
 
-  const handleLogout = () => {
-    window.localStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
+  const handleLogout = async () => {
+    await fetch("/api/admin/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+
     setError(null);
     setAuthStatus("unauthenticated");
 
@@ -94,6 +142,16 @@ const AdminPage: NextPage = () => {
       title: "Logged out",
       description: "Admin access has been cleared from this browser.",
     });
+  };
+
+  const handleSessionExpired = (message = "Session expired. Please log in again.") => {
+    setAuthStatus("unauthenticated");
+    setError(message);
+    void fetch("/api/admin/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+    void router.replace("/admin?expired=1");
   };
 
   return (
@@ -113,7 +171,7 @@ const AdminPage: NextPage = () => {
               </div>
             </div>
           ) : authStatus === "authenticated" ? (
-            <AdminFeedbackDashboard onLogout={handleLogout} />
+            <AdminFeedbackDashboard onLogout={handleLogout} onSessionExpired={handleSessionExpired} />
           ) : (
             <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="rounded-3xl border border-border/70 bg-secondary/60 p-8 shadow-sm">
@@ -132,11 +190,11 @@ const AdminPage: NextPage = () => {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                       <p className="text-sm text-muted-foreground">Protected entry</p>
-                      <p className="mt-2 text-lg font-semibold text-foreground">Local browser session</p>
+                      <p className="mt-2 text-lg font-semibold text-foreground">HTTP-only session cookie</p>
                     </div>
                     <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                       <p className="text-sm text-muted-foreground">Data source</p>
-                      <p className="mt-2 text-lg font-semibold text-foreground">Firestore feedback</p>
+                      <p className="mt-2 text-lg font-semibold text-foreground">Server-side Firestore admin API</p>
                     </div>
                   </div>
                 </div>

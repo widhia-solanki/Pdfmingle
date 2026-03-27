@@ -1,24 +1,24 @@
-import { useEffect, useState } from "react";
-import { collection, getDocs, Timestamp } from "firebase/firestore";
-import { ArrowDownUp, Database, Loader2, LogOut, RefreshCcw, Rows3 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ArrowDownUp,
+  Database,
+  Download,
+  Loader2,
+  LogOut,
+  RefreshCcw,
+  Rows3,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { db } from "@/lib/firebase";
 
 type SortOrder = "latest" | "oldest";
-
-type FeedbackTimestamp =
-  | Timestamp
-  | Date
-  | {
-      seconds?: number;
-      nanoseconds?: number;
-    }
-  | null
-  | undefined;
 
 interface FeedbackEntry {
   id: string;
@@ -26,86 +26,61 @@ interface FeedbackEntry {
   emoji: string;
   page: string;
   rating: number | null;
-  timestamp: FeedbackTimestamp;
+  timestampMs: number | null;
   userId: string;
-}
-
-interface FirestoreFeedbackDocument {
-  comment?: string;
-  emoji?: string;
-  page?: string;
-  rating?: number;
-  timestamp?: FeedbackTimestamp;
-  userId?: string;
-  userid?: string;
 }
 
 interface AdminFeedbackDashboardProps {
   onLogout: () => void;
+  onSessionExpired: (message?: string) => void;
 }
 
-const getTimestampValue = (timestamp: FeedbackTimestamp) => {
-  if (!timestamp) {
-    return 0;
-  }
-
-  if (timestamp instanceof Timestamp) {
-    return timestamp.toMillis();
-  }
-
-  if (timestamp instanceof Date) {
-    return timestamp.getTime();
-  }
-
-  if (typeof timestamp === "object" && typeof timestamp.seconds === "number") {
-    return timestamp.seconds * 1000;
-  }
-
-  return 0;
-};
-
-const formatTimestamp = (timestamp: FeedbackTimestamp) => {
-  const timestampValue = getTimestampValue(timestamp);
-
-  if (!timestampValue) {
+const formatTimestamp = (timestampMs: number | null) => {
+  if (!timestampMs) {
     return "Pending";
   }
 
   return new Intl.DateTimeFormat(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
-  }).format(timestampValue);
+  }).format(timestampMs);
 };
 
 const fetchFeedbackDocuments = async (): Promise<FeedbackEntry[]> => {
-  const snapshot = await getDocs(collection(db, "feedback"));
-
-  return snapshot.docs.map((document) => {
-    const data = document.data() as FirestoreFeedbackDocument;
-
-    return {
-      id: document.id,
-      comment: typeof data.comment === "string" ? data.comment : "",
-      emoji: typeof data.emoji === "string" ? data.emoji : "N/A",
-      page: typeof data.page === "string" ? data.page : "Unknown",
-      rating: typeof data.rating === "number" ? data.rating : null,
-      timestamp: data.timestamp ?? null,
-      userId:
-        typeof data.userId === "string"
-          ? data.userId
-          : typeof data.userid === "string"
-            ? data.userid
-            : "anonymous",
-    };
+  const response = await fetch("/api/admin/feedback", {
+    credentials: "include",
   });
+
+  if (response.status === 401) {
+    throw new Error("unauthorized");
+  }
+
+  if (!response.ok) {
+    throw new Error("fetch_failed");
+  }
+
+  const payload = (await response.json()) as { feedback?: FeedbackEntry[] };
+  return Array.isArray(payload.feedback) ? payload.feedback : [];
 };
 
-export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps) => {
+const toCsvValue = (value: string | number | null) => {
+  const normalized = value === null ? "" : String(value);
+  return `"${normalized.replace(/"/g, '""')}"`;
+};
+
+export const AdminFeedbackDashboard = ({
+  onLogout,
+  onSessionExpired,
+}: AdminFeedbackDashboardProps) => {
   const { toast } = useToast();
   const [feedback, setFeedback] = useState<FeedbackEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState<SortOrder>("latest");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [pageFilter, setPageFilter] = useState("all");
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -121,6 +96,11 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
           setFeedback(entries);
         }
       } catch (loadError) {
+        if (loadError instanceof Error && loadError.message === "unauthorized") {
+          onSessionExpired("Your admin session expired. Please log in again.");
+          return;
+        }
+
         console.error("Error fetching feedback:", loadError);
 
         if (isMounted) {
@@ -143,12 +123,36 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
     return () => {
       isMounted = false;
     };
-  }, [toast]);
+  }, [onSessionExpired, toast]);
 
-  const sortedFeedback = [...feedback].sort((left, right) => {
-    const difference = getTimestampValue(left.timestamp) - getTimestampValue(right.timestamp);
-    return sortOrder === "latest" ? -difference : difference;
-  });
+  const pageOptions = useMemo(() => {
+    return Array.from(new Set(feedback.map((entry) => entry.page).filter(Boolean))).sort(
+      (left, right) => left.localeCompare(right)
+    );
+  }, [feedback]);
+
+  const filteredFeedback = useMemo(() => {
+    const normalizedQuery = searchQuery.trim().toLowerCase();
+
+    return feedback.filter((entry) => {
+      const matchesQuery =
+        !normalizedQuery ||
+        entry.userId.toLowerCase().includes(normalizedQuery) ||
+        entry.page.toLowerCase().includes(normalizedQuery) ||
+        entry.comment.toLowerCase().includes(normalizedQuery);
+      const matchesRating = ratingFilter === "all" || String(entry.rating ?? "") === ratingFilter;
+      const matchesPage = pageFilter === "all" || entry.page === pageFilter;
+
+      return matchesQuery && matchesRating && matchesPage;
+    });
+  }, [feedback, pageFilter, ratingFilter, searchQuery]);
+
+  const sortedFeedback = useMemo(() => {
+    return [...filteredFeedback].sort((left, right) => {
+      const difference = (left.timestampMs ?? 0) - (right.timestampMs ?? 0);
+      return sortOrder === "latest" ? -difference : difference;
+    });
+  }, [filteredFeedback, sortOrder]);
 
   const feedbackWithComments = feedback.filter((entry) => entry.comment.trim().length > 0).length;
 
@@ -160,6 +164,11 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
       const entries = await fetchFeedbackDocuments();
       setFeedback(entries);
     } catch (loadError) {
+      if (loadError instanceof Error && loadError.message === "unauthorized") {
+        onSessionExpired("Your admin session expired. Please log in again.");
+        return;
+      }
+
       console.error("Error refreshing feedback:", loadError);
       setError("Could not refresh feedback right now.");
       toast({
@@ -170,6 +179,83 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleExport = () => {
+    if (!sortedFeedback.length) {
+      toast({
+        title: "Nothing to export",
+        description: "There are no feedback rows matching the current filters.",
+      });
+      return;
+    }
+
+    const header = ["User ID", "Rating", "Emoji", "Comment", "Page", "Timestamp"];
+    const rows = sortedFeedback.map((entry) => [
+      entry.userId,
+      entry.rating,
+      entry.emoji,
+      entry.comment,
+      entry.page,
+      formatTimestamp(entry.timestampMs),
+    ]);
+    const csv = [header, ...rows].map((row) => row.map(toCsvValue).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    link.download = `pdfmingle-feedback-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(objectUrl);
+  };
+
+  const handleDelete = async (entry: FeedbackEntry) => {
+    const shouldDelete = window.confirm("Delete this feedback entry permanently?");
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    setDeletingId(entry.id);
+
+    try {
+      const response = await fetch(`/api/admin/feedback/${entry.id}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
+
+      if (response.status === 401) {
+        onSessionExpired("Your admin session expired. Please log in again.");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error("delete_failed");
+      }
+
+      setFeedback((current) => current.filter((item) => item.id !== entry.id));
+      toast({
+        title: "Feedback deleted",
+        description: "The feedback entry was removed from Firestore.",
+      });
+    } catch (deleteError) {
+      console.error("Error deleting feedback:", deleteError);
+      toast({
+        title: "Delete failed",
+        description: "Could not delete the feedback entry.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setRatingFilter("all");
+    setPageFilter("all");
   };
 
   return (
@@ -183,7 +269,7 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
             <div className="space-y-1">
               <CardTitle className="text-2xl text-foreground">Feedback Dashboard</CardTitle>
               <CardDescription>
-                Read-only view of every document in the Firestore <code>feedback</code> collection.
+                Secure admin view of every document in the Firestore <code>feedback</code> collection.
               </CardDescription>
             </div>
           </div>
@@ -200,6 +286,10 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
             <Button type="button" variant="outline" onClick={handleRefresh} disabled={isLoading}>
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCcw className="h-4 w-4" />}
               Refresh
+            </Button>
+            <Button type="button" variant="outline" onClick={handleExport} disabled={isLoading}>
+              <Download className="h-4 w-4" />
+              Export CSV
             </Button>
             <Button type="button" variant="ghost" onClick={onLogout}>
               <LogOut className="h-4 w-4" />
@@ -227,10 +317,53 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
         <CardHeader>
           <CardTitle className="text-xl text-foreground">Feedback Entries</CardTitle>
           <CardDescription>
-            User ID, rating, comment, source page, and submission time.
+            Search, filter, export, and delete feedback while keeping Firestore access on the server.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
+          <div className="grid gap-3 md:grid-cols-[1.5fr_0.7fr_1fr_auto]">
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search by user ID, page, or comment"
+                className="pl-10"
+              />
+            </div>
+
+            <select
+              value={ratingFilter}
+              onChange={(event) => setRatingFilter(event.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="all">All ratings</option>
+              <option value="5">5 only</option>
+              <option value="4">4 only</option>
+              <option value="3">3 only</option>
+              <option value="2">2 only</option>
+              <option value="1">1 only</option>
+            </select>
+
+            <select
+              value={pageFilter}
+              onChange={(event) => setPageFilter(event.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            >
+              <option value="all">All pages</option>
+              {pageOptions.map((page) => (
+                <option key={page} value={page}>
+                  {page}
+                </option>
+              ))}
+            </select>
+
+            <Button type="button" variant="ghost" onClick={clearFilters}>
+              <X className="h-4 w-4" />
+              Clear
+            </Button>
+          </div>
+
           {isLoading ? (
             <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-secondary/30 text-center">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -247,8 +380,8 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
             <div className="flex min-h-[280px] flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border bg-secondary/30 text-center">
               <Rows3 className="h-8 w-8 text-muted-foreground" />
               <div>
-                <p className="font-medium text-foreground">No feedback yet</p>
-                <p className="text-sm text-muted-foreground">Feedback submissions will appear here after users respond.</p>
+                <p className="font-medium text-foreground">No matching feedback</p>
+                <p className="text-sm text-muted-foreground">Try adjusting the search query or active filters.</p>
               </div>
             </div>
           ) : (
@@ -262,6 +395,7 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
                       <TableHead>Comment</TableHead>
                       <TableHead>Page</TableHead>
                       <TableHead>Timestamp</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -283,7 +417,23 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">{entry.page}</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
-                          {formatTimestamp(entry.timestamp)}
+                          {formatTimestamp(entry.timestampMs)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleDelete(entry)}
+                            disabled={deletingId === entry.id}
+                          >
+                            {deletingId === entry.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                            Delete
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -319,9 +469,26 @@ export const AdminFeedbackDashboard = ({ onLogout }: AdminFeedbackDashboardProps
                         </div>
                         <div className="text-right">
                           <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Timestamp</p>
-                          <p className="mt-1 text-foreground">{formatTimestamp(entry.timestamp)}</p>
+                          <p className="mt-1 text-foreground">{formatTimestamp(entry.timestampMs)}</p>
                         </div>
                       </div>
+                    </div>
+
+                    <div className="mt-4">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        className="w-full justify-center text-destructive hover:text-destructive"
+                        onClick={() => handleDelete(entry)}
+                        disabled={deletingId === entry.id}
+                      >
+                        {deletingId === entry.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 ))}

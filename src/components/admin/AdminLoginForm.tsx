@@ -36,7 +36,7 @@ export const AdminLoginForm = ({
         <div className="space-y-1">
           <CardTitle className="text-2xl text-foreground">Admin Login</CardTitle>
           <CardDescription>
-            Sign in with the configured admin credentials to view submitted feedback.
+            Sign in with the configured admin credentials to view submitted feedback. Sessions expire after 3 minutes.
           </CardDescription>
         </div>
       </CardHeader>
