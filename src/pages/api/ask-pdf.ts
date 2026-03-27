@@ -16,11 +16,9 @@ interface DeepSeekResponse {
   };
 }
 
-const normalizeContent = (content: DeepSeekResponse["choices"] extends Array<infer T>
-  ? T extends { message?: { content?: infer U } }
-    ? U
-    : never
-  : never) => {
+const normalizeContent = (
+  content: string | Array<{ text?: string; type?: string }> | undefined
+) => {
   if (typeof content === "string") {
     return content.trim();
   }
