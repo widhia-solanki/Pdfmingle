@@ -1,7 +1,7 @@
-import { useRef } from "react";
-import { FileText, Loader2, RefreshCcw, UploadCloud } from "lucide-react";
+import { FileText, RefreshCcw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { FileUploader } from "@/components/FileUploader";
 import { cn } from "@/lib/utils";
 
 interface UploadBoxProps {
@@ -27,18 +27,16 @@ export const UploadBox = ({
   onFileSelected,
   pageCount,
 }: UploadBoxProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
   const isReady = Boolean(file) && !isExtracting && extractedCharacterCount > 0;
+  const selectedFiles = file ? [file] : [];
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (!consentGranted) {
-      event.target.value = "";
+  const handleFilesChange = (files: File[]) => {
+    if (!consentGranted || files.length === 0) {
+      onFileSelected(files[0] ?? null);
       return;
     }
 
-    const selectedFile = event.target.files?.[0] ?? null;
-    onFileSelected(selectedFile);
-    event.target.value = "";
+    onFileSelected(files[0] ?? null);
   };
 
   return (
@@ -50,60 +48,22 @@ export const UploadBox = ({
         </p>
       </div>
 
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => {
-          if (consentGranted) {
-            inputRef.current?.click();
-          }
-        }}
-        onKeyDown={(event) => {
-          if ((event.key === "Enter" || event.key === " ") && consentGranted) {
-            event.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        className={cn(
-          "rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-300 animate-in fade-in-0",
-          compact && "px-5 py-7",
-          error
-            ? "border-destructive bg-destructive/10"
-            : "border-border bg-background hover:border-primary/40",
-          consentGranted ? "cursor-pointer" : "cursor-not-allowed opacity-70"
-        )}
-      >
-        <input
-          ref={inputRef}
-          type="file"
-          accept="application/pdf,.pdf"
-          onChange={handleChange}
-          className="hidden"
-        />
-
-        <div className={cn("mx-auto flex max-w-md flex-col items-center gap-4", compact && "gap-3")}>
-          <div className={cn("flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-foreground", compact && "h-12 w-12")}>
-            {isExtracting ? <Loader2 className="h-7 w-7 animate-spin" /> : <UploadCloud className="h-7 w-7" />}
-          </div>
-          <div className="space-y-2">
-            <p className={cn("text-xl font-semibold text-foreground", compact && "text-lg")}>
-              {isExtracting ? "Extracting text..." : "Choose a PDF file"}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {consentGranted
-                ? "Select one PDF and start asking questions."
-                : "Consent is required before you can upload a document."}
-            </p>
-          </div>
-          <Button
-            type="button"
-            disabled={!consentGranted}
-            className="rounded-full bg-brand-blue px-6 text-white hover:bg-brand-blue-dark"
-          >
-            Select PDF
-          </Button>
-        </div>
-      </div>
+      <FileUploader
+        accept=".pdf"
+        buttonLabel="Select PDF"
+        disabled={!consentGranted || isExtracting}
+        files={selectedFiles}
+        helperText={
+          consentGranted
+            ? "Upload one PDF and start asking questions"
+            : "Consent is required before you can upload a document."
+        }
+        multiple={false}
+        onFilesChange={handleFilesChange}
+        showSelectedFiles={false}
+        title={isExtracting ? "Extracting text..." : "Choose a PDF file"}
+        className={cn("animate-in fade-in-0", compact && "[&_.p-8]:p-5")}
+      />
 
       {error ? (
         <div className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive animate-in fade-in-0">
