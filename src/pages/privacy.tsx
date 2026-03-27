@@ -17,7 +17,7 @@ const PrivacyPage = () => {
               Privacy Policy
             </h1>
             <p className="mt-4 text-lg md:text-xl text-gray-300">
-              Last updated: August 15, 2025
+              Last updated: March 27, 2026
             </p>
           </div>
         </section>
@@ -36,6 +36,12 @@ const PrivacyPage = () => {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-foreground border-b border-border pb-2">File Handling</h2>
                 <p>We temporarily process the files you upload to perform the requested tool's function. All files are automatically and permanently deleted from our servers within a limited timeframe (e.g., 2 hours). We do not read, access, or store your files for any purpose other than to provide the service you requested.</p>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-foreground border-b border-border pb-2">AI Processing</h2>
+                <p>Some features, including AI-powered document question answering, may process extracted document text through a third-party AI provider in order to generate a response. Consent is required before these features can be used.</p>
+                <p>We do not permanently store AI processing inputs or outputs unless explicitly stated for a specific feature. You should not upload sensitive, confidential, regulated, or personal documents to AI-powered tools.</p>
               </div>
               
               <div className="space-y-4">

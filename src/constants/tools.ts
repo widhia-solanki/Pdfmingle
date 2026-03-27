@@ -3,15 +3,15 @@
 import {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, Link as LinkIcon, LucideProps,
-  Crop, Droplets
+  Crop, Droplets, Sparkles
 } from "lucide-react";
 
-export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security";
+export type ToolCategory = "Organize" | "Optimize" | "Convert" | "Edit" | "Security" | "AI";
 
 export const iconMap: { [key: string]: React.ElementType<LucideProps> } = {
   FilePlus, Scissors, Archive, FileOutput, FileType, FileText,
   Unlock, Lock, RotateCw, FileImage, Image, FileHeart, Files, LinkIcon,
-  Crop, Droplets
+  Crop, Droplets, Sparkles
 };
 
 export interface Tool {
@@ -49,6 +49,7 @@ export const tools: ToolMap = {
   "add-watermark": { value: "add-watermark", label: "Add Watermark", h1: "Add Watermark to PDF", description: "Stamp your PDFs with a text or image watermark. Customize typography, transparency, and position.", category: "Edit", icon: 'Droplets', color: "#0077B6", metaTitle: "Add Watermark to PDF – Free & Secure", metaDescription: "Easily add a text or image watermark to your PDF files. Customize placement, transparency, rotation, and more with our free online tool.", metaKeywords: "add watermark pdf, pdf watermark, stamp pdf, text watermark, image watermark", steps: ["Upload your PDF file.", "Choose to add a text or image watermark.", "Customize the style, position, and transparency.", "Click 'Add Watermark' and download your protected file."], isBrowserOnly: false, isMultiFile: false, faqs: [] },
   "edit-pdf": { value: "edit-pdf", label: "Edit PDF", h1: "Edit PDF Online – Free PDF Editor", description: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.", category: "Edit", icon: 'FileText', color: "#7ED321", metaTitle: "Edit PDF Online – Free PDF Editor", metaDescription: "Edit text, images, and pages in PDF files instantly. Free and user-friendly PDF editor.", metaKeywords: "edit pdf, pdf editor, annotate pdf, modify pdf", steps: ["Upload your PDF", "Use the toolbar to add text, images, or shapes", "Save your changes", "Download the edited PDF"], isBrowserOnly: true, isMultiFile: false, faqs: [] },
   "crop-pdf": { value: "crop-pdf", label: "Crop PDF", h1: "Crop PDF Files Online", description: "Visually select and trim the margins of your PDF pages. Fast, simple, and free.", category: "Edit", icon: 'Crop', color: "#E54D2E", metaTitle: "Crop PDF Online – Free PDF Cropping Tool", metaDescription: "Easily crop your PDF files online. Select the area you want to keep and remove the rest. A free, secure, and visual PDF cropping tool.", metaKeywords: "crop pdf, pdf cropper, trim pdf, resize pdf pages", steps: ["Upload your PDF file.", "An adjustable crop box will appear on your page.", "Drag the corners and sides of the box to define the area you want to keep.", "Choose to apply the crop to the current page or all pages.", "Click 'Crop PDF' and download your new file."], isBrowserOnly: false, isMultiFile: false, faqs: [] },
+  "ask-your-pdf": { value: "ask-your-pdf", label: "Ask Your PDF", h1: "Ask Your PDF", description: "Upload a PDF and ask questions using AI.", category: "AI", icon: 'Sparkles', color: "#F97316", metaTitle: "Ask Your PDF – AI Q&A for Documents", metaDescription: "Upload a PDF, extract its text in your browser, and ask questions with AI-powered answers.", metaKeywords: "ask your pdf, ai pdf chat, chat with pdf, pdf question answering", steps: ["Sign in to access the AI tool.", "Accept the AI processing consent notice.", "Upload a PDF and wait while the text is extracted in your browser.", "Ask a question about the document and review the AI response carefully."], isBrowserOnly: false, isMultiFile: false, faqs: [] },
 
   // --- NON-WORKING / COMING SOON TOOLS ---
   "pdf-to-word": { value: "pdf-to-word", label: "PDF to Word", h1: "Convert PDF to Word Online", description: "Convert PDFs into editable Word documents in seconds. Accurate, free, and easy PDF to Word converter.", category: "Convert", icon: 'FileType', color: "#2B78E4", metaTitle: "Convert PDF to Word Online – Free", metaDescription: "Convert PDFs into editable Word documents in seconds. Accurate, free, and easy PDF to Word converter.", metaKeywords: "pdf to word, convert pdf to word, pdf to docx", steps: [], isBrowserOnly: false, isMultiFile: false, faqs: [] },
@@ -62,4 +63,4 @@ export const tools: ToolMap = {
 
 export const toolArray: Tool[] = Object.values(tools);
 
-export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security"];
+export const categories: ToolCategory[] = ["Organize", "Optimize", "Convert", "Edit", "Security", "AI"];

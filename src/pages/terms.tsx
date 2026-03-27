@@ -17,7 +17,7 @@ const TermsPage = () => {
               Terms and Conditions
             </h1>
             <p className="mt-4 text-lg md:text-xl text-gray-300">
-              Last updated: August 15, 2025
+              Last updated: March 27, 2026
             </p>
           </div>
         </section>
@@ -42,6 +42,12 @@ const TermsPage = () => {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-foreground border-b border-border pb-2">User Files</h2>
                 <p>Our service allows you to upload and process files. We are committed to protecting the privacy and security of your files. All files uploaded to PDFMingle are automatically deleted from our servers within a few hours. We do not access, copy, or share your files.</p>
+              </div>
+
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold text-foreground border-b border-border pb-2">AI Tools Usage</h2>
+                <p>PDFMingle may provide AI-assisted features that generate responses based on document content or user prompts. AI output may be incorrect, incomplete, or misleading, and you remain responsible for verifying any result before relying on it.</p>
+                <p>You agree not to upload sensitive, confidential, or regulated data into AI-powered tools. By using these features, you acknowledge that document text may be processed by a third-party AI service for the sole purpose of generating the requested response.</p>
               </div>
 
               <div className="space-y-4">
