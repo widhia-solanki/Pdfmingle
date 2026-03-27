@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+import { collection, getDocs } from "firebase/firestore";
 
 import {
   clearAdminSessionCookie,
   getAdminSessionTokenFromRequest,
   verifyAdminSessionToken,
 } from "@/lib/admin-session";
+import { db } from "@/lib/firebase";
 import { getAdminDb } from "@/lib/firebase-admin";
 
 const setNoStore = (response: NextApiResponse) => {
@@ -28,6 +30,44 @@ const mapTimestampToMs = (timestamp: unknown) => {
   return null;
 };
 
+const mapFeedbackDocument = (
+  id: string,
+  data: {
+    comment?: string;
+    emoji?: string;
+    page?: string;
+    rating?: number;
+    timestamp?: unknown;
+    userId?: string;
+    userid?: string;
+  }
+) => {
+  return {
+    id,
+    comment: typeof data.comment === "string" ? data.comment : "",
+    emoji: typeof data.emoji === "string" ? data.emoji : "N/A",
+    page: typeof data.page === "string" ? data.page : "Unknown",
+    rating: typeof data.rating === "number" ? data.rating : null,
+    timestampMs: mapTimestampToMs(data.timestamp),
+    userId:
+      typeof data.userId === "string"
+        ? data.userId
+        : typeof data.userid === "string"
+          ? data.userid
+          : "anonymous",
+  };
+};
+
+const sortFeedback = <
+  T extends {
+    timestampMs: number | null;
+  },
+>(
+  feedback: T[]
+) => {
+  return feedback.sort((left, right) => (right.timestampMs ?? 0) - (left.timestampMs ?? 0));
+};
+
 export default async function handler(request: NextApiRequest, response: NextApiResponse) {
   setNoStore(response);
 
@@ -48,38 +88,58 @@ export default async function handler(request: NextApiRequest, response: NextApi
       .orderBy("timestamp", "desc")
       .get();
 
-    const feedback = snapshot.docs.map((document) => {
-      const data = document.data() as {
-        comment?: string;
-        emoji?: string;
-        page?: string;
-        rating?: number;
-        timestamp?: unknown;
-        userId?: string;
-        userid?: string;
-      };
-
-      return {
-        id: document.id,
-        comment: typeof data.comment === "string" ? data.comment : "",
-        emoji: typeof data.emoji === "string" ? data.emoji : "N/A",
-        page: typeof data.page === "string" ? data.page : "Unknown",
-        rating: typeof data.rating === "number" ? data.rating : null,
-        timestampMs: mapTimestampToMs(data.timestamp),
-        userId:
-          typeof data.userId === "string"
-            ? data.userId
-            : typeof data.userid === "string"
-              ? data.userid
-              : "anonymous",
-      };
-    });
+    const feedback = snapshot.docs.map((document) =>
+      mapFeedbackDocument(
+        document.id,
+        document.data() as {
+          comment?: string;
+          emoji?: string;
+          page?: string;
+          rating?: number;
+          timestamp?: unknown;
+          userId?: string;
+          userid?: string;
+        }
+      )
+    );
 
     return response.status(200).json({ feedback });
   } catch (error) {
     console.error("Admin feedback fetch failed:", error);
-    return response.status(500).json({
-      error: error instanceof Error ? error.message : "Could not load feedback.",
-    });
+
+    try {
+      const snapshot = await getDocs(collection(db, "feedback"));
+      const feedback = sortFeedback(
+        snapshot.docs.map((document) =>
+          mapFeedbackDocument(
+            document.id,
+            document.data() as {
+              comment?: string;
+              emoji?: string;
+              page?: string;
+              rating?: number;
+              timestamp?: unknown;
+              userId?: string;
+              userid?: string;
+            }
+          )
+        )
+      );
+
+      return response.status(200).json({
+        feedback,
+        degraded: true,
+      });
+    } catch (fallbackError) {
+      console.error("Fallback feedback fetch failed:", fallbackError);
+      return response.status(500).json({
+        error:
+          fallbackError instanceof Error
+            ? fallbackError.message
+            : error instanceof Error
+              ? error.message
+              : "Could not load feedback.",
+      });
+    }
   }
 }
