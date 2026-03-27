@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import { NextPage } from "next";
 import { NextSeo } from "next-seo";
 import * as pdfjsLib from "pdfjs-dist";
-import { ShieldCheck, Sparkles, Stars, WandSparkles } from "lucide-react";
 
 import { ChatBox, type AskPdfMessage } from "@/components/askpdf/ChatBox";
 import { ConsentModal } from "@/components/askpdf/ConsentModal";
@@ -14,6 +13,11 @@ import { useToast } from "@/hooks/use-toast";
 
 const AI_CONSENT_STORAGE_KEY = "ai_consent_given";
 const MAX_TEXT_LENGTH = 20000;
+const EXAMPLE_QUESTIONS = [
+  "Summarize this PDF",
+  "What are key points?",
+  "Explain in simple terms",
+];
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
@@ -70,6 +74,7 @@ const AskYourPdfPage: NextPage = () => {
   const [isConsentGiven, setIsConsentGiven] = useState(false);
   const [isTextTruncated, setIsTextTruncated] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const isToolLocked = !isConsentGiven;
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -210,6 +215,10 @@ const AskYourPdfPage: NextPage = () => {
     }
   };
 
+  const handleExampleClick = (example: string) => {
+    setQuestion(example);
+  };
+
   return (
     <AuthGuard>
       <NextSeo
@@ -225,55 +234,21 @@ const AskYourPdfPage: NextPage = () => {
         onContinue={handleConsentContinue}
       />
 
-      <div className="relative overflow-hidden bg-[linear-gradient(180deg,#fff7ed_0%,#f0fdfa_38%,#ffffff_100%)]">
-        <div className="absolute left-[-8rem] top-24 h-72 w-72 rounded-full bg-orange-300/40 blur-3xl" />
-        <div className="absolute right-[-5rem] top-10 h-72 w-72 rounded-full bg-cyan-300/40 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-80 w-80 rounded-full bg-lime-200/30 blur-3xl" />
+      <div className="w-full bg-background">
+        <section className="container mx-auto px-4 pb-16 pt-6 md:pb-24 md:pt-8">
+          <div className="mb-8 max-w-3xl space-y-4 text-center lg:text-left">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
+              Ask Your PDF
+            </h1>
+            <p className="max-w-2xl text-lg text-muted-foreground">
+              Upload a PDF and ask questions using AI.
+            </p>
+          </div>
 
-        <section className="relative container mx-auto px-4 pb-16 pt-6 md:pb-24 md:pt-8">
-          <div className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
-            <div className="space-y-8">
-              <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-white/80 bg-white/70 px-4 py-2 text-xs font-black uppercase tracking-[0.22em] text-slate-700 shadow-sm backdrop-blur">
-                  <WandSparkles className="h-4 w-4 text-orange-500" />
-                  AI document helper
-                </div>
-
-                <div className="max-w-3xl space-y-4">
-                  <h1 className="max-w-2xl text-5xl font-black tracking-tight text-slate-900 md:text-6xl">
-                    Ask Your PDF
-                  </h1>
-                  <p className="max-w-2xl text-lg leading-8 text-slate-700 md:text-xl">
-                    Upload a PDF and ask questions using AI.
-                  </p>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-                    <Stars className="h-5 w-5 text-cyan-500" />
-                    <p className="mt-3 text-sm font-bold text-slate-900">Browser-first</p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      PDF text is extracted on your device before you ask anything.
-                    </p>
-                  </div>
-                  <div className="rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-                    <Sparkles className="h-5 w-5 text-orange-500" />
-                    <p className="mt-3 text-sm font-bold text-slate-900">Fast Q&A</p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Ask for summaries, details, definitions, dates, or action items.
-                    </p>
-                  </div>
-                  <div className="rounded-[1.5rem] border border-white/70 bg-white/80 p-4 shadow-sm backdrop-blur">
-                    <ShieldCheck className="h-5 w-5 text-lime-600" />
-                    <p className="mt-3 text-sm font-bold text-slate-900">Consent required</p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      AI use is gated with explicit consent and a clear no-sensitive-documents warning.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
+          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
+            <div>
               <UploadBox
+                consentGranted={!isToolLocked}
                 file={file}
                 onFileSelected={handleFileSelected}
                 isExtracting={isExtracting}
@@ -284,14 +259,16 @@ const AskYourPdfPage: NextPage = () => {
               />
             </div>
 
-            <div className="lg:pt-12">
+            <div>
               <ChatBox
                 messages={messages}
                 question={question}
+                onExampleClick={handleExampleClick}
+                exampleQuestions={EXAMPLE_QUESTIONS}
                 onQuestionChange={setQuestion}
                 onSubmit={handleAskQuestion}
                 isLoading={isAsking}
-                disabled={!pdfText || isExtracting}
+                disabled={isToolLocked || !pdfText || isExtracting}
                 hasDocument={Boolean(pdfText)}
               />
             </div>
