@@ -63,7 +63,7 @@ export const ChatBox = ({
           variant="outline"
           onClick={() => onExampleClick(example)}
           disabled={disabled}
-          className="justify-start rounded-full"
+          className="h-8 justify-start rounded-full px-3 text-xs"
         >
           {example}
         </Button>
@@ -72,7 +72,7 @@ export const ChatBox = ({
   );
 
   return (
-    <section className="flex h-full min-h-[580px] flex-col">
+    <section className="flex h-full min-h-0 flex-col">
       <div className="border-b border-border px-6 py-5">
         <h2 className="text-2xl font-bold text-foreground">Ask questions</h2>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -82,7 +82,7 @@ export const ChatBox = ({
 
       <div
         ref={scrollContainerRef}
-        className="flex-1 space-y-4 overflow-y-auto bg-background px-6 py-6"
+        className="flex-1 space-y-4 overflow-y-auto bg-background px-6 py-5"
       >
         {messages.length === 0 ? (
           <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center animate-in fade-in-0">
@@ -136,9 +136,7 @@ export const ChatBox = ({
         onSubmit={handleSubmit}
         className="sticky bottom-0 border-t border-border bg-card/95 px-4 py-4 backdrop-blur md:px-6"
       >
-        {!hasMessages ? (
-          <div className="mb-3 flex flex-wrap gap-2">{exampleButtons}</div>
-        ) : null}
+        <div className="mb-3 flex flex-wrap gap-2">{exampleButtons}</div>
 
         <div className="flex flex-col gap-3 md:flex-row">
           <Input

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface UploadBoxProps {
+  compact?: boolean;
   consentGranted: boolean;
   error: string | null;
   extractedCharacterCount: number;
@@ -16,6 +17,7 @@ interface UploadBoxProps {
 }
 
 export const UploadBox = ({
+  compact = false,
   consentGranted,
   error,
   extractedCharacterCount,
@@ -40,9 +42,9 @@ export const UploadBox = ({
   };
 
   return (
-    <section className="space-y-5">
+    <section className={cn("space-y-5", compact && "space-y-4")}>
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Upload PDF</h2>
+        <h2 className={cn("text-2xl font-bold text-foreground", compact && "text-xl")}>Upload PDF</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Upload one PDF. Text will be extracted in your browser before AI is used.
         </p>
@@ -64,6 +66,7 @@ export const UploadBox = ({
         }}
         className={cn(
           "rounded-2xl border-2 border-dashed px-6 py-10 text-center transition-all duration-300 animate-in fade-in-0",
+          compact && "px-5 py-7",
           error
             ? "border-destructive bg-destructive/10"
             : "border-border bg-background hover:border-primary/40",
@@ -78,12 +81,12 @@ export const UploadBox = ({
           className="hidden"
         />
 
-        <div className="mx-auto flex max-w-md flex-col items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-foreground">
+        <div className={cn("mx-auto flex max-w-md flex-col items-center gap-4", compact && "gap-3")}>
+          <div className={cn("flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-foreground", compact && "h-12 w-12")}>
             {isExtracting ? <Loader2 className="h-7 w-7 animate-spin" /> : <UploadCloud className="h-7 w-7" />}
           </div>
           <div className="space-y-2">
-            <p className="text-xl font-semibold text-foreground">
+            <p className={cn("text-xl font-semibold text-foreground", compact && "text-lg")}>
               {isExtracting ? "Extracting text..." : "Choose a PDF file"}
             </p>
             <p className="text-sm text-muted-foreground">

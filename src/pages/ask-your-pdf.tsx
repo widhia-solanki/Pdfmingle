@@ -190,8 +190,8 @@ const AskYourPdfPage: NextPage = () => {
     }
   };
 
-  const handleAskQuestion = async () => {
-    const trimmedQuestion = question.trim();
+  const submitQuestion = async (rawQuestion?: string) => {
+    const trimmedQuestion = (rawQuestion ?? question).trim();
 
     if (!pdfText || !trimmedQuestion || isAsking) {
       return;
@@ -242,8 +242,16 @@ const AskYourPdfPage: NextPage = () => {
     }
   };
 
+  const handleAskQuestion = async () => {
+    await submitQuestion();
+  };
+
   const handleExampleClick = (example: string) => {
     setQuestion(example);
+
+    if (!isToolLocked && pdfText && !isExtracting && !isAsking) {
+      void submitQuestion(example);
+    }
   };
 
   return (
@@ -262,34 +270,37 @@ const AskYourPdfPage: NextPage = () => {
       />
 
       <div className="w-full bg-background">
-        <section className="container mx-auto px-4 pb-16 pt-6 md:pb-24 md:pt-8">
-          <div className="mb-6 max-w-3xl space-y-3 text-center lg:text-left">
+        <section className="container mx-auto flex h-[calc(100vh-5rem)] min-h-[620px] flex-col px-4 py-5 md:py-6">
+          <div className="mb-5 max-w-3xl space-y-2 text-center lg:text-left">
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
               Ask Your PDF
             </h1>
-            <p className="max-w-2xl text-lg text-muted-foreground">
+            <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
               Upload a PDF and ask questions using AI.
             </p>
           </div>
 
           {!hasActiveDocument ? (
-            <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300 animate-in fade-in-0">
-              <UploadBox
-                consentGranted={!isToolLocked}
-                file={file}
-                onFileSelected={handleFileSelected}
-                isExtracting={isExtracting}
-                pageCount={pageCount}
-                extractedCharacterCount={extractedCharacterCount}
-                isTruncated={isTextTruncated}
-                error={error}
-              />
+            <div className="flex flex-1 items-center justify-center">
+              <div className="mx-auto w-full max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300 animate-in fade-in-0">
+                <UploadBox
+                  consentGranted={!isToolLocked}
+                  file={file}
+                  onFileSelected={handleFileSelected}
+                  isExtracting={isExtracting}
+                  pageCount={pageCount}
+                  extractedCharacterCount={extractedCharacterCount}
+                  isTruncated={isTextTruncated}
+                  error={error}
+                />
+              </div>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 animate-in fade-in-0">
-              <div className="grid lg:grid-cols-[360px_minmax(0,1fr)]">
-                <div className="border-b border-border p-6 lg:border-b-0 lg:border-r">
+            <div className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 animate-in fade-in-0">
+              <div className="grid h-full min-h-0 lg:grid-cols-[320px_minmax(0,1fr)]">
+                <div className="min-h-0 border-b border-border p-5 lg:border-b-0 lg:border-r">
                   <UploadBox
+                    compact
                     consentGranted={!isToolLocked}
                     file={file}
                     onFileSelected={handleFileSelected}
@@ -301,7 +312,7 @@ const AskYourPdfPage: NextPage = () => {
                   />
                 </div>
 
-                <div className="min-h-[580px]">
+                <div className="min-h-0">
                   <ChatBox
                     messages={messages}
                     question={question}
