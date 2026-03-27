@@ -42,11 +42,16 @@ export const InformativePanel = () => {
                         </div>
                     </div>
                 </div>
-                <div className="mt-16 pt-8 border-t border-border flex items-center justify-between">
+                <div className="mt-16 flex flex-col gap-4 border-t border-border pt-8 md:flex-row md:items-center md:justify-between">
                     <p className="text-muted-foreground text-sm group">
                         Made with <span className="inline-block text-red-500 transition-transform group-hover:scale-125 animate-heartbeat">❤️</span> in India
                     </p>
-                    <ThemeSwitcher />
+                    <div className="flex items-center gap-4">
+                        <Link href="/admin" className="text-sm text-muted-foreground transition-colors hover:text-foreground hover:underline">
+                            Admin
+                        </Link>
+                        <ThemeSwitcher />
+                    </div>
                 </div>
             </div>
         </section>
