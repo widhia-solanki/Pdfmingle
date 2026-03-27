@@ -18,6 +18,35 @@ const EXAMPLE_QUESTIONS = [
   "What are key points?",
   "Explain in simple terms",
 ];
+const AI_CONSENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+const getCookieValue = (name: string) => {
+  if (typeof document === "undefined") {
+    return "";
+  }
+
+  const encodedName = `${encodeURIComponent(name)}=`;
+  const cookies = document.cookie.split(";");
+
+  for (const rawCookie of cookies) {
+    const cookie = rawCookie.trim();
+    if (cookie.startsWith(encodedName)) {
+      return decodeURIComponent(cookie.slice(encodedName.length));
+    }
+  }
+
+  return "";
+};
+
+const setCookieValue = (name: string, value: string, maxAgeSeconds: number) => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(
+    value
+  )}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
+};
 
 if (typeof window !== "undefined") {
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
@@ -75,13 +104,14 @@ const AskYourPdfPage: NextPage = () => {
   const [isTextTruncated, setIsTextTruncated] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isToolLocked = !isConsentGiven;
+  const hasActiveDocument = Boolean(file || pdfText || isExtracting);
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return;
     }
 
-    const storedConsent = window.localStorage.getItem(AI_CONSENT_STORAGE_KEY);
+    const storedConsent = getCookieValue(AI_CONSENT_STORAGE_KEY);
     if (storedConsent === "true") {
       setIsConsentGiven(true);
       setIsConsentChecked(true);
@@ -91,10 +121,7 @@ const AskYourPdfPage: NextPage = () => {
   const extractedCharacterCount = useMemo(() => pdfText.length, [pdfText]);
 
   const handleConsentContinue = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(AI_CONSENT_STORAGE_KEY, "true");
-    }
-
+    setCookieValue(AI_CONSENT_STORAGE_KEY, "true", AI_CONSENT_COOKIE_MAX_AGE);
     setIsConsentGiven(true);
     setIsConsentChecked(true);
   };
@@ -236,7 +263,7 @@ const AskYourPdfPage: NextPage = () => {
 
       <div className="w-full bg-background">
         <section className="container mx-auto px-4 pb-16 pt-6 md:pb-24 md:pt-8">
-          <div className="mb-8 max-w-3xl space-y-4 text-center lg:text-left">
+          <div className="mb-6 max-w-3xl space-y-3 text-center lg:text-left">
             <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
               Ask Your PDF
             </h1>
@@ -245,8 +272,8 @@ const AskYourPdfPage: NextPage = () => {
             </p>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-start">
-            <div>
+          {!hasActiveDocument ? (
+            <div className="mx-auto max-w-3xl rounded-2xl border border-border bg-card p-6 shadow-sm transition-all duration-300 animate-in fade-in-0">
               <UploadBox
                 consentGranted={!isToolLocked}
                 file={file}
@@ -258,21 +285,38 @@ const AskYourPdfPage: NextPage = () => {
                 error={error}
               />
             </div>
+          ) : (
+            <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 animate-in fade-in-0">
+              <div className="grid lg:grid-cols-[360px_minmax(0,1fr)]">
+                <div className="border-b border-border p-6 lg:border-b-0 lg:border-r">
+                  <UploadBox
+                    consentGranted={!isToolLocked}
+                    file={file}
+                    onFileSelected={handleFileSelected}
+                    isExtracting={isExtracting}
+                    pageCount={pageCount}
+                    extractedCharacterCount={extractedCharacterCount}
+                    isTruncated={isTextTruncated}
+                    error={error}
+                  />
+                </div>
 
-            <div>
-              <ChatBox
-                messages={messages}
-                question={question}
-                onExampleClick={handleExampleClick}
-                exampleQuestions={EXAMPLE_QUESTIONS}
-                onQuestionChange={setQuestion}
-                onSubmit={handleAskQuestion}
-                isLoading={isAsking}
-                disabled={isToolLocked || !pdfText || isExtracting}
-                hasDocument={Boolean(pdfText)}
-              />
+                <div className="min-h-[580px]">
+                  <ChatBox
+                    messages={messages}
+                    question={question}
+                    onExampleClick={handleExampleClick}
+                    exampleQuestions={EXAMPLE_QUESTIONS}
+                    onQuestionChange={setQuestion}
+                    onSubmit={handleAskQuestion}
+                    isLoading={isAsking}
+                    disabled={isToolLocked || !pdfText || isExtracting}
+                    hasDocument={Boolean(pdfText)}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          )}
         </section>
       </div>
     </AuthGuard>

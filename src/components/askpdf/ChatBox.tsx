@@ -35,6 +35,7 @@ export const ChatBox = ({
   question,
 }: ChatBoxProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const hasMessages = messages.length > 0;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -71,23 +72,20 @@ export const ChatBox = ({
   );
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+    <section className="flex h-full min-h-[580px] flex-col">
       <div className="border-b border-border px-6 py-5">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Ask questions</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Ask about summaries, key points, explanations, and details from the uploaded PDF.
-          </p>
-        </div>
+        <h2 className="text-2xl font-bold text-foreground">Ask questions</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ask about summaries, key points, explanations, and details from the uploaded PDF.
+        </p>
       </div>
 
-      <div className="border-b border-border px-6 py-4">
-        <div className="flex flex-wrap gap-2">{exampleButtons}</div>
-      </div>
-
-      <div ref={scrollContainerRef} className="max-h-[420px] space-y-4 overflow-y-auto bg-background px-6 py-6">
+      <div
+        ref={scrollContainerRef}
+        className="flex-1 space-y-4 overflow-y-auto bg-background px-6 py-6"
+      >
         {messages.length === 0 ? (
-          <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center">
+          <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center animate-in fade-in-0">
             <p className="text-xl font-semibold text-foreground">
               {hasDocument ? "Your PDF is ready for questions" : "Upload a PDF to start"}
             </p>
@@ -102,7 +100,7 @@ export const ChatBox = ({
             <div
               key={message.id}
               className={cn(
-                "flex",
+                "flex animate-in fade-in-0 slide-in-from-bottom-2 duration-300",
                 message.role === "user" ? "justify-end" : "justify-start"
               )}
             >
@@ -136,8 +134,12 @@ export const ChatBox = ({
 
       <form
         onSubmit={handleSubmit}
-        className="border-t border-border bg-card px-4 py-4 md:px-6"
+        className="sticky bottom-0 border-t border-border bg-card/95 px-4 py-4 backdrop-blur md:px-6"
       >
+        {!hasMessages ? (
+          <div className="mb-3 flex flex-wrap gap-2">{exampleButtons}</div>
+        ) : null}
+
         <div className="flex flex-col gap-3 md:flex-row">
           <Input
             value={question}
