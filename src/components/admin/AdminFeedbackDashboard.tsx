@@ -37,6 +37,7 @@ interface FirestoreFeedbackDocument {
   rating?: number;
   timestamp?: FeedbackTimestamp;
   userId?: string;
+  userid?: string;
 }
 
 interface AdminFeedbackDashboardProps {
@@ -89,7 +90,12 @@ const fetchFeedbackDocuments = async (): Promise<FeedbackEntry[]> => {
       page: typeof data.page === "string" ? data.page : "Unknown",
       rating: typeof data.rating === "number" ? data.rating : null,
       timestamp: data.timestamp ?? null,
-      userId: typeof data.userId === "string" ? data.userId : "anonymous",
+      userId:
+        typeof data.userId === "string"
+          ? data.userId
+          : typeof data.userid === "string"
+            ? data.userid
+            : "anonymous",
     };
   });
 };
