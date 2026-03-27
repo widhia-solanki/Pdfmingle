@@ -156,14 +156,7 @@ const AskYourPdfPage: NextPage = () => {
       setPdfText(extracted.text);
       setPageCount(extracted.pageCount);
       setIsTextTruncated(extracted.wasTruncated);
-      setMessages([
-        createMessage(
-          "assistant",
-          extracted.wasTruncated
-            ? "Your PDF is ready. I extracted the document text and trimmed it to fit the AI context window. Ask a question and verify the answer against the original file."
-            : "Your PDF is ready. Ask me anything about the document and I’ll answer from the extracted text."
-        ),
-      ]);
+      setMessages([]);
 
       toast({
         title: "PDF ready",
@@ -270,14 +263,11 @@ const AskYourPdfPage: NextPage = () => {
       />
 
       <div className="w-full bg-background">
-        <section className="container mx-auto flex h-[calc(100vh-5rem)] min-h-[620px] flex-col px-4 py-5 md:py-6">
-          <div className="mb-5 max-w-3xl space-y-2 text-center lg:text-left">
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
+        <section className="container mx-auto flex h-[calc(100vh-5rem)] min-h-[560px] flex-col px-4 py-4 md:py-5">
+          <div className="mb-4 max-w-3xl text-center lg:text-left">
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
               Ask Your PDF
             </h1>
-            <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-              Upload a PDF and ask questions using AI.
-            </p>
           </div>
 
           {!hasActiveDocument ? (

@@ -87,11 +87,11 @@ export const ChatBox = ({
         {messages.length === 0 ? (
           <div className="flex min-h-[260px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center animate-in fade-in-0">
             <p className="text-xl font-semibold text-foreground">
-              {hasDocument ? "Your PDF is ready for questions" : "Upload a PDF to start"}
+              {hasDocument ? "Start asking about this PDF" : "Upload a PDF to start"}
             </p>
             <p className="mt-2 max-w-md text-sm text-muted-foreground">
               {hasDocument
-                ? "Try asking for a summary, action items, dates, names, or a specific explanation from the document."
+                ? "Use a suggestion below or type your own question."
                 : "Once the PDF text is extracted, your conversation will appear here."}
             </p>
           </div>
