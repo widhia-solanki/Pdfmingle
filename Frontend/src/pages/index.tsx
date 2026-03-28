@@ -41,7 +41,10 @@ const DesktopHero = () => {
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
                     <div className="text-center lg:text-left animate-in fade-in slide-in-from-left-12 duration-500">
-                        <h1 className="text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
+                        <div className="inline-flex items-center rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                            Fast, secure, free
+                        </div>
+                        <h1 className="mt-4 text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
                             Every tool you need to work with PDFs in one place
                         </h1>
                         <p className="mt-6 max-w-xl mx-auto lg:mx-0 text-lg text-muted-foreground leading-relaxed">
@@ -51,6 +54,11 @@ const DesktopHero = () => {
                             <Button asChild size="lg" className="text-lg px-8 py-7 bg-brand-blue hover:bg-brand-blue-dark text-white rounded-xl">
                                 <Link href="/tools">View All Tools</Link>
                             </Button>
+                        </div>
+                        <div className="mt-5 flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground lg:justify-start">
+                            <span className="rounded-full border border-border bg-background px-3 py-1.5">Merge, split, compress</span>
+                            <span className="rounded-full border border-border bg-background px-3 py-1.5">Protect and convert</span>
+                            <span className="rounded-full border border-border bg-background px-3 py-1.5">No clutter, just tools</span>
                         </div>
                     </div>
                     <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">

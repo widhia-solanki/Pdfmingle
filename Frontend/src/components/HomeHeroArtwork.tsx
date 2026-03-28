@@ -1,89 +1,152 @@
+import type { ReactNode } from "react";
+import { FileText, Lock, Scissors, Sparkles, Zap } from "lucide-react";
+
+const FloatingPill = ({
+  className,
+  icon,
+  label,
+}: {
+  className: string;
+  icon: ReactNode;
+  label: string;
+}) => (
+  <div
+    className={`absolute flex items-center gap-2 rounded-2xl border border-slate-200/80 bg-white/90 px-3 py-2 text-sm font-medium text-slate-700 shadow-[0_16px_40px_rgba(15,23,42,0.10)] backdrop-blur ${className}`}
+  >
+    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+      {icon}
+    </span>
+    <span>{label}</span>
+  </div>
+);
+
+const StatusDot = ({ color }: { color: string }) => (
+  <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
+);
+
 export const HomeHeroArtwork = () => {
   return (
-    <div className="relative w-full max-w-[520px]">
-      <div className="absolute inset-x-12 top-6 h-40 rounded-full bg-blue-500/10 blur-3xl" />
-      <div className="absolute -left-2 top-20 h-24 w-24 rounded-full bg-emerald-400/10 blur-2xl" />
-      <div className="absolute -right-3 bottom-10 h-28 w-28 rounded-full bg-amber-400/10 blur-2xl" />
+    <div className="relative w-full max-w-[560px]">
+      <div className="absolute inset-x-10 top-10 h-44 rounded-full bg-blue-500/10 blur-3xl" />
+      <div className="absolute left-3 top-28 h-24 w-24 rounded-full bg-emerald-400/10 blur-2xl" />
+      <div className="absolute right-2 top-12 h-28 w-28 rounded-full bg-amber-400/10 blur-2xl" />
 
-      <div className="relative rounded-[28px] border border-border/60 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 shadow-[0_18px_60px_rgba(15,23,42,0.08)]">
-        <svg
-          viewBox="0 0 560 420"
-          role="img"
-          aria-label="Compact illustration of PDF tools and document actions"
-          className="h-auto w-full"
-        >
-          <defs>
-            <linearGradient id="hero-card" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#eff6ff" />
-              <stop offset="100%" stopColor="#dbeafe" />
-            </linearGradient>
-            <linearGradient id="hero-page" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#2563eb" />
-              <stop offset="100%" stopColor="#1d4ed8" />
-            </linearGradient>
-          </defs>
+      <div className="relative aspect-[11/9]">
+        <FloatingPill
+          className="left-0 top-10 -rotate-6"
+          icon={<Scissors className="h-4 w-4 text-emerald-600" />}
+          label="Split pages"
+        />
+        <FloatingPill
+          className="right-0 top-6 rotate-6"
+          icon={<Lock className="h-4 w-4 text-blue-600" />}
+          label="Protect PDF"
+        />
+        <FloatingPill
+          className="bottom-10 left-10 -rotate-3"
+          icon={<Zap className="h-4 w-4 text-amber-500" />}
+          label="Compress fast"
+        />
 
-          <rect x="0" y="0" width="560" height="420" rx="26" fill="url(#hero-card)" />
+        <div className="absolute inset-x-12 inset-y-6 rounded-[30px] border border-slate-200/80 bg-gradient-to-br from-slate-50 via-white to-slate-100 p-5 shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
+          <div className="absolute inset-0 rounded-[30px] bg-[radial-gradient(circle_at_top_right,_rgba(59,130,246,0.12),_transparent_34%),radial-gradient(circle_at_bottom_left,_rgba(16,185,129,0.10),_transparent_28%)]" />
 
-          <circle cx="112" cy="88" r="10" fill="#f59e0b" />
-          <circle cx="446" cy="72" r="12" fill="#34d399" />
-          <circle cx="472" cy="314" r="10" fill="#60a5fa" />
+          <div className="relative flex h-full flex-col rounded-[24px] border border-slate-200/70 bg-white/95 p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-blue-600 text-white shadow-sm">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-400">
+                    Workflow
+                  </p>
+                  <p className="text-lg font-semibold text-slate-900">PDF toolkit</p>
+                </div>
+              </div>
 
-          <path
-            d="M196 80c19-21 50-33 85-33 60 0 107 36 119 87"
-            fill="none"
-            stroke="#93c5fd"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
-          <path
-            d="M180 305c-25-21-40-52-40-87 0-17 4-34 11-48"
-            fill="none"
-            stroke="#86efac"
-            strokeWidth="14"
-            strokeLinecap="round"
-          />
+              <div className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                Secure by default
+              </div>
+            </div>
 
-          <g transform="translate(190 80)">
-            <rect x="0" y="0" width="180" height="236" rx="22" fill="white" stroke="#bfdbfe" strokeWidth="3" />
-            <path d="M129 0h17l34 34v17h-51z" fill="#dbeafe" />
-            <rect x="28" y="54" width="98" height="18" rx="9" fill="url(#hero-page)" />
-            <rect x="28" y="92" width="124" height="10" rx="5" fill="#cbd5e1" />
-            <rect x="28" y="114" width="110" height="10" rx="5" fill="#cbd5e1" />
-            <rect x="28" y="136" width="118" height="10" rx="5" fill="#cbd5e1" />
-            <rect x="28" y="168" width="124" height="28" rx="14" fill="#eff6ff" />
-            <rect x="40" y="178" width="52" height="8" rx="4" fill="#60a5fa" />
-            <rect x="28" y="212" width="78" height="10" rx="5" fill="#cbd5e1" />
-          </g>
+            <div className="mt-5 grid grid-cols-[1.3fr_0.9fr] gap-4">
+              <div className="rounded-[22px] border border-slate-200 bg-slate-50/90 p-4">
+                <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  Smart actions
+                </div>
 
-          <g transform="translate(81 134)">
-            <rect x="0" y="0" width="78" height="78" rx="20" fill="white" stroke="#dbeafe" strokeWidth="3" />
-            <path d="M24 49l9-17 13 9 15-18" fill="none" stroke="#10b981" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="24" cy="49" r="5" fill="#10b981" />
-            <circle cx="46" cy="41" r="5" fill="#10b981" />
-            <circle cx="61" cy="23" r="5" fill="#10b981" />
-          </g>
+                <div className="mt-4 space-y-3">
+                  <div className="rounded-2xl bg-white p-3 shadow-sm">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-900">Merge documents</span>
+                      <StatusDot color="bg-blue-500" />
+                    </div>
+                    <div className="mt-2 h-2 rounded-full bg-slate-100">
+                      <div className="h-2 w-[78%] rounded-full bg-blue-500" />
+                    </div>
+                  </div>
 
-          <g transform="translate(402 136)">
-            <rect x="0" y="0" width="78" height="78" rx="20" fill="white" stroke="#dbeafe" strokeWidth="3" />
-            <path d="M23 39h32" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round" />
-            <path d="M39 23v32" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round" />
-            <path d="M22 56h34" stroke="#fdba74" strokeWidth="8" strokeLinecap="round" />
-          </g>
+                  <div className="rounded-2xl bg-white p-3 shadow-sm">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-900">Compress output</span>
+                      <StatusDot color="bg-amber-400" />
+                    </div>
+                    <div className="mt-2 h-2 rounded-full bg-slate-100">
+                      <div className="h-2 w-[62%] rounded-full bg-amber-400" />
+                    </div>
+                  </div>
 
-          <g transform="translate(115 276)">
-            <rect x="0" y="0" width="84" height="84" rx="22" fill="white" stroke="#dbeafe" strokeWidth="3" />
-            <path d="M25 55l33-33" stroke="#8b5cf6" strokeWidth="9" strokeLinecap="round" />
-            <path d="M30 28h30v30" fill="none" stroke="#8b5cf6" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
-          </g>
+                  <div className="rounded-2xl bg-white p-3 shadow-sm">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-slate-900">Protect file</span>
+                      <StatusDot color="bg-emerald-500" />
+                    </div>
+                    <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
+                      <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-700">
+                        Encrypted
+                      </span>
+                      <span>Ready to download</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-          <g transform="translate(361 270)">
-            <rect x="0" y="0" width="94" height="94" rx="24" fill="white" stroke="#dbeafe" strokeWidth="3" />
-            <path d="M30 59h34" stroke="#2563eb" strokeWidth="9" strokeLinecap="round" />
-            <path d="M50 33l14 26-14 0" fill="none" stroke="#2563eb" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M42 33L28 59" fill="none" stroke="#60a5fa" strokeWidth="9" strokeLinecap="round" />
-          </g>
-        </svg>
+              <div className="space-y-4">
+                <div className="rounded-[22px] border border-blue-100 bg-blue-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-blue-500">
+                    Output
+                  </p>
+                  <p className="mt-2 text-3xl font-bold text-slate-900">18+</p>
+                  <p className="mt-1 text-sm text-slate-600">PDF actions ready in one place</p>
+                </div>
+
+                <div className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-2 text-sm font-medium text-slate-800">
+                    <Lock className="h-4 w-4 text-emerald-600" />
+                    Private processing
+                  </div>
+                  <p className="mt-3 text-sm leading-6 text-slate-500">
+                    Merge, split, compress, and protect documents without visual clutter.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between rounded-[20px] border border-slate-200 bg-slate-50/90 px-4 py-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                  Session summary
+                </p>
+                <p className="mt-1 text-sm font-medium text-slate-900">Ready for merge, split, compress, and export</p>
+              </div>
+              <div className="rounded-full bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white">
+                Live tools
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
