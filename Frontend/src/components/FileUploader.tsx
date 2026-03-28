@@ -1,8 +1,12 @@
 import { useState, useRef, useCallback } from "react";
-import { Upload, X, FileText } from "lucide-react";
+import { Upload, X, FileText, Cloud, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import {
+  googleDriveMimeTypesFromAcceptString,
+  importFilesFromGoogleDrive,
+} from "@/lib/google-drive-picker";
 
 interface FileUploaderProps {
   accept?: string;
@@ -30,6 +34,8 @@ export const FileUploader = ({
   title,
 }: FileUploaderProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
+  const [driveImportError, setDriveImportError] = useState<string | null>(null);
+  const [isImportingFromDrive, setIsImportingFromDrive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -57,6 +63,7 @@ export const FileUploader = ({
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
+    setDriveImportError(null);
     
     const droppedFiles = Array.from(e.dataTransfer.files);
     onFilesChange(multiple ? [...files, ...droppedFiles] : droppedFiles.slice(0, 1));
@@ -67,6 +74,7 @@ export const FileUploader = ({
       return;
     }
     if (e.target.files) {
+      setDriveImportError(null);
       const selectedFiles = Array.from(e.target.files);
       onFilesChange(multiple ? [...files, ...selectedFiles] : selectedFiles.slice(0, 1));
     }
@@ -86,6 +94,37 @@ export const FileUploader = ({
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     openFileDialog();
+  };
+
+  const handleDriveImport = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+
+    if (disabled) {
+      return;
+    }
+
+    setDriveImportError(null);
+    setIsImportingFromDrive(true);
+
+    try {
+      const driveFiles = await importFilesFromGoogleDrive({
+        mimeTypes: googleDriveMimeTypesFromAcceptString(accept),
+        multiple,
+      });
+
+      if (driveFiles.length === 0) {
+        return;
+      }
+
+      onFilesChange(multiple ? [...files, ...driveFiles] : driveFiles.slice(0, 1));
+    } catch (driveError) {
+      const message = driveError instanceof Error ? driveError.message : "Google Drive import failed.";
+      if (!message.toLowerCase().includes("cancelled")) {
+        setDriveImportError(message);
+      }
+    } finally {
+      setIsImportingFromDrive(false);
+    }
   };
 
   return (
@@ -109,10 +148,15 @@ export const FileUploader = ({
             {isDragOver ? "Drop files here" : title || "Drag & Drop files here"}
           </p>
           <p className="text-sm text-muted-foreground mb-4">{helperText}</p>
-          {/* THE FIX IS HERE: We use the new handleButtonClick function */}
-          <Button variant="outline" onClick={handleButtonClick} type="button" disabled={disabled}>
-            {buttonLabel}
-          </Button>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Button variant="outline" onClick={handleButtonClick} type="button" disabled={disabled}>
+              {buttonLabel}
+            </Button>
+            <Button variant="outline" onClick={handleDriveImport} type="button" disabled={disabled || isImportingFromDrive}>
+              {isImportingFromDrive ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cloud className="mr-2 h-4 w-4" />}
+              Import from Drive
+            </Button>
+          </div>
         </div>
         <input
           ref={fileInputRef}
@@ -123,6 +167,15 @@ export const FileUploader = ({
           accept={accept}
         />
       </Card>
+
+      {driveImportError ? (
+        <Card className="border-destructive/30 bg-destructive/10 p-3">
+          <div className="flex items-start gap-2 text-sm text-destructive">
+            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+            <span>{driveImportError}</span>
+          </div>
+        </Card>
+      ) : null}
 
       {showSelectedFiles && files.length > 0 && (
         <div className="space-y-2">
