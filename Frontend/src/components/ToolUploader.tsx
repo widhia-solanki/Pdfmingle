@@ -1,6 +1,6 @@
 // src/components/ToolUploader.tsx
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { UploadCloud, File as FileIcon, X, AlertTriangle, Loader2, Cloud } from 'lucide-react';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import {
   googleDriveMimeTypesFromAcceptedFileTypes,
   importFilesFromGoogleDrive,
+  preloadGoogleDrivePicker,
 } from '@/lib/google-drive-picker';
 
 interface ToolUploaderProps {
@@ -23,6 +24,13 @@ interface ToolUploaderProps {
 export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, actionButtonText, selectedFiles, isMultiFile, error }: ToolUploaderProps) => {
   const [driveImportError, setDriveImportError] = useState<string | null>(null);
   const [isImportingFromDrive, setIsImportingFromDrive] = useState(false);
+
+  useEffect(() => {
+    void preloadGoogleDrivePicker().catch((preloadError) => {
+      const message = preloadError instanceof Error ? preloadError.message : "Google Drive import is not configured.";
+      setDriveImportError(message);
+    });
+  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setDriveImportError(null);
@@ -44,7 +52,6 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
   };
 
   const handleDriveImport = async () => {
-    setDriveImportError(null);
     setIsImportingFromDrive(true);
 
     try {

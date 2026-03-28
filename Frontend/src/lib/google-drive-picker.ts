@@ -332,3 +332,9 @@ export const importFilesFromGoogleDrive = async ({
 
   return Promise.all(pickedDocuments.map((document) => downloadDriveFile(document, accessToken)));
 };
+
+export const preloadGoogleDrivePicker = async () => {
+  const { clientId } = getRequiredEnv();
+  await Promise.all([loadGapi(), loadGis()]);
+  return clientId;
+};
