@@ -10,8 +10,8 @@ import { NextSeo, WebPageJsonLd } from 'next-seo';
 import Link from 'next/link';
 import { useIsMobile } from '@/hooks/use-mobile';
 import React from 'react';
-import Image from 'next/image';
 import { SITE_URL } from '@/lib/seo';
+import { HomeHeroArtwork } from '@/components/HomeHeroArtwork';
 
 const MobileHero = ({ activeCategory, setActiveCategory }: { activeCategory: ToolCategory | 'All', setActiveCategory: (category: ToolCategory | 'All') => void }) => (
     <section className="container mx-auto px-4 pt-3 md:pt-6">
@@ -54,14 +54,7 @@ const DesktopHero = () => {
                         </div>
                     </div>
                     <div className="flex items-center justify-center animate-in fade-in slide-in-from-right-12 duration-500">
-                        <Image
-                          src="/hero-illustration-v2.png"
-                          alt="Illustration of PDF document management tools"
-                          width={560}
-                          height={460}
-                          priority
-                          className="rounded-lg"
-                        />
+                        <HomeHeroArtwork />
                     </div>
                 </div>
             </div>
