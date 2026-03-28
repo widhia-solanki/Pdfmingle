@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "sitemap": "next-sitemap --config config/next-sitemap.config.js"
+    "sitemap": "next-sitemap --config Config.files/seo/next-sitemap.config.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -92,5 +92,5 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
-  "next-seo-config": "config/next-seo.config.ts"
+  "next-seo-config": "Config.files/seo/next-seo.config.ts"
 }

@@ -1,4 +1,4 @@
-// Proxy to keep tooling paths stable while storing the actual config in config/
-import config from './config/tailwind.config';
+// Proxy to keep tooling paths stable while storing the actual config in Config.files/
+import config from './Config.files/tailwind.config';
 
 export default config;
