@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Upload, X, FileText, Cloud, Loader2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils";
 import {
   googleDriveMimeTypesFromAcceptString,
   importFilesFromGoogleDrive,
-  preloadGoogleDrivePicker,
 } from "@/lib/google-drive-picker";
 
 interface FileUploaderProps {
@@ -38,13 +37,6 @@ export const FileUploader = ({
   const [driveImportError, setDriveImportError] = useState<string | null>(null);
   const [isImportingFromDrive, setIsImportingFromDrive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    void preloadGoogleDrivePicker().catch((preloadError) => {
-      const message = preloadError instanceof Error ? preloadError.message : "Google Drive import is not configured.";
-      setDriveImportError(message);
-    });
-  }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     if (disabled) {
@@ -111,6 +103,7 @@ export const FileUploader = ({
       return;
     }
 
+    setDriveImportError(null);
     setIsImportingFromDrive(true);
 
     try {

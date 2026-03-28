@@ -1,6 +1,6 @@
 // src/components/ToolUploader.tsx
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { UploadCloud, File as FileIcon, X, AlertTriangle, Loader2, Cloud } from 'lucide-react';
@@ -8,7 +8,6 @@ import { cn } from '@/lib/utils';
 import {
   googleDriveMimeTypesFromAcceptedFileTypes,
   importFilesFromGoogleDrive,
-  preloadGoogleDrivePicker,
 } from '@/lib/google-drive-picker';
 
 interface ToolUploaderProps {
@@ -24,13 +23,6 @@ interface ToolUploaderProps {
 export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, actionButtonText, selectedFiles, isMultiFile, error }: ToolUploaderProps) => {
   const [driveImportError, setDriveImportError] = useState<string | null>(null);
   const [isImportingFromDrive, setIsImportingFromDrive] = useState(false);
-
-  useEffect(() => {
-    void preloadGoogleDrivePicker().catch((preloadError) => {
-      const message = preloadError instanceof Error ? preloadError.message : "Google Drive import is not configured.";
-      setDriveImportError(message);
-    });
-  }, []);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setDriveImportError(null);
@@ -52,6 +44,7 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
   };
 
   const handleDriveImport = async () => {
+    setDriveImportError(null);
     setIsImportingFromDrive(true);
 
     try {
@@ -75,8 +68,6 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
     }
   };
 
-  const activeError = error ?? driveImportError;
-
   return (
     <div className="w-full max-w-2xl mx-auto flex flex-col items-center gap-6">
       <div 
@@ -85,16 +76,16 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
           'w-full border-2 border-dashed rounded-xl p-8 text-center transition-colors flex flex-col items-center justify-center min-h-[250px]', 
           // THE FIX: Use theme variables for border and background colors
           isDragActive ? 'border-primary bg-primary/10' : 'border-border bg-card', 
-          activeError && 'border-destructive bg-destructive/10'
+          error && 'border-destructive bg-destructive/10'
         )}
       >
         <input {...getInputProps()} />
         
-        {activeError ? (
+        {error ? (
           <div className="flex flex-col items-center gap-4 text-destructive-foreground">
             <AlertTriangle className="w-16 h-16" />
             <p className="text-lg font-semibold">Upload Failed</p>
-            <p className="text-base">{activeError}</p>
+            <p className="text-base">{error}</p>
           </div>
         ) : (
           // THE FIX: Use `text-muted-foreground` for better contrast
@@ -121,7 +112,13 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
         )}
       </div>
 
-      {selectedFiles.length > 0 && !activeError && (
+      {driveImportError ? (
+        <div className="w-full rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {driveImportError}
+        </div>
+      ) : null}
+
+      {selectedFiles.length > 0 && !error && (
         <div className="w-full space-y-2">
           <h3 className="font-semibold text-lg text-left text-foreground">Selected Files:</h3>
           {selectedFiles.map((file, index) => (
@@ -137,7 +134,7 @@ export const ToolUploader = ({ onFilesSelected, onProcess, acceptedFileTypes, ac
         </div>
       )}
 
-      {selectedFiles.length > 0 && !activeError && actionButtonText && (
+      {selectedFiles.length > 0 && !error && actionButtonText && (
           <Button size="lg" onClick={onProcess} className="w-full md:w-auto px-12 py-6 text-lg font-bold bg-red-500 hover:bg-red-600 mt-4">
             {actionButtonText}
           </Button>
