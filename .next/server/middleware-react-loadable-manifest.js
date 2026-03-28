@@ -1,1 +1,0 @@
-self.__REACT_LOADABLE_MANIFEST="{\"components/feedback/FeedbackButton.tsx -> ./FeedbackModal\":{\"id\":\"components/feedback/FeedbackButton.tsx -> ./FeedbackModal\",\"files\":[\"static/chunks/src_components_feedback_FeedbackModal_tsx.js\"]}}"
